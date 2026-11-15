@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAcademicContext } from '@/context/academic-context';
+import { useSession } from '@/context/session-context';
 import { LexiColors, LexiFonts } from '@/constants/lexi-theme';
 
 const AVATAR_URL =
@@ -24,6 +25,7 @@ const AVATAR_URL =
 export default function StudentProfileScreen() {
   const insets = useSafeAreaInsets();
   const { state, setAcademicInfo, updatePreferences } = useAcademicContext();
+  const { signOut } = useSession();
 
   // Local state for profile identity
   const [studentName, setStudentName] = useState('Alex Mercer');
@@ -264,7 +266,10 @@ export default function StudentProfileScreen() {
         {/* Quick Log Out / Switch Profile Row */}
         <Pressable
           style={styles.switchAccountButton}
-          onPress={() => router.replace('/onboarding/welcome' as any)}
+          onPress={() => {
+            signOut();
+            router.replace('/onboarding/welcome' as any);
+          }}
         >
           <Ionicons name="log-out-outline" size={18} color="#ba1a1a" />
           <Text style={styles.switchAccountText}>Sign Out of Academic Session</Text>

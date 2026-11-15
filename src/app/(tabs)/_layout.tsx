@@ -1,9 +1,11 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { LexiBottomTabBar } from '@/components/lexi-bottom-tab-bar';
+import { RoleGate } from '@/components/role-gate';
 
 export default function TabsLayout() {
   return (
+    <RoleGate role="student">
     <Tabs
       tabBar={(props) => <LexiBottomTabBar {...props} />}
       screenOptions={{
@@ -35,5 +37,6 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    </RoleGate>
   );
 }

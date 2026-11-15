@@ -13,6 +13,7 @@ import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { useSession, ROLE_HOME } from '@/context/session-context';
 
 type RoleType = 'student' | 'lecturer' | 'school-board';
 
@@ -48,6 +49,7 @@ export default function RoleSelectScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ universityName?: string; universityId?: string }>();
   const [fontsLoaded] = useLexiFonts();
+  const { setRole } = useSession();
 
   const [selectedRole, setSelectedRole] = useState<RoleType>('student');
 
@@ -65,6 +67,7 @@ export default function RoleSelectScreen() {
 
   const handleGetStarted = () => {
     if (selectedRole === 'student') {
+      setRole('student');
       router.push({
         pathname: '/onboarding/student-courses',
         params: {
@@ -74,14 +77,10 @@ export default function RoleSelectScreen() {
       return;
     }
 
-    // Other roles proceed directly to tabs
-    router.replace({
-      pathname: '/(tabs)',
-      params: {
-        role: selectedRole,
-        university: params.universityName || 'Veritas University',
-      },
-    } as any);
+    // Lecturer and School Board each open their own app.
+    const role = selectedRole === 'lecturer' ? 'lecturer' : 'institution';
+    setRole(role);
+    router.replace(ROLE_HOME[role]);
   };
 
   return (

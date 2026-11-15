@@ -5,10 +5,26 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LexiColors, LexiFonts } from '@/constants/lexi-theme';
 
-export function LexiBottomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
+export interface LexiTabIcon {
+  outline: IoniconName;
+  filled: IoniconName;
+}
+
+interface LexiBottomTabBarProps extends BottomTabBarProps {
+  /** Optional per-route icons. Labels come from each screen's `title` option. */
+  icons?: Record<string, LexiTabIcon>;
+}
+
+export function LexiBottomTabBar({ state, descriptors, navigation, icons }: LexiBottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
-  const getTabConfig = (routeName: string) => {
+  const getTabConfig = (routeName: string, title?: string) => {
+    const custom = icons?.[routeName];
+    if (custom) {
+      return { label: title ?? routeName, iconOutline: custom.outline, iconFilled: custom.filled };
+    }
     switch (routeName) {
       case 'index':
         return {
@@ -57,7 +73,7 @@ export function LexiBottomTabBar({ state, descriptors, navigation }: BottomTabBa
       <View style={styles.tabRow}>
         {state.routes.map((route, index) => {
           const isFocused = state.index === index;
-          const config = getTabConfig(route.name);
+          const config = getTabConfig(route.name, descriptors[route.key]?.options.title);
 
           const onPress = () => {
             const event = navigation.emit({

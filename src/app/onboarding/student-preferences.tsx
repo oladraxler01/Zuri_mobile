@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
 import { useAcademic } from '@/context/academic-context';
+import { useSession } from '@/context/session-context';
 
 const GPA_GOALS = [
   '4.50+ (First Class)',
@@ -28,6 +29,7 @@ export default function StudentPreferencesScreen() {
   const router = useRouter();
   const [fontsLoaded] = useLexiFonts();
   const { state, updatePreferences } = useAcademic();
+  const { setRole } = useSession();
 
   const [targetGpa, setTargetGpa] = useState(state.preferences.targetGpa);
   const [studyHours, setStudyHours] = useState(state.preferences.weeklyStudyHours);
@@ -57,6 +59,7 @@ export default function StudentPreferencesScreen() {
       examCountdown,
       assignmentAlerts,
     });
+    setRole('student');
     router.replace('/(tabs)' as Href);
   };
 
