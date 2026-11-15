@@ -9,6 +9,7 @@ import { NetworkProvider } from '@/context/network-context';
 import { MaterialsProvider } from '@/context/materials-context';
 import { PlannerProvider } from '@/context/planner-context';
 import { FeedProvider } from '@/context/feed-context';
+import { ProgressProvider } from '@/context/progress-context';
 import { LecturerProvider } from '@/context/lecturer-context';
 import { InstitutionProvider } from '@/context/institution-context';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
@@ -24,6 +25,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 export default function RootLayout() {
   return (
     <NetworkProvider>
+      <ProgressProvider>
       <SessionProvider>
         <AcademicProvider>
           <LecturesProvider>
@@ -41,6 +43,7 @@ export default function RootLayout() {
           </LecturesProvider>
         </AcademicProvider>
       </SessionProvider>
+      </ProgressProvider>
     </NetworkProvider>
   );
 }

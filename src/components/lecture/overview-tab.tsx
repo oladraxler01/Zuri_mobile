@@ -13,12 +13,14 @@ interface Props {
   canSeek: boolean;
   onSeek: (seconds: number) => void;
   onOpenQuiz: () => void;
+  /** flashcard self-rating: knew it or not */
+  onCard?: (card: { question: string; answer: string }, knew: boolean) => void;
 }
 
 type ChatMsg = { role: 'user' | 'lexi'; text: string; refs?: TranscriptSegment[] };
 
 /** Summary, "what you need to know", knowledge gap and study actions. */
-export function OverviewTab({ lecture, canSeek, onSeek, onOpenQuiz }: Props) {
+export function OverviewTab({ lecture, canSeek, onSeek, onOpenQuiz, onCard }: Props) {
   const a = lecture.analysis!;
   const [concept, setConcept] = useState<LectureConcept | null>(null);
   const [gapOpen, setGapOpen] = useState(false);
@@ -137,7 +139,7 @@ export function OverviewTab({ lecture, canSeek, onSeek, onOpenQuiz }: Props) {
         </Modal>
       )}
 
-      <FlashcardSheet visible={cardsOpen} lecture={lecture} onClose={() => setCardsOpen(false)} />
+      <FlashcardSheet visible={cardsOpen} lecture={lecture} onClose={() => setCardsOpen(false)} onCard={onCard} />
       <AskSheet
         visible={askOpen}
         lecture={lecture}
@@ -221,7 +223,17 @@ function ConceptSheet({
   );
 }
 
-function FlashcardSheet({ visible, lecture, onClose }: { visible: boolean; lecture: Lecture; onClose: () => void }) {
+function FlashcardSheet({
+  visible,
+  lecture,
+  onClose,
+  onCard,
+}: {
+  visible: boolean;
+  lecture: Lecture;
+  onClose: () => void;
+  onCard?: (card: { question: string; answer: string }, knew: boolean) => void;
+}) {
   const cards = lecture.analysis!.flashcards;
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -269,6 +281,34 @@ function FlashcardSheet({ visible, lecture, onClose }: { visible: boolean; lectu
             </Text>
           </Pressable>
 
+          {flipped && onCard ? (
+          <View style={styles.flashNav}>
+            <Pressable
+              style={({ pressed }) => [t.secondaryBtn, { flex: 1 }, pressed && t.pressed]}
+              onPress={() => {
+                onCard(card, false);
+                if (last) return close();
+                setFlipped(false);
+                setIdx((i) => i + 1);
+              }}
+            >
+              <Ionicons name="refresh" size={18} color={UI.ink} />
+              <Text style={t.secondaryBtnText}>Still learning</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [t.primaryBtn, { flex: 1 }, pressed && t.pressed]}
+              onPress={() => {
+                onCard(card, true);
+                if (last) return close();
+                setFlipped(false);
+                setIdx((i) => i + 1);
+              }}
+            >
+              <Ionicons name="checkmark" size={18} color="#fff" />
+              <Text style={t.primaryBtnText}>Got it</Text>
+            </Pressable>
+          </View>
+          ) : (
           <View style={styles.flashNav}>
             <Pressable
               style={({ pressed }) => [t.secondaryBtn, { flex: 1 }, idx === 0 && { opacity: 0.4 }, pressed && t.pressed]}
@@ -293,6 +333,7 @@ function FlashcardSheet({ visible, lecture, onClose }: { visible: boolean; lectu
               {!last && <Ionicons name="arrow-forward" size={18} color="#fff" />}
             </Pressable>
           </View>
+          )}
         </View>
       </View>
     </Modal>

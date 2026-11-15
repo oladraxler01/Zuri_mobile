@@ -15,6 +15,8 @@ import { QuizTab } from '@/components/lecture/quiz-tab';
 import { Chip, Segmented } from '@/components/ui/chip';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
 import { StateView } from '@/components/states/state-view';
+import { useProgress } from '@/context/progress-context';
+import { conceptForQuestion } from '@/utils/mastery';
 import { MATERIAL_CATEGORIES, type Material } from '@/types/material';
 import { formatLectureDate } from '@/utils/time';
 
@@ -30,6 +32,7 @@ export default function MaterialScreen() {
   );
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [openError, setOpenError] = useState('');
+  const progress = useProgress();
 
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/materials' as Href));
 
@@ -186,7 +189,21 @@ export default function MaterialScreen() {
               {tab === 'questions' && (
                 <View style={{ marginHorizontal: -20 }}>
                   {a.questions.length ? (
-                    <QuizTab questions={a.questions} onFinish={() => {}} />
+                    <QuizTab
+                      questions={a.questions}
+                      onFinish={() => {}}
+                      onAnswer={(q, correct) =>
+                        progress.log({
+                          type: 'quiz-answer',
+                          courseId: m.courseId,
+                          courseCode: m.courseCode,
+                          concept: conceptForQuestion(q, a.concepts),
+                          correct,
+                          sourceId: m.id,
+                          sourceKind: 'material',
+                        })
+                      }
+                    />
                   ) : (
                     <StateView compact icon="help-circle-outline" title="No quiz yet" message="Practice questions are generated once the document server is connected." />
                   )}

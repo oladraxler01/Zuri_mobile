@@ -18,6 +18,8 @@ import { NotesTab } from '@/components/lecture/notes-tab';
 import { QuizTab } from '@/components/lecture/quiz-tab';
 import { AudioPlayerBar } from '@/components/lecture/audio-player-bar';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
+import { useProgress } from '@/context/progress-context';
+import { conceptForQuestion } from '@/utils/mastery';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
@@ -37,6 +39,7 @@ export default function LectureScreen() {
   const initialTab = TABS.some((t) => t.key === params.tab) ? (params.tab as TabKey) : 'overview';
   const [tab, setTab] = useState<TabKey>(initialTab);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const progress = useProgress();
 
   const player = useAudioPlayer(lecture?.audioUri ? { uri: lecture.audioUri } : null);
   const status = useAudioPlayerStatus(player);
@@ -142,7 +145,26 @@ export default function LectureScreen() {
 
           <View style={{ flex: 1 }}>
             {tab === 'overview' && (
-              <OverviewTab lecture={lecture} canSeek={canSeek} onSeek={seek} onOpenQuiz={() => setTab('questions')} />
+              <OverviewTab
+                lecture={lecture}
+                canSeek={canSeek}
+                onSeek={seek}
+                onOpenQuiz={() => setTab('questions')}
+                onCard={(card, knew) =>
+                  progress.log({
+                    type: 'flashcard',
+                    courseId: lecture.courseId,
+                    courseCode: lecture.courseCode,
+                    concept: conceptForQuestion(
+                      { id: '', question: card.question, options: [card.answer], correctIndex: 0, explanation: '' },
+                      lecture.analysis!.concepts
+                    ),
+                    correct: knew,
+                    sourceId: lecture.id,
+                    sourceKind: 'lecture',
+                  })
+                }
+              />
             )}
             {tab === 'transcript' && (
               <TranscriptTab
@@ -157,6 +179,17 @@ export default function LectureScreen() {
             {tab === 'questions' && (
               <QuizTab
                 questions={lecture.analysis.questions}
+                onAnswer={(q, correct) =>
+                  progress.log({
+                    type: 'quiz-answer',
+                    courseId: lecture.courseId,
+                    courseCode: lecture.courseCode,
+                    concept: conceptForQuestion(q, lecture.analysis!.concepts),
+                    correct,
+                    sourceId: lecture.id,
+                    sourceKind: 'lecture',
+                  })
+                }
                 best={lecture.quizBest}
                 onFinish={(score, total) => {
                   if (!lecture.quizBest || score > lecture.quizBest.score) {

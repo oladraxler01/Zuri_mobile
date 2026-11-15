@@ -124,3 +124,10 @@ Part 2 — institution:
 - `context/feed-context.tsx`: read / dismissed / snoozed-until-tomorrow state (saved), rebuilt every minute.
 - New `notifications.tsx` (notification centre: needs attention / recommended / updates, unread dots, mark all read, dismiss) and `recommendation/[id].tsx` (why, what to do, actions, remind me tomorrow, dismiss).
 - Home: bell with unread count; "Recommended for you" now shows the top recommendation of any kind; "Get started" checklist for new students (timetable, first lecture, upload, add a deadline), dismissible.
+
+### Phase 6.3 — Courses (done 2026-11-15)
+- `context/progress-context.tsx`: saved log of quiz answers, flashcard ratings, study sessions and concept reviews (last 3000 events).
+- Lecture and material quizzes record each checked answer; lecture flashcards get "Still learning" / "Got it" after flipping. Each is linked to its concept (`utils/mastery.ts` `conceptForQuestion`; tested: 8 of 9 sample items matched, the 9th is course-level).
+- `utils/mastery.ts`: per-concept mastery (recency-weighted % of last 6 answers) → Strong / Developing / Weak / Not tested, plus concepts flagged by lecture analysis.
+- `utils/activity.ts`: course activity (recordings, uploads, deadlines added, quiz rounds and flashcard sessions grouped by day).
+- Course page: "Your standing" on the overview (mastery, strong/weak/untested, answers, weakest topic); new Topics tab (strength map with practise-weakest, and all topics with where each was covered) and Activity tab.

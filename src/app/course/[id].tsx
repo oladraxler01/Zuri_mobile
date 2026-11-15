@@ -16,6 +16,9 @@ import { usePlanner } from '@/context/planner-context';
 import { MaterialCard } from '@/components/materials/material-card';
 import { AssessmentCard } from '@/components/planner/assessment-card';
 import { pickAndUploadMaterial } from '@/utils/pick-material';
+import { useProgress } from '@/context/progress-context';
+import { courseMastery, overallMastery } from '@/utils/mastery';
+import { CourseTopics, ActivityList, activityFor } from '@/components/course/course-topics';
 import { describeStart, formatDuration, upcomingClasses } from '@/utils/time';
 
 const TABS = [
@@ -24,6 +27,8 @@ const TABS = [
   { key: 'lectures', label: 'Lectures' },
   { key: 'materials', label: 'Materials' },
   { key: 'assessments', label: 'Assessments' },
+  { key: 'topics', label: 'Topics' },
+  { key: 'activity', label: 'Activity' },
 ] as const;
 type TabKey = (typeof TABS)[number]['key'];
 
@@ -48,6 +53,14 @@ export default function CourseDetailScreen() {
   const courseMaterials = materials.filter((m) => m.courseId === params.id).sort((a, b) => b.addedAt.localeCompare(a.addedAt));
   const courseAssessments = assessments.filter((a) => a.courseId === params.id).sort((a, b) => a.dueAt.localeCompare(b.dueAt));
   const nextDue = courseAssessments.find((a) => a.status !== 'done' && new Date(a.dueAt) > new Date());
+  const { events } = useProgress();
+  const mastery = useMemo(() => courseMastery(params.id, lectures, materials, events), [params.id, lectures, materials, events]);
+  const overall = overallMastery(mastery);
+  const answers = events.filter((e) => e.courseId === params.id && e.type === 'quiz-answer');
+  const activity = useMemo(
+    () => activityFor({ lectures, materials, assessments, events }, params.id),
+    [lectures, materials, assessments, events, params.id]
+  );
 
   const course = state.courses.find((c) => c.id === params.id);
   const [tab, setTab] = useState<TabKey>(
@@ -149,6 +162,34 @@ export default function CourseDetailScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {tab === 'overview' && (
           <>
+            <Text style={styles.sectionLabel}>YOUR STANDING</Text>
+            <Pressable style={({ pressed }) => [styles.card, pressed && styles.pressed]} onPress={() => setTab('topics')}>
+              <View style={styles.rowBetween}>
+                <View>
+                  <Text style={styles.standingBig}>{overall === null ? '—' : `${overall}%`}</Text>
+                  <Text style={styles.cardMeta}>{overall === null ? 'Take a lecture quiz to measure mastery' : 'average mastery across tested topics'}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={UI.muted} />
+              </View>
+              <View style={styles.standingRow}>
+                <Text style={styles.standingItem}>
+                  <Text style={styles.standingN}>{mastery.filter((c) => c.level === 'strong').length}</Text> strong
+                </Text>
+                <Text style={styles.standingItem}>
+                  <Text style={styles.standingN}>{mastery.filter((c) => c.level === 'weak').length}</Text> weak
+                </Text>
+                <Text style={styles.standingItem}>
+                  <Text style={styles.standingN}>{mastery.filter((c) => c.level === 'new').length}</Text> untested
+                </Text>
+                <Text style={styles.standingItem}>
+                  <Text style={styles.standingN}>{answers.length}</Text> answers
+                </Text>
+              </View>
+              {mastery.find((c) => c.level === 'weak') && (
+                <Text style={styles.standingHint}>Weakest: {mastery.find((c) => c.level === 'weak')!.concept}</Text>
+              )}
+            </Pressable>
+
             <Text style={styles.sectionLabel}>NEXT CLASS</Text>
             {next ? (
               <Pressable
@@ -287,6 +328,10 @@ export default function CourseDetailScreen() {
           </>
         )}
 
+        {tab === 'topics' && <CourseTopics concepts={mastery} onRecord={record} />}
+
+        {tab === 'activity' && <ActivityList items={activity} />}
+
         {tab === 'assessments' && (
           <>
             <Pressable
@@ -370,6 +415,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   tab: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
+  standingBig: { fontFamily: LexiFonts.headlineLg, fontSize: 30, color: UI.ink },
+  standingRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: UI.borderSoft },
+  standingItem: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: UI.muted },
+  standingN: { fontFamily: LexiFonts.labelSmBold, color: UI.ink },
+  standingHint: { fontFamily: LexiFonts.bodyMedium, fontSize: 13, color: UI.error, marginTop: 8 },
   inlineAction: {
     flexDirection: 'row',
     alignItems: 'center',
