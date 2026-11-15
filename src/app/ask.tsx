@@ -23,8 +23,9 @@ import { useMaterials } from '@/context/materials-context';
 import { Chip } from '@/components/ui/chip';
 import { SourceCard } from '@/components/source-card';
 import { searchSources, type SourceHit } from '@/utils/source-search';
+import { useConversations } from '@/context/conversations-context';
 
-type Msg = { role: 'user' | 'lexi'; text: string; sources?: SourceHit[] };
+type Msg = import('@/context/conversations-context').ChatMessage;
 
 /**
  * Ask questions across your lectures and materials. Every answer is made of
@@ -32,16 +33,21 @@ type Msg = { role: 'user' | 'lexi'; text: string; sources?: SourceHit[] };
  * Scope: everything, one course (?courseId), or one document (?materialId).
  */
 export default function AskScreen() {
-  const params = useLocalSearchParams<{ courseId?: string; materialId?: string; q?: string }>();
+  const params = useLocalSearchParams<{ courseId?: string; materialId?: string; q?: string; conversationId?: string }>();
+  const convs = useConversations();
+  const existing = params.conversationId ? convs.get(params.conversationId) : undefined;
   const { state } = useAcademic();
   const { lectures } = useLectures();
   const { materials, getMaterial } = useMaterials();
   const scrollRef = useRef<ScrollViewInstance>(null);
 
-  const material = params.materialId ? getMaterial(params.materialId) : undefined;
-  const [courseId, setCourseId] = useState<string | null>(params.courseId || null);
+  const materialId = existing?.scope.materialId ?? params.materialId;
+  const material = materialId ? getMaterial(materialId) : undefined;
+  const [courseId, setCourseId] = useState<string | null>(existing?.scope.courseId ?? (params.courseId || null));
   const [input, setInput] = useState('');
-  const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [msgs, setMsgs] = useState<Msg[]>(existing?.messages ?? []);
+  const [convId, setConvId] = useState<string | undefined>(existing?.id);
+  const saved = convId ? convs.get(convId)?.saved : false;
 
   const scopeLabel = material
     ? `“${material.analysis?.title ?? material.name}”`
@@ -79,15 +85,24 @@ export default function AskScreen() {
               ? 'There’s nothing to search yet. Record a lecture or upload notes, and I’ll answer from them.'
               : `I couldn’t find that in ${scopeLabel}. Try other words${courseId || material ? ', or widen the search to everything' : ''}.`,
         };
-    setMsgs((m) => [...m, { role: 'user', text: q }, reply]);
+    const turn: Msg[] = [{ role: 'user', text: q }, reply];
+    setMsgs((m) => [...m, ...turn]);
+    // Every chat is kept in history; star it to save it.
+    if (convId) convs.append(convId, turn);
+    else setConvId(convs.start({ courseId: courseId ?? undefined, materialId: material?.id }, turn));
     setInput('');
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
   };
 
   // A question passed in (e.g. from an assignment) is asked straight away.
   useEffect(() => {
-    if (params.q) ask(params.q);
+    if (params.q && !existing) ask(params.q);
   }, []);
+
+  const newChat = () => {
+    setMsgs([]);
+    setConvId(undefined);
+  };
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
@@ -100,8 +115,22 @@ export default function AskScreen() {
         >
           <Ionicons name="close" size={24} color={UI.ink} />
         </Pressable>
-        <Text style={styles.topTitle}>Ask</Text>
-        <View style={{ width: 24 }} />
+        <Text style={styles.topTitle}>Ask Zuri</Text>
+        <View style={{ flexDirection: 'row', gap: 18 }}>
+          {convId && (
+            <Pressable onPress={() => convs.toggleSaved(convId)} hitSlop={10} accessibilityLabel={saved ? 'Unsave conversation' : 'Save conversation'}>
+              <Ionicons name={saved ? 'star' : 'star-outline'} size={21} color={saved ? UI.amber : UI.ink} />
+            </Pressable>
+          )}
+          {msgs.length > 0 && (
+            <Pressable onPress={newChat} hitSlop={10} accessibilityLabel="New conversation">
+              <Ionicons name="create-outline" size={21} color={UI.ink} />
+            </Pressable>
+          )}
+          <Pressable onPress={() => router.push('/ask-history' as Href)} hitSlop={10} accessibilityLabel="Conversation history">
+            <Ionicons name="time-outline" size={22} color={UI.ink} />
+          </Pressable>
+        </View>
       </View>
 
       {!material && (

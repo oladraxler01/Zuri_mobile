@@ -103,6 +103,15 @@ export default function AcademicHomeScreen() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
         <Pressable
           style={styles.profileBtn}
+          onPress={() => router.push('/search' as Href)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Search"
+        >
+          <Ionicons name="search-outline" size={23} color="#272e0a" />
+        </Pressable>
+        <Pressable
+          style={styles.profileBtn}
           onPress={() => router.push('/notifications' as Href)}
           hitSlop={8}
           accessibilityRole="button"

@@ -10,6 +10,7 @@ import { MaterialsProvider } from '@/context/materials-context';
 import { PlannerProvider } from '@/context/planner-context';
 import { FeedProvider } from '@/context/feed-context';
 import { ProgressProvider } from '@/context/progress-context';
+import { ConversationsProvider } from '@/context/conversations-context';
 import { LecturerProvider } from '@/context/lecturer-context';
 import { InstitutionProvider } from '@/context/institution-context';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
@@ -26,6 +27,7 @@ export default function RootLayout() {
   return (
     <NetworkProvider>
       <ProgressProvider>
+      <ConversationsProvider>
       <SessionProvider>
         <AcademicProvider>
           <LecturesProvider>
@@ -43,6 +45,7 @@ export default function RootLayout() {
           </LecturesProvider>
         </AcademicProvider>
       </SessionProvider>
+      </ConversationsProvider>
       </ProgressProvider>
     </NetworkProvider>
   );
@@ -85,6 +88,8 @@ function AppShell() {
         <Stack.Screen name="assessment/edit" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="ask" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="notifications" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="search" options={{ animation: 'fade' }} />
+        <Stack.Screen name="ask-history" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="study/index" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="study/session" options={{ presentation: 'modal', animation: 'slide_from_bottom', gestureEnabled: false }} />
         <Stack.Screen name="study/mastery" options={{ animation: 'slide_from_right' }} />

@@ -138,3 +138,11 @@ Part 2 — institution:
 - `study/index.tsx` hub (start session, review weak topics, per-course sessions, week minutes, strong topics, planned today), `study/mastery.tsx` (all courses), `study/history.tsx` (minutes per day chart, day streak, accuracy, full activity).
 - Topic "practise" buttons and the concept/exam recommendations now start focused study sessions. Home's fake "Focus Session" popup is replaced by a Study session tile.
 - Interactive tutoring is guided by your own sources; AI-written tutoring still needs the backend.
+
+### Rename to Zuri (2026-11-15, commit fa21dc1)
+- All user-visible text, app display name and microphone permission text say Zuri. Internal names (files, `lexi.*` storage keys, identifiers, EAS slug, scheme, bundle id) unchanged on purpose so saved data and builds keep working.
+
+### Phase 6.5 — Academic assistant & global search (done 2026-11-15)
+- `context/conversations-context.tsx`: every Ask conversation is kept (history); star to save. Ask screen ("Ask Zuri") saves as you go, reopens past chats (`?conversationId=`), new-chat and history buttons.
+- `ask-history.tsx`: history and saved conversations, search, star, delete.
+- `utils/global-search.ts` + `search.tsx`: one search across courses, deadlines, topics, lectures, materials and the words in transcripts/passages; grouped results with type filters, recent searches, "Ask Zuri instead" when nothing matches. Search icon in the Home header. Tested on sample data.
