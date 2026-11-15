@@ -78,9 +78,13 @@ export default function RoleSelectScreen() {
     }
 
     // Lecturer and School Board each open their own app.
-    const role = selectedRole === 'lecturer' ? 'lecturer' : 'institution';
-    setRole(role);
-    router.replace(ROLE_HOME[role]);
+    if (selectedRole === 'lecturer') {
+      setRole('lecturer');
+      router.push('/onboarding/lecturer-setup' as Href);
+      return;
+    }
+    setRole('institution');
+    router.replace(ROLE_HOME.institution);
   };
 
   return (

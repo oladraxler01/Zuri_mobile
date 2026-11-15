@@ -26,4 +26,6 @@ export const STORAGE_KEYS = {
   lectures: 'lexi.lectures.v1',
   materials: 'lexi.materials.v1',
   planner: 'lexi.planner.v1',
+  lecturer: 'lexi.lecturer.v1',
+  institution: 'lexi.institution.v1',
 } as const;

@@ -8,6 +8,8 @@ import { LecturesProvider } from '@/context/lectures-context';
 import { NetworkProvider } from '@/context/network-context';
 import { MaterialsProvider } from '@/context/materials-context';
 import { PlannerProvider } from '@/context/planner-context';
+import { LecturerProvider } from '@/context/lecturer-context';
+import { InstitutionProvider } from '@/context/institution-context';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
 import { OfflineBanner } from '@/components/states/offline-banner';
 import { ReminderSync } from '@/components/reminder-sync';
@@ -26,7 +28,11 @@ export default function RootLayout() {
           <LecturesProvider>
             <MaterialsProvider>
               <PlannerProvider>
-                <AppShell />
+                <LecturerProvider>
+                  <InstitutionProvider>
+                    <AppShell />
+                  </InstitutionProvider>
+                </LecturerProvider>
               </PlannerProvider>
             </MaterialsProvider>
           </LecturesProvider>
@@ -71,6 +77,8 @@ function AppShell() {
         <Stack.Screen name="assessment/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="assessment/edit" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="ask" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="teach" />
+        <Stack.Screen name="admin" />
         <Stack.Screen name="status/[kind]" options={{ animation: 'fade', gestureEnabled: false }} />
       </Stack>
       <OfflineBanner />

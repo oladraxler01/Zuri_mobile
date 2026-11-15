@@ -18,6 +18,9 @@ import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
 import { UI } from '@/constants/lexi-ui';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
 import { useAcademic, type CourseItem } from '@/context/academic-context';
+import { useSession } from '@/context/session-context';
+import { useLecturer } from '@/context/lecturer-context';
+import { teachingTimetable } from '@/utils/lecturer';
 import { useLectures } from '@/context/lectures-context';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
 import { PermissionState } from '@/components/states/state-view';
@@ -43,6 +46,13 @@ export default function LectureRecordingScreen() {
   const params = useLocalSearchParams<{ courseId?: string; courseCode?: string; courseTitle?: string }>();
   const [fontsLoaded] = useLexiFonts();
   const { state } = useAcademic();
+  const { role } = useSession();
+  const lecturer = useLecturer();
+  const isLecturer = role === 'lecturer';
+  const courseList: CourseItem[] = isLecturer
+    ? lecturer.courses.map((c) => ({ id: c.id, code: c.code, title: c.title, units: 0 }))
+    : state.courses;
+  const timetable = isLecturer ? teachingTimetable(lecturer.courses) : state.timetable;
   const { saveRecording } = useLectures();
 
   const recorder = useAudioRecorder(LECTURE_RECORDING);
@@ -61,11 +71,11 @@ export default function LectureRecordingScreen() {
   // ── Course selection ──
   const defaultCourse = useMemo<CourseItem | undefined>(() => {
     const byParam =
-      state.courses.find((c) => c.id === params.courseId) ??
-      state.courses.find((c) => c.code.toLowerCase() === params.courseCode?.toLowerCase());
+      courseList.find((c) => c.id === params.courseId) ??
+      courseList.find((c) => c.code.toLowerCase() === params.courseCode?.toLowerCase());
     if (byParam) return byParam;
-    const next = upcomingClasses(state.timetable)[0];
-    return state.courses.find((c) => c.id === next?.slot.courseId) ?? state.courses[0];
+    const next = upcomingClasses(timetable)[0];
+    return courseList.find((c) => c.id === next?.slot.courseId) ?? courseList[0];
   }, []);
   const [course, setCourse] = useState<CourseItem | undefined>(defaultCourse);
   const courseCode = course?.code ?? params.courseCode ?? 'Lecture';
@@ -222,7 +232,7 @@ export default function LectureRecordingScreen() {
           <>
             <Text style={styles.label}>RECORDING FOR</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.courseChips}>
-              {state.courses.map((c) => {
+              {courseList.map((c) => {
                 const on = c.id === course?.id;
                 return (
                   <Pressable
