@@ -16,11 +16,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
 import { useAcademic } from '@/context/academic-context';
+import { useLectures } from '@/context/lectures-context';
+import { describeStart, upcomingClasses, formatDuration } from '@/utils/time';
+import { lectureTitle } from '@/components/lecture/lecture-card';
 
 export default function AcademicHomeScreen() {
   const router = useRouter();
   const [fontsLoaded] = useLexiFonts();
   const { state } = useAcademic();
+  const { lectures } = useLectures();
 
   // Modals for interactive actions
   const [syllabusVisible, setSyllabusVisible] = useState(false);
@@ -32,24 +36,27 @@ export default function AcademicHomeScreen() {
     return <View style={styles.container} />;
   }
 
-  const handleStartRecording = (courseCode?: string, courseTitle?: string) => {
+  const upcoming = upcomingClasses(state.timetable);
+  const nextOcc = upcoming[0];
+  const nextClass = nextOcc?.slot;
+  const nextCourse = state.courses.find((c) => c.id === nextClass?.courseId);
+  const laterClasses = upcoming.slice(1, 3);
+
+  // Post-lecture state: the most recent lecture recorded in the last 24 hours.
+  const recentLecture = [...lectures]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .find((l) => Date.now() - new Date(l.createdAt).getTime() < 24 * 60 * 60 * 1000);
+
+  const handleStartRecording = (courseId?: string) => {
+    const course = state.courses.find((c) => c.id === courseId);
     router.push({
       pathname: '/lecture-recording',
-      params: {
-        courseCode: courseCode || 'CSC 301',
-        courseTitle: courseTitle || 'Design and Analysis of Algorithms',
-      },
+      params: course ? { courseId: course.id, courseCode: course.code, courseTitle: course.title } : {},
     } as any);
   };
 
-  const nextClass = state.timetable[0] || {
-    courseCode: 'CSC 301',
-    startTime: '9:00 AM',
-    endTime: '11:30 AM',
-    venue: 'Lecture Hall 4, Science Block',
-  };
-
-  const laterClasses = state.timetable.slice(1, 3);
+  const openUpcoming = (slotId?: string) =>
+    router.push({ pathname: '/upcoming-lecture', params: slotId ? { slotId } : {} } as any);
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
@@ -77,19 +84,68 @@ export default function AcademicHomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Post-lecture state */}
+        {recentLecture && (
+          <Pressable
+            style={({ pressed }) => [styles.postLectureCard, pressed && styles.btnPressed]}
+            onPress={() => router.push(`/lecture/${recentLecture.id}` as Href)}
+          >
+            <View style={styles.alertHeaderRow}>
+              <Text style={styles.postLectureTag}>
+                {recentLecture.status === 'ready'
+                  ? 'YOUR NOTES ARE READY'
+                  : recentLecture.status === 'failed'
+                    ? 'NEEDS ATTENTION'
+                    : 'PROCESSING YOUR LECTURE'}
+              </Text>
+              <Ionicons
+                name={recentLecture.status === 'ready' ? 'checkmark-circle' : recentLecture.status === 'failed' ? 'alert-circle' : 'sync'}
+                size={18}
+                color={recentLecture.status === 'failed' ? '#ba1a1a' : '#e9c349'}
+              />
+            </View>
+            <Text style={styles.postLectureTitle}>
+              {recentLecture.courseCode}: {lectureTitle(recentLecture)}
+            </Text>
+            <Text style={styles.postLectureMeta}>
+              {recentLecture.status === 'ready' && recentLecture.analysis
+                ? `${recentLecture.analysis.concepts.length} key concepts · ${recentLecture.analysis.questions.length} questions · ${recentLecture.analysis.flashcards.length} flashcards`
+                : recentLecture.status === 'failed'
+                  ? 'Processing stopped. Tap to try again.'
+                  : `${formatDuration(recentLecture.durationSeconds)} recorded · ${recentLecture.status === 'uploading' ? `uploading ${Math.round((recentLecture.progress ?? 0) * 100)}%` : 'preparing notes'}`}
+            </Text>
+            {recentLecture.status === 'ready' && (
+              <View style={styles.postLectureActions}>
+                <View style={styles.postLectureBtn}>
+                  <Text style={styles.postLectureBtnText}>Review notes</Text>
+                </View>
+                <Pressable
+                  style={styles.postLectureBtnGhost}
+                  onPress={() =>
+                    router.push({ pathname: '/lecture/[id]', params: { id: recentLecture.id, tab: 'questions' } } as any)
+                  }
+                >
+                  <Text style={styles.postLectureBtnGhostText}>Take quiz</Text>
+                </Pressable>
+              </View>
+            )}
+          </Pressable>
+        )}
+
         {/* Proactive Lecture Recording Alert Banner */}
+        {nextOcc && (
         <View style={styles.proactiveAlertCard}>
           <View style={styles.alertHeaderRow}>
             <View style={styles.alertBadge}>
               <View style={styles.pulsingDot} />
-              <Text style={styles.alertBadgeText}>UPCOMING IN 12 MINS</Text>
+              <Text style={styles.alertBadgeText}>{describeStart(nextOcc).toUpperCase()}</Text>
             </View>
             <Ionicons name="notifications" size={16} color="#c5832b" />
           </View>
 
           <Text style={styles.alertTitle}>Ready to capture {nextClass.courseCode}?</Text>
           <Text style={styles.alertSubtitle}>
-            Your lecture at {nextClass.venue} is starting shortly. Tap below to automatically record, transcribe, and generate revision notes.
+            {nextOcc.inProgress ? 'Your class is on now' : 'Your next class'} at {nextClass.venue}. Record it to get a transcript, notes and questions afterwards.
           </Text>
 
           <Pressable
@@ -97,12 +153,13 @@ export default function AcademicHomeScreen() {
               styles.alertRecordBtn,
               pressed && styles.btnPressed,
             ]}
-            onPress={() => handleStartRecording(nextClass.courseCode, 'Design and Analysis of Algorithms')}
+            onPress={() => handleStartRecording(nextClass.courseId)}
           >
             <Ionicons name="mic" size={18} color="#ffffff" />
             <Text style={styles.alertRecordBtnText}>Start Recording Lecture</Text>
           </Pressable>
         </View>
+        )}
 
         {/* Greeting Section */}
         <View style={styles.greetingSection}>
@@ -118,6 +175,7 @@ export default function AcademicHomeScreen() {
           <View style={styles.timelineGuideLine} />
 
           {/* NEXT UP Section */}
+          {nextOcc && (
           <View style={styles.timelineSection}>
             <View style={styles.milestoneDotGold} />
 
@@ -132,7 +190,7 @@ export default function AcademicHomeScreen() {
               <View style={styles.cardGoldGlow} />
 
               <Text style={styles.nextCourseTitle}>
-                {nextClass.courseCode}: Design and Analysis of Algorithms
+                {nextClass.courseCode}: {nextCourse?.title ?? 'Upcoming class'}
               </Text>
 
               <View style={styles.venueRow}>
@@ -150,14 +208,14 @@ export default function AcademicHomeScreen() {
 
                 <Pressable
                   style={styles.secondaryActionBtn}
-                  onPress={() => setPrepNotesVisible(true)}
+                  onPress={() => openUpcoming(nextClass.id)}
                 >
-                  <Text style={styles.secondaryActionBtnText}>Prep Notes</Text>
+                  <Text style={styles.secondaryActionBtnText}>Prepare</Text>
                 </Pressable>
 
                 <Pressable
                   style={styles.micQuickBtn}
-                  onPress={() => handleStartRecording(nextClass.courseCode)}
+                  onPress={() => handleStartRecording(nextClass.courseId)}
                   hitSlop={6}
                   accessibilityLabel="Record Lecture"
                 >
@@ -166,6 +224,8 @@ export default function AcademicHomeScreen() {
               </View>
             </View>
           </View>
+
+          )}
 
           {/* RECOMMENDED REVIEW Section ("From Your Last Class") */}
           <View style={styles.timelineSection}>
@@ -199,42 +259,37 @@ export default function AcademicHomeScreen() {
             </View>
           </View>
 
-          {/* LATER TODAY Section */}
+          {/* COMING UP Section */}
+          {laterClasses.length > 0 && (
           <View style={styles.timelineSection}>
             <View style={styles.milestoneDotSmall} />
 
             <View style={styles.sectionHeaderRow}>
-              <Text style={styles.tagMuted}>LATER TODAY</Text>
+              <Text style={styles.tagMuted}>COMING UP</Text>
             </View>
 
             <View style={styles.laterList}>
-              <Pressable
-                style={styles.laterItem}
-                onPress={() => Alert.alert('MTH 302', 'Abstract Algebra • Room 214, Math Dept.')}
-              >
-                <Text style={styles.laterTime}>1:00 PM</Text>
-                <View style={styles.laterDetails}>
-                  <Text style={styles.laterTitle}>MTH 302: Abstract Algebra</Text>
-                  <Text style={styles.laterVenue}>Room 214, Math Dept.</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={16} color={LexiColors.outline} />
-              </Pressable>
-
-              <View style={styles.laterDivider} />
-
-              <Pressable
-                style={styles.laterItem}
-                onPress={() => Alert.alert('GST 304', 'Peace and Conflict Resolution • Main Auditorium')}
-              >
-                <Text style={styles.laterTime}>3:30 PM</Text>
-                <View style={styles.laterDetails}>
-                  <Text style={styles.laterTitle}>GST 304: Peace and Conflict Resolution</Text>
-                  <Text style={styles.laterVenue}>Main Auditorium</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={16} color={LexiColors.outline} />
-              </Pressable>
+              {laterClasses.map((occ, i) => {
+                const c = state.courses.find((x) => x.id === occ.slot.courseId);
+                return (
+                  <View key={occ.slot.id}>
+                    {i > 0 && <View style={styles.laterDivider} />}
+                    <Pressable style={styles.laterItem} onPress={() => openUpcoming(occ.slot.id)}>
+                      <Text style={styles.laterTime}>{`${occ.slot.day}\n${occ.slot.startTime}`}</Text>
+                      <View style={styles.laterDetails}>
+                        <Text style={styles.laterTitle}>
+                          {occ.slot.courseCode}: {c?.title ?? ''}
+                        </Text>
+                        <Text style={styles.laterVenue}>{occ.slot.venue}</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color={LexiColors.outline} />
+                    </Pressable>
+                  </View>
+                );
+              })}
             </View>
           </View>
+          )}
 
           {/* QUICK ACTIONS Section */}
           <View style={styles.quickActionsSection}>
@@ -250,10 +305,12 @@ export default function AcademicHomeScreen() {
 
               <Pressable
                 style={styles.quickActionCard}
-                onPress={() => Alert.alert('Reading List', 'Algorithms (Cormen) Ch. 15: Dynamic Programming & Optimal Memoization.')}
+                onPress={() => router.push('/lectures' as Href)}
               >
-                <Ionicons name="book-outline" size={20} color="#272e0a" />
-                <Text style={styles.quickActionTitle}>Review Reading List</Text>
+                <Ionicons name="albums-outline" size={20} color="#272e0a" />
+                <Text style={styles.quickActionTitle}>
+                  Lecture Archive{lectures.length ? ` · ${lectures.length}` : ''}
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -388,6 +445,59 @@ export default function AcademicHomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  postLectureCard: {
+    backgroundColor: '#272e0a',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+  },
+  postLectureTag: {
+    fontFamily: LexiFonts.labelSmBold,
+    fontSize: 11,
+    letterSpacing: 1.2,
+    color: '#e9c349',
+  },
+  postLectureTitle: {
+    fontFamily: LexiFonts.headlineMd,
+    fontSize: 20,
+    lineHeight: 26,
+    color: '#ffffff',
+    marginTop: 10,
+  },
+  postLectureMeta: {
+    fontFamily: LexiFonts.bodyRegular,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 6,
+  },
+  postLectureActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 16,
+  },
+  postLectureBtn: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+  },
+  postLectureBtnText: {
+    fontFamily: LexiFonts.labelSmBold,
+    fontSize: 13,
+    color: '#272e0a',
+  },
+  postLectureBtnGhost: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+  },
+  postLectureBtnGhostText: {
+    fontFamily: LexiFonts.labelSmBold,
+    fontSize: 13,
+    color: '#ffffff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f9f7f2', // surface-cream

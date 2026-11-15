@@ -12,11 +12,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAcademicContext, CourseItem } from '@/context/academic-context';
+import { useLectures } from '@/context/lectures-context';
 import { LexiColors, LexiFonts } from '@/constants/lexi-theme';
 
 export default function CoursesScreen() {
   const insets = useSafeAreaInsets();
   const { state, addCourse, removeCourse } = useAcademicContext();
+  const { lectures } = useLectures();
+  const lectureCounts = lectures.reduce<Record<string, number>>((acc, l) => {
+    if (l.courseId) acc[l.courseId] = (acc[l.courseId] ?? 0) + 1;
+    return acc;
+  }, {});
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newCode, setNewCode] = useState('');
@@ -87,7 +93,7 @@ export default function CoursesScreen() {
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Enrolled Course Catalog</Text>
           <Text style={styles.sectionSubtitle}>
-            Tap any course to inspect recordings, flashcards, or syllabus
+            Tap a course to see its schedule and recorded lectures
           </Text>
         </View>
 
@@ -99,7 +105,13 @@ export default function CoursesScreen() {
           );
 
           return (
-            <View key={course.id} style={styles.courseCard}>
+            <Pressable
+              key={course.id}
+              style={styles.courseCard}
+              onPress={() => router.push(`/course/${course.id}` as any)}
+              accessibilityRole="button"
+              accessibilityLabel={`${course.code} ${course.title}`}
+            >
               <View style={styles.courseCardHeader}>
                 <View style={styles.codePill}>
                   <Text style={styles.codePillText}>{course.code}</Text>
@@ -128,21 +140,28 @@ export default function CoursesScreen() {
               <View style={styles.courseActions}>
                 <Pressable
                   style={styles.inspectButton}
-                  onPress={() => router.push('/lecture-analysis' as any)}
+                  onPress={() => router.push({ pathname: '/course/[id]', params: { id: course.id, tab: 'lectures' } } as any)}
                 >
-                  <Ionicons name="sparkles" size={14} color="#c5832b" />
-                  <Text style={styles.inspectButtonText}>Lecture Intelligence</Text>
+                  <Ionicons name="albums-outline" size={14} color="#c5832b" />
+                  <Text style={styles.inspectButtonText}>
+                    Lectures{lectureCounts[course.id] ? ` · ${lectureCounts[course.id]}` : ''}
+                  </Text>
                 </Pressable>
 
                 <Pressable
                   style={styles.recordButton}
-                  onPress={() => router.push('/lecture-recording' as any)}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/lecture-recording',
+                      params: { courseId: course.id, courseCode: course.code, courseTitle: course.title },
+                    } as any)
+                  }
                 >
                   <Ionicons name="mic" size={14} color="#272e0a" />
                   <Text style={styles.recordButtonText}>Record Lecture</Text>
                 </Pressable>
               </View>
-            </View>
+            </Pressable>
           );
         })}
       </ScrollView>

@@ -1,324 +1,468 @@
-import { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  ScrollView,
-  StatusBar,
-  Animated,
-  Easing,
-  Alert,
-} from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView, StatusBar, Linking, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useNavigation } from 'expo-router';
+import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
+import {
+  useAudioRecorder,
+  useAudioRecorderState,
+  RecordingPresets,
+  setAudioModeAsync,
+  getRecordingPermissionsAsync,
+  requestRecordingPermissionsAsync,
+  type RecordingOptions,
+} from 'expo-audio';
 import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
+import { UI } from '@/constants/lexi-ui';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { useAcademic, type CourseItem } from '@/context/academic-context';
+import { useLectures } from '@/context/lectures-context';
+import { ConfirmSheet } from '@/components/ui/confirm-sheet';
+import { formatClock, formatDuration, upcomingClasses } from '@/utils/time';
+
+/** Voice-optimised settings from AUDIO_PROCESSING_SPEC.md: 16 kHz mono AAC, 64 kbps. */
+const LECTURE_RECORDING: RecordingOptions = {
+  ...RecordingPresets.HIGH_QUALITY,
+  isMeteringEnabled: true,
+  sampleRate: 16000,
+  numberOfChannels: 1,
+  bitRate: 64000,
+  web: { mimeType: 'audio/webm', bitsPerSecond: 64000 },
+};
+
+const BAR_COUNT = 28;
+
+type Phase = 'checking' | 'needs-permission' | 'denied' | 'ready' | 'recording' | 'paused' | 'completed' | 'error';
 
 export default function LectureRecordingScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ courseCode?: string; courseTitle?: string }>();
+  const navigation = useNavigation();
+  const params = useLocalSearchParams<{ courseId?: string; courseCode?: string; courseTitle?: string }>();
   const [fontsLoaded] = useLexiFonts();
+  const { state } = useAcademic();
+  const { saveRecording } = useLectures();
 
-  const courseTitle = params.courseTitle
-    ? `${params.courseCode || 'CSC 301'}: ${params.courseTitle}`
-    : 'CSC 301: Data Structures and Algorithms';
+  const recorder = useAudioRecorder(LECTURE_RECORDING);
+  const recState = useAudioRecorderState(recorder, 200);
 
-  // Timer State (starts at 37m 21s as in Stitch design, or ticks up)
-  const [seconds, setSeconds] = useState(37 * 60 + 21);
-  const [isPaused, setIsPaused] = useState(false);
-  const [sessionCompleted, setSessionCompleted] = useState(false);
+  const [phase, setPhase] = useState<Phase>('checking');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [levels, setLevels] = useState<number[]>(() => Array(BAR_COUNT).fill(0.08));
+  const [finalSeconds, setFinalSeconds] = useState(0);
+  const [recordingUri, setRecordingUri] = useState<string | null>(null);
+  const [confirmLeave, setConfirmLeave] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const allowLeave = useRef(false);
+  const pendingLeave = useRef<any>(null);
 
-  // Animation values for audio wave visualizer
-  const waveAnim1 = useRef(new Animated.Value(12)).current;
-  const waveAnim2 = useRef(new Animated.Value(18)).current;
-  const waveAnim3 = useRef(new Animated.Value(24)).current;
-  const waveAnim4 = useRef(new Animated.Value(32)).current;
-  const waveAnim5 = useRef(new Animated.Value(20)).current;
-  const waveAnim6 = useRef(new Animated.Value(28)).current;
-  const waveAnim7 = useRef(new Animated.Value(14)).current;
+  // ── Course selection ──
+  const defaultCourse = useMemo<CourseItem | undefined>(() => {
+    const byParam =
+      state.courses.find((c) => c.id === params.courseId) ??
+      state.courses.find((c) => c.code.toLowerCase() === params.courseCode?.toLowerCase());
+    if (byParam) return byParam;
+    const next = upcomingClasses(state.timetable)[0];
+    return state.courses.find((c) => c.id === next?.slot.courseId) ?? state.courses[0];
+  }, []);
+  const [course, setCourse] = useState<CourseItem | undefined>(defaultCourse);
+  const courseCode = course?.code ?? params.courseCode ?? 'Lecture';
+  const courseTitle = course?.title ?? params.courseTitle ?? 'Untitled course';
 
-  // Pulse animation for recording dot
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  // Spinner animation for semantic context step
-  const spinAnim = useRef(new Animated.Value(0)).current;
-
-  // Clock interval
+  // ── Permission check on open ──
   useEffect(() => {
-    if (isPaused || sessionCompleted) return;
-    const interval = setInterval(() => {
-      setSeconds((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isPaused, sessionCompleted]);
-
-  // Audio wave loop
-  useEffect(() => {
-    if (isPaused || sessionCompleted) return;
-
-    const createWave = (anim: Animated.Value, minH: number, maxH: number, duration: number) => {
-      return Animated.loop(
-        Animated.sequence([
-          Animated.timing(anim, {
-            toValue: maxH,
-            duration,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: false,
-          }),
-          Animated.timing(anim, {
-            toValue: minH,
-            duration,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: false,
-          }),
-        ])
-      );
-    };
-
-    const anims = [
-      createWave(waveAnim1, 8, 28, 450),
-      createWave(waveAnim2, 10, 36, 520),
-      createWave(waveAnim3, 14, 40, 480),
-      createWave(waveAnim4, 16, 44, 400),
-      createWave(waveAnim5, 12, 34, 550),
-      createWave(waveAnim6, 10, 30, 430),
-      createWave(waveAnim7, 6, 24, 490),
-    ];
-
-    anims.forEach((a) => a.start());
-
-    return () => {
-      anims.forEach((a) => a.stop());
-    };
-  }, [isPaused, sessionCompleted]);
-
-  // Pulse dot loop
-  useEffect(() => {
-    if (isPaused || sessionCompleted) return;
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.3,
-          duration: 900,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 900,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulse.start();
-    return () => pulse.stop();
-  }, [isPaused, sessionCompleted]);
-
-  // Spinner loop
-  useEffect(() => {
-    const spin = Animated.loop(
-      Animated.timing(spinAnim, {
-        toValue: 1,
-        duration: 1200,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    );
-    spin.start();
-    return () => spin.stop();
+    (async () => {
+      try {
+        const perm = await getRecordingPermissionsAsync();
+        if (perm.granted) setPhase('ready');
+        else if (perm.canAskAgain === false) setPhase('denied');
+        else setPhase('needs-permission');
+      } catch {
+        setPhase('needs-permission');
+      }
+    })();
   }, []);
 
-  const spinInterpolate = spinAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
+  // ── Meter → waveform ──
+  useEffect(() => {
+    if (phase !== 'recording') return;
+    const db = recState.metering;
+    // dB is roughly -60 (silence) … 0 (loud). Fall back to gentle motion if unavailable.
+    const level =
+      typeof db === 'number' ? Math.max(0.06, Math.min(1, (db + 60) / 60)) : 0.25 + Math.random() * 0.5;
+    setLevels((prev) => [...prev.slice(1), level]);
+  }, [recState.durationMillis]);
 
-  const formatTimer = (totalSeconds: number) => {
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  // ── Block accidental exits while recording ──
+  const isActive = phase === 'recording' || phase === 'paused' || phase === 'completed';
+  useEffect(() => {
+    const unsub = navigation.addListener('beforeRemove', (e: any) => {
+      if (!isActive || allowLeave.current) return;
+      e.preventDefault();
+      pendingLeave.current = e.data.action;
+      setConfirmLeave(true);
+    });
+    return unsub;
+  }, [navigation, isActive]);
+
+  const requestPermission = async () => {
+    const perm = await requestRecordingPermissionsAsync();
+    if (perm.granted) setPhase('ready');
+    else setPhase(perm.canAskAgain === false ? 'denied' : 'needs-permission');
   };
 
-  const handleTogglePause = () => {
-    setIsPaused((prev) => !prev);
+  const start = async () => {
+    try {
+      try {
+        await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true, allowsBackgroundRecording: true });
+      } catch {
+        await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+      }
+      await recorder.prepareToRecordAsync();
+      recorder.record();
+      setPhase('recording');
+    } catch (e) {
+      setErrorMsg(e instanceof Error ? e.message : 'The microphone could not be started.');
+      setPhase('error');
+    }
   };
 
-  const handleStopSession = () => {
-    setSessionCompleted(true);
-    router.replace({
-      pathname: '/lecture-analysis',
-      params: {
-        courseCode: params.courseCode || 'CSC 301',
-        courseTitle: params.courseTitle || 'Dynamic Programming Introduction',
-      },
-    } as any);
+  const togglePause = () => {
+    if (phase === 'recording') {
+      recorder.pause();
+      setPhase('paused');
+    } else if (phase === 'paused') {
+      recorder.record();
+      setPhase('recording');
+    }
   };
 
-  if (!fontsLoaded) {
-    return <View style={styles.container} />;
-  }
+  const stop = async () => {
+    const seconds = recState.durationMillis / 1000;
+    try {
+      await recorder.stop();
+      await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true }).catch(() => {});
+      setFinalSeconds(seconds);
+      setRecordingUri(recorder.uri);
+      setPhase('completed');
+    } catch (e) {
+      setErrorMsg(e instanceof Error ? e.message : 'The recording could not be saved.');
+      setPhase('error');
+    }
+  };
+
+  const leave = () => {
+    allowLeave.current = true;
+    if (pendingLeave.current) navigation.dispatch(pendingLeave.current);
+    else if (router.canGoBack()) router.back();
+    else router.replace('/(tabs)' as Href);
+  };
+
+  const discard = async () => {
+    if (phase === 'recording' || phase === 'paused') {
+      await recorder.stop().catch(() => {});
+    }
+    leave();
+  };
+
+  const save = () => {
+    if (!recordingUri) return;
+    const id = saveRecording({
+      courseId: course?.id,
+      courseCode,
+      courseTitle,
+      durationSeconds: finalSeconds,
+      recordingUri,
+    });
+    allowLeave.current = true;
+    router.replace(`/lecture/${id}` as Href);
+  };
+
+  if (!fontsLoaded) return <View style={styles.container} />;
+
+  const close = () => {
+    if (isActive) setConfirmLeave(true);
+    else leave();
+  };
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fbf9f4" />
+      <StatusBar barStyle="dark-content" backgroundColor={UI.bg} />
 
-      {/* Top Bar with Dismiss */}
       <View style={styles.topBar}>
-        <Pressable
-          style={styles.closeBtn}
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel="Minimize Recording"
-          hitSlop={12}
-        >
+        <Pressable style={styles.closeBtn} onPress={close} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">
           <Ionicons name="chevron-down" size={26} color={LexiColors.primary} />
         </Pressable>
-        <Text style={styles.topBarTitle}>Live Lecture Capture</Text>
+        <Text style={styles.topBarTitle}>Lecture Capture</Text>
         <View style={styles.spacer} />
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header Section */}
-        <View style={styles.headerSection}>
-          <Text style={styles.courseHeadline}>{courseTitle}</Text>
-          <View style={styles.statusBadgeRow}>
-            <Animated.View
-              style={[
-                styles.pulseDot,
-                isPaused && styles.pulseDotPaused,
-                { transform: [{ scale: pulseAnim }] },
-              ]}
-            />
-            <Text style={styles.statusBadgeText}>
-              {isPaused ? 'Recording paused' : 'Recording in progress...'}
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {phase === 'checking' && null}
+
+        {(phase === 'needs-permission' || phase === 'denied') && (
+          <PermissionView denied={phase === 'denied'} onAllow={requestPermission} />
+        )}
+
+        {phase === 'error' && (
+          <View style={styles.centerBlock}>
+            <View style={[styles.bigIcon, { backgroundColor: UI.errorSoft }]}>
+              <Ionicons name="mic-off-outline" size={30} color={UI.error} />
+            </View>
+            <Text style={styles.blockTitle}>Recording stopped</Text>
+            <Text style={styles.blockText}>{errorMsg}</Text>
+            <Pressable style={styles.primaryWide} onPress={() => setPhase('ready')}>
+              <Text style={styles.primaryWideText}>Try again</Text>
+            </Pressable>
+          </View>
+        )}
+
+        {phase === 'ready' && (
+          <>
+            <Text style={styles.label}>RECORDING FOR</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.courseChips}>
+              {state.courses.map((c) => {
+                const on = c.id === course?.id;
+                return (
+                  <Pressable
+                    key={c.id}
+                    onPress={() => setCourse(c)}
+                    style={[styles.courseChip, on && styles.courseChipOn]}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: on }}
+                  >
+                    <Text style={[styles.courseChipText, on && { color: '#fff' }]}>{c.code}</Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+            <Text style={styles.courseHeadline}>{courseTitle}</Text>
+
+            <View style={styles.hubCard}>
+              <Text style={styles.timerDisplay}>00:00</Text>
+              <Pressable
+                onPress={start}
+                style={({ pressed }) => [styles.recordBtn, pressed && styles.btnPressed]}
+                accessibilityRole="button"
+                accessibilityLabel="Start recording"
+              >
+                <View style={styles.recordDot} />
+              </Pressable>
+              <Text style={styles.hint}>Tap to start recording</Text>
+            </View>
+
+            <Tips />
+          </>
+        )}
+
+        {(phase === 'recording' || phase === 'paused') && (
+          <>
+            <View style={styles.headerSection}>
+              <Text style={styles.courseHeadline}>
+                {courseCode}: {courseTitle}
+              </Text>
+              <View style={styles.statusBadgeRow}>
+                <PulseDot paused={phase === 'paused'} />
+                <Text style={styles.statusBadgeText}>{phase === 'paused' ? 'Paused' : 'Recording'}</Text>
+              </View>
+            </View>
+
+            <View style={styles.hubCard}>
+              <Text style={styles.timerDisplay}>{formatClock(recState.durationMillis / 1000)}</Text>
+
+              <View style={styles.waveContainer} accessibilityElementsHidden>
+                {levels.map((l, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.waveBar,
+                      { height: 6 + l * 50, opacity: phase === 'paused' ? 0.3 : 0.35 + (i / BAR_COUNT) * 0.65 },
+                    ]}
+                  />
+                ))}
+              </View>
+
+              <View style={styles.controlsRow}>
+                <Pressable
+                  style={({ pressed }) => [styles.pauseBtn, pressed && styles.btnPressed]}
+                  onPress={togglePause}
+                  accessibilityRole="button"
+                  accessibilityLabel={phase === 'paused' ? 'Resume recording' : 'Pause recording'}
+                >
+                  <Ionicons name={phase === 'paused' ? 'play' : 'pause'} size={26} color={LexiColors.primary} />
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [styles.stopBtn, pressed && styles.btnPressed]}
+                  onPress={stop}
+                  accessibilityRole="button"
+                  accessibilityLabel="Stop recording"
+                >
+                  <Ionicons name="stop" size={20} color="#ffffff" />
+                  <Text style={styles.stopBtnText}>Stop</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {phase === 'paused' && (
+              <View style={styles.pausedNote}>
+                <Ionicons name="pause-circle-outline" size={18} color={UI.amber} />
+                <Text style={styles.pausedNoteText}>
+                  Recording is paused. Nothing is being captured until you resume.
+                </Text>
+              </View>
+            )}
+
+            <Tips />
+          </>
+        )}
+
+        {phase === 'completed' && (
+          <View style={styles.centerBlock}>
+            <View style={[styles.bigIcon, { backgroundColor: UI.successSoft }]}>
+              <Ionicons name="checkmark" size={32} color={UI.success} />
+            </View>
+            <Text style={styles.blockTitle}>Recording complete</Text>
+            <Text style={styles.blockText}>
+              {formatDuration(finalSeconds)} recorded for {courseCode}. Save it to get a transcript, summary, notes and
+              questions.
             </Text>
-          </View>
-        </View>
 
-        {/* Central Recording Hub Card */}
-        <View style={styles.hubCard}>
-          {/* Digital Timer Display */}
-          <Text style={styles.timerDisplay}>{formatTimer(seconds)}</Text>
+            <View style={styles.summaryCard}>
+              <SummaryRow icon="school-outline" label="Course" value={`${courseCode} · ${courseTitle}`} />
+              <SummaryRow icon="time-outline" label="Length" value={formatClock(finalSeconds)} />
+              <SummaryRow icon="phone-portrait-outline" label="Saved to" value="This phone" />
+            </View>
 
-          {/* Audio Wave Visualizer */}
-          <View style={styles.waveContainer}>
-            <Animated.View style={[styles.waveBar, { height: waveAnim1 }]} />
-            <Animated.View style={[styles.waveBar, { height: waveAnim2 }]} />
-            <Animated.View style={[styles.waveBar, { height: waveAnim3 }]} />
-            <Animated.View style={[styles.waveBar, { height: waveAnim4 }]} />
-            <Animated.View style={[styles.waveBar, { height: waveAnim5 }]} />
-            <Animated.View style={[styles.waveBar, { height: waveAnim6 }]} />
-            <Animated.View style={[styles.waveBar, { height: waveAnim7 }]} />
-          </View>
-
-          {/* Recording Controls */}
-          <View style={styles.controlsRow}>
-            {/* Pause / Resume Button */}
-            <Pressable
-              style={({ pressed }) => [
-                styles.pauseBtn,
-                pressed && styles.btnPressed,
-              ]}
-              onPress={handleTogglePause}
-              accessibilityRole="button"
-              accessibilityLabel={isPaused ? 'Resume Recording' : 'Pause Recording'}
-            >
-              <Ionicons
-                name={isPaused ? 'play' : 'pause'}
-                size={26}
-                color={LexiColors.primary}
-              />
+            <Pressable style={({ pressed }) => [styles.primaryWide, pressed && styles.btnPressed]} onPress={save}>
+              <Ionicons name="cloud-upload-outline" size={18} color="#fff" />
+              <Text style={styles.primaryWideText}>Save & process</Text>
             </Pressable>
-
-            {/* Stop Session Button */}
-            <Pressable
-              style={({ pressed }) => [
-                styles.stopBtn,
-                pressed && styles.btnPressed,
-              ]}
-              onPress={handleStopSession}
-              accessibilityRole="button"
-              accessibilityLabel="Stop Recording"
-            >
-              <Ionicons name="stop" size={20} color="#ffffff" />
-              <Text style={styles.stopBtnText}>Stop Session</Text>
+            <Pressable style={({ pressed }) => [styles.secondaryWide, pressed && styles.btnPressed]} onPress={() => setConfirmDiscard(true)}>
+              <Text style={styles.secondaryWideText}>Discard</Text>
             </Pressable>
           </View>
-        </View>
-
-        {/* Live Processing Status Section */}
-        <View style={styles.processingSection}>
-          <Text style={styles.processingHeaderTitle}>LIVE PROCESSING</Text>
-
-          <View style={styles.processingCard}>
-            {/* Step 1: Saved */}
-            <View style={styles.statusItem}>
-              <View style={styles.iconCheck}>
-                <Ionicons name="checkmark" size={14} color="#191e00" />
-              </View>
-              <View style={styles.statusTextBox}>
-                <Text style={styles.statusTitle}>Lecture saved</Text>
-                <Text style={styles.statusDesc}>Audio stream securely captured to local storage.</Text>
-              </View>
-            </View>
-
-            <View style={styles.itemDivider} />
-
-            {/* Step 2: Transcription */}
-            <View style={styles.statusItem}>
-              <View style={styles.iconCheck}>
-                <Ionicons name="checkmark" size={14} color="#191e00" />
-              </View>
-              <View style={styles.statusTextBox}>
-                <Text style={styles.statusTitle}>Transcription</Text>
-                <Text style={styles.statusDesc}>Real-time speech-to-text synced.</Text>
-              </View>
-            </View>
-
-            <View style={styles.itemDivider} />
-
-            {/* Step 3: Understanding (Active) */}
-            <View style={styles.statusItem}>
-              <View style={styles.iconSpinWrapper}>
-                <Animated.View style={{ transform: [{ rotate: spinInterpolate }] }}>
-                  <Ionicons name="reload" size={14} color={LexiColors.primary} />
-                </Animated.View>
-              </View>
-              <View style={styles.statusTextBox}>
-                <Text style={[styles.statusTitle, { color: LexiColors.primary }]}>
-                  Understanding semantic context
-                </Text>
-                <Text style={styles.statusDesc}>
-                  Extracting key concepts, algorithms, and data structures mentioned.
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.itemDivider} />
-
-            {/* Step 4: Pending */}
-            <View style={[styles.statusItem, { opacity: 0.55 }]}>
-              <View style={styles.iconPending} />
-              <View style={styles.statusTextBox}>
-                <Text style={styles.statusTitle}>Study material generation</Text>
-                <Text style={styles.statusDesc}>Will begin upon session completion.</Text>
-              </View>
-            </View>
-          </View>
-        </View>
+        )}
       </ScrollView>
+
+      <ConfirmSheet
+        visible={confirmLeave}
+        title={phase === 'completed' ? 'Leave without saving?' : 'End this recording?'}
+        message={
+          phase === 'completed'
+            ? 'This recording hasn’t been saved. If you leave now it will be lost.'
+            : 'Leaving now discards the recording. Tap Stop first if you want to keep it.'
+        }
+        confirmLabel="Discard recording"
+        cancelLabel={phase === 'completed' ? 'Go back' : 'Keep recording'}
+        destructive
+        onCancel={() => {
+          pendingLeave.current = null;
+          setConfirmLeave(false);
+        }}
+        onConfirm={() => {
+          setConfirmLeave(false);
+          discard();
+        }}
+      />
+      <ConfirmSheet
+        visible={confirmDiscard}
+        title="Discard this recording?"
+        message="The audio will be deleted and can’t be recovered."
+        confirmLabel="Discard"
+        destructive
+        onCancel={() => setConfirmDiscard(false)}
+        onConfirm={() => {
+          setConfirmDiscard(false);
+          leave();
+        }}
+      />
     </SafeAreaView>
   );
+}
+
+// ─── Pieces ───────────────────────────────────────────────────────
+
+function PermissionView({ denied, onAllow }: { denied: boolean; onAllow: () => void }) {
+  return (
+    <View style={styles.centerBlock}>
+      <View style={[styles.bigIcon, { backgroundColor: UI.amberSoft }]}>
+        <Ionicons name="mic-outline" size={30} color={UI.amber} />
+      </View>
+      <Text style={styles.blockTitle}>{denied ? 'Microphone is turned off' : 'Allow microphone access'}</Text>
+      <Text style={styles.blockText}>
+        {denied
+          ? 'Lexi needs the microphone to record lectures. Turn it on for Lexi in your phone’s settings, then come back.'
+          : 'Lexi uses the microphone only while you’re recording a lecture. Recordings stay on your phone until you choose to process them.'}
+      </Text>
+
+      <View style={styles.summaryCard}>
+        <SummaryRow icon="radio-button-on-outline" label="When" value="Only after you tap record" />
+        <SummaryRow icon="lock-closed-outline" label="Where" value="Saved on this phone first" />
+        <SummaryRow icon="trash-outline" label="Control" value="Delete any recording anytime" />
+      </View>
+
+      {denied ? (
+        Platform.OS === 'web' ? (
+          <Text style={styles.blockText}>Allow microphone access in your browser's site settings, then reload.</Text>
+        ) : (
+          <Pressable style={({ pressed }) => [styles.primaryWide, pressed && styles.btnPressed]} onPress={() => Linking.openSettings()}>
+            <Ionicons name="settings-outline" size={18} color="#fff" />
+            <Text style={styles.primaryWideText}>Open settings</Text>
+          </Pressable>
+        )
+      ) : (
+        <Pressable style={({ pressed }) => [styles.primaryWide, pressed && styles.btnPressed]} onPress={onAllow}>
+          <Text style={styles.primaryWideText}>Allow microphone</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
+function SummaryRow({ icon, label, value }: { icon: any; label: string; value: string }) {
+  return (
+    <View style={styles.summaryRow}>
+      <Ionicons name={icon} size={18} color={UI.inkSoft} />
+      <Text style={styles.summaryLabel}>{label}</Text>
+      <Text style={styles.summaryValue} numberOfLines={1}>
+        {value}
+      </Text>
+    </View>
+  );
+}
+
+function Tips() {
+  return (
+    <View style={styles.tipsCard}>
+      <Text style={styles.tipsTitle}>FOR CLEARER AUDIO</Text>
+      {[
+        'Sit near the front, close to the lecturer.',
+        'Place your phone face-up on the desk.',
+        'Keep Lexi open while the lecture runs.',
+      ].map((tip) => (
+        <View key={tip} style={styles.tipRow}>
+          <View style={styles.tipDot} />
+          <Text style={styles.tipText}>{tip}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function PulseDot({ paused }: { paused: boolean }) {
+  const s = useSharedValue(1);
+  useEffect(() => {
+    s.value = paused ? withTiming(1) : withRepeat(withTiming(1.35, { duration: 800, easing: Easing.inOut(Easing.quad) }), -1, true);
+  }, [paused]);
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: s.value }] }));
+  return <Animated.View style={[styles.pulseDot, paused && styles.pulseDotPaused, style]} />;
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fbf9f4',
+    backgroundColor: UI.bg,
   },
   topBar: {
     height: 52,
@@ -350,6 +494,34 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
   },
+  label: {
+    fontFamily: LexiFonts.labelSmBold,
+    fontSize: 11,
+    letterSpacing: 1.2,
+    color: UI.muted,
+    marginBottom: 10,
+  },
+  courseChips: {
+    gap: 8,
+    paddingBottom: 14,
+  },
+  courseChip: {
+    borderWidth: 1,
+    borderColor: UI.border,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: UI.card,
+  },
+  courseChipOn: {
+    backgroundColor: UI.ink,
+    borderColor: UI.ink,
+  },
+  courseChipText: {
+    fontFamily: LexiFonts.labelSmBold,
+    fontSize: 13,
+    color: UI.ink,
+  },
   headerSection: {
     alignItems: 'center',
     marginBottom: 24,
@@ -360,7 +532,7 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     color: LexiColors.primary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   statusBadgeRow: {
     flexDirection: 'row',
@@ -389,7 +561,7 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
     paddingHorizontal: 20,
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.04,
@@ -404,17 +576,39 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
     marginBottom: 24,
     fontWeight: '700',
+    fontVariant: ['tabular-nums'],
+  },
+  recordBtn: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    borderWidth: 4,
+    borderColor: 'rgba(186, 26, 26, 0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  recordDot: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#ba1a1a',
+  },
+  hint: {
+    fontFamily: LexiFonts.bodyRegular,
+    fontSize: 14,
+    color: UI.muted,
   },
   waveContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
-    height: 48,
+    gap: 4,
+    height: 60,
     marginBottom: 28,
   },
   waveBar: {
-    width: 5,
-    borderRadius: 2.5,
+    width: 4,
+    borderRadius: 2,
     backgroundColor: '#272e0a',
   },
   controlsRow: {
@@ -438,13 +632,8 @@ const styles = StyleSheet.create({
     gap: 10,
     height: 56,
     backgroundColor: LexiColors.primaryContainer,
-    paddingHorizontal: 26,
+    paddingHorizontal: 30,
     borderRadius: 28,
-    shadowColor: LexiColors.primaryContainer,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    elevation: 3,
   },
   stopBtnText: {
     fontFamily: LexiFonts.labelSmBold,
@@ -456,78 +645,138 @@ const styles = StyleSheet.create({
     opacity: 0.88,
     transform: [{ scale: 0.98 }],
   },
-  // Processing
-  processingSection: {
-    width: '100%',
+  pausedNote: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+    backgroundColor: UI.amberSoft,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 20,
   },
-  processingHeaderTitle: {
-    fontFamily: LexiFonts.labelSmBold,
-    fontSize: 12,
-    letterSpacing: 1.2,
-    color: LexiColors.onSurfaceVariant,
-    marginBottom: 12,
-    paddingLeft: 4,
+  pausedNoteText: {
+    flex: 1,
+    fontFamily: LexiFonts.bodyRegular,
+    fontSize: 13,
+    lineHeight: 19,
+    color: '#6b4511',
   },
-  processingCard: {
+  tipsCard: {
     backgroundColor: '#f5f3ee',
     borderRadius: 16,
     padding: 18,
     borderWidth: 1,
     borderColor: 'rgba(26, 28, 22, 0.08)',
+    gap: 8,
   },
-  statusItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    paddingVertical: 6,
-  },
-  iconCheck: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#dfe8a9',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  iconSpinWrapper: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: LexiColors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  iconPending: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: LexiColors.outline,
-    marginTop: 2,
-  },
-  statusTextBox: {
-    flex: 1,
-  },
-  statusTitle: {
-    fontFamily: LexiFonts.bodyLg,
-    fontSize: 14,
-    fontWeight: '600',
-    color: LexiColors.onSurface,
-  },
-  statusDesc: {
-    fontFamily: LexiFonts.bodyMd,
-    fontSize: 12,
+  tipsTitle: {
+    fontFamily: LexiFonts.labelSmBold,
+    fontSize: 11,
+    letterSpacing: 1.2,
     color: LexiColors.onSurfaceVariant,
-    marginTop: 2,
-    lineHeight: 16,
+    marginBottom: 4,
   },
-  itemDivider: {
-    height: 1,
-    backgroundColor: 'rgba(199, 199, 185, 0.4)',
-    marginLeft: 36,
-    marginVertical: 6,
+  tipRow: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+  },
+  tipDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: UI.amber,
+  },
+  tipText: {
+    flex: 1,
+    fontFamily: LexiFonts.bodyRegular,
+    fontSize: 14,
+    color: UI.inkSoft,
+  },
+  centerBlock: {
+    alignItems: 'center',
+    paddingTop: 12,
+  },
+  bigIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 18,
+  },
+  blockTitle: {
+    fontFamily: LexiFonts.headlineMd,
+    fontSize: 24,
+    color: UI.ink,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  blockText: {
+    fontFamily: LexiFonts.bodyRegular,
+    fontSize: 15,
+    lineHeight: 22,
+    color: UI.inkSoft,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  summaryCard: {
+    alignSelf: 'stretch',
+    backgroundColor: UI.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: UI.border,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    marginBottom: 20,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 10,
+  },
+  summaryLabel: {
+    fontFamily: LexiFonts.bodyMedium,
+    fontSize: 14,
+    color: UI.muted,
+    width: 64,
+  },
+  summaryValue: {
+    flex: 1,
+    fontFamily: LexiFonts.bodyMedium,
+    fontSize: 14,
+    color: UI.ink,
+    textAlign: 'right',
+  },
+  primaryWide: {
+    alignSelf: 'stretch',
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: UI.ink,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 10,
+  },
+  primaryWideText: {
+    fontFamily: LexiFonts.labelSmBold,
+    fontSize: 15,
+    color: '#fff',
+  },
+  secondaryWide: {
+    alignSelf: 'stretch',
+    height: 54,
+    borderRadius: 27,
+    borderWidth: 1,
+    borderColor: UI.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryWideText: {
+    fontFamily: LexiFonts.labelSmBold,
+    fontSize: 15,
+    color: UI.error,
   },
 });
