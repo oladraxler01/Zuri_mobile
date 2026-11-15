@@ -1,420 +1,543 @@
 import { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  StatusBar,
-  Pressable,
-} from 'react-native';
+import { View, Text, StyleSheet, StatusBar, Pressable, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  useReducedMotion,
   withTiming,
+  withSpring,
   withRepeat,
   withDelay,
   withSequence,
+  interpolate,
   Easing,
 } from 'react-native-reanimated';
-import { LexiColors, LexiFonts, LexiSpacing, LexiRadius } from '@/constants/lexi-theme';
+import { LexiFonts } from '@/constants/lexi-theme';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
-import { AnimatedIcon } from '@/components/animated-icon';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+/**
+ * Launch splash: kinetic typography on deep forest green.
+ * Motion sequence (≈2.2s), then a calm idle loop:
+ *   gold rule draws → orbit rings open → "Lexi" letters rise from a mask →
+ *   gold full stop drops in → tagline words reveal → ticker + button arrive.
+ */
 
-const TAGLINES = [
-  'Your Academic Intelligence',
-  'Learn Smarter, Not Harder',
-  'Insights Before You Ask',
-  'Your Campus Companion',
-  'Knowledge, Amplified',
-];
+const { width: SCREEN_W } = Dimensions.get('window');
 
-const FEATURES = [
-  {
-    icon: 'school-outline' as const,
-    title: 'Academic Intelligence',
-    subtitle: 'AI-driven answers for your courses',
-  },
-  {
-    icon: 'document-text-outline' as const,
-    title: 'Instant Summaries',
-    subtitle: 'Turn lectures into quick study guides',
-  },
-  {
-    icon: 'sparkles-outline' as const,
-    title: 'Smart Study Planner',
-    subtitle: 'Automated schedules tailored for you',
-  },
-];
+const INK = '#17231b'; // primary
+const INK_SOFT = '#2c3930'; // primaryContainer
+const CREAM = '#fbf9f8';
+const GOLD = '#e9c349'; // tertiaryFixedDim
+const GOLD_DEEP = '#cba72f';
+const MUTED = 'rgba(251, 249, 248, 0.62)';
 
-const TAGLINE_DURATION = 2400;
+const LETTERS = ['L', 'e', 'x', 'i'];
+const TAGLINE = ['Every', 'lecture.', 'Every', 'class.', 'In', 'focus.'];
+const TICKER = ['LECTURES', 'NOTES', 'TIMETABLE', 'COURSES', 'EXAMS', 'RESEARCH', 'DEADLINES'];
+
+const T = {
+  rule: 0,
+  rings: 250,
+  letters: 450,
+  letterStagger: 85,
+  stop: 950,
+  tagline: 1150,
+  wordStagger: 70,
+  ticker: 1500,
+  button: 1700,
+};
 
 export default function OnboardingSplashScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [fontsLoaded] = useLexiFonts();
-  const [taglineIndex, setTaglineIndex] = useState(0);
-  const [taglineFading, setTaglineFading] = useState(false);
+  const reduceMotion = useReducedMotion();
 
-  // Animations
-  const heroOpacity = useSharedValue(0);
-  const heroScale = useSharedValue(0.92);
-  const heroTranslateY = useSharedValue(20);
-  const card1TranslateY = useSharedValue(30);
-  const card2TranslateY = useSharedValue(30);
-  const card3TranslateY = useSharedValue(30);
-  const cardOpacity = useSharedValue(0);
-  const orb1Scale = useSharedValue(1);
-  const orb2Scale = useSharedValue(1);
+  // Shared timeline values
+  const rule = useSharedValue(0);
+  const rings = useSharedValue(0);
+  const spin = useSharedValue(0);
+  const drift = useSharedValue(0);
+  const stop = useSharedValue(0);
+  const ticker = useSharedValue(0);
+  const button = useSharedValue(0);
+  const shimmer = useSharedValue(0);
 
   useEffect(() => {
     if (!fontsLoaded) return;
 
-    // Entrance animations
-    heroOpacity.value = withDelay(100, withTiming(1, { duration: 800 }));
-    heroScale.value = withDelay(
-      100,
-      withTiming(1, { duration: 1000, easing: Easing.out(Easing.back(1.2)) })
-    );
-    heroTranslateY.value = withDelay(
-      100,
-      withTiming(0, { duration: 1000, easing: Easing.out(Easing.cubic) })
-    );
+    if (reduceMotion) {
+      rule.value = 1;
+      rings.value = 1;
+      stop.value = 1;
+      ticker.value = 1;
+      button.value = 1;
+      return;
+    }
 
-    // Feature Cards Staggered entrance
-    cardOpacity.value = withDelay(400, withTiming(1, { duration: 800 }));
-    card1TranslateY.value = withDelay(
-      500,
-      withTiming(0, { duration: 700, easing: Easing.out(Easing.quad) })
-    );
-    card2TranslateY.value = withDelay(
-      650,
-      withTiming(0, { duration: 700, easing: Easing.out(Easing.quad) })
-    );
-    card3TranslateY.value = withDelay(
-      800,
-      withTiming(0, { duration: 700, easing: Easing.out(Easing.quad) })
-    );
+    const outExpo = Easing.bezier(0.16, 1, 0.3, 1);
 
-    // Ambient floating background orbs
-    orb1Scale.value = withRepeat(
-      withSequence(
-        withTiming(1.18, { duration: 4000, easing: Easing.inOut(Easing.quad) }),
-        withTiming(1, { duration: 4000, easing: Easing.inOut(Easing.quad) })
-      ),
+    rule.value = withDelay(T.rule, withTiming(1, { duration: 900, easing: outExpo }));
+    rings.value = withDelay(T.rings, withTiming(1, { duration: 1400, easing: outExpo }));
+    spin.value = withRepeat(withTiming(1, { duration: 24000, easing: Easing.linear }), -1, false);
+    drift.value = withRepeat(
+      withTiming(1, { duration: 9000, easing: Easing.inOut(Easing.sin) }),
       -1,
       true
     );
-    orb2Scale.value = withRepeat(
-      withSequence(
-        withTiming(1.22, { duration: 5000, easing: Easing.inOut(Easing.quad) }),
-        withTiming(1, { duration: 5000, easing: Easing.inOut(Easing.quad) })
-      ),
-      -1,
-      true
+    stop.value = withDelay(T.stop, withSpring(1, { damping: 9, stiffness: 180, mass: 0.6 }));
+    ticker.value = withDelay(T.ticker, withTiming(1, { duration: 700 }));
+    button.value = withDelay(T.button, withTiming(1, { duration: 800, easing: outExpo }));
+    shimmer.value = withDelay(
+      T.button + 900,
+      withRepeat(
+        withSequence(
+          withTiming(1, { duration: 1100, easing: Easing.inOut(Easing.quad) }),
+          withDelay(2600, withTiming(0, { duration: 0 }))
+        ),
+        -1,
+        false
+      )
     );
-  }, [fontsLoaded]);
+  }, [fontsLoaded, reduceMotion]);
 
-  // Tagline rotation
-  useEffect(() => {
-    if (!fontsLoaded) return;
-
-    const interval = setInterval(() => {
-      setTaglineFading(true);
-      setTimeout(() => {
-        setTaglineIndex((prev) => (prev + 1) % TAGLINES.length);
-        setTaglineFading(false);
-      }, 350);
-    }, TAGLINE_DURATION);
-
-    return () => clearInterval(interval);
-  }, [fontsLoaded]);
-
-  const heroAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: heroOpacity.value,
+  // ─── Animated styles ───────────────────────────────────────────
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(rings.value, [0, 1], [0, 1]),
     transform: [
-      { scale: heroScale.value },
-      { translateY: heroTranslateY.value },
+      { translateX: interpolate(drift.value, [0, 1], [-40, 40]) },
+      { translateY: interpolate(drift.value, [0, 1], [-20, 30]) },
+      { scale: interpolate(drift.value, [0, 1], [1, 1.15]) },
     ],
   }));
 
-  const card1Style = useAnimatedStyle(() => ({
-    opacity: cardOpacity.value,
-    transform: [{ translateY: card1TranslateY.value }],
+  const ringOuter = useAnimatedStyle(() => ({
+    opacity: rings.value * 0.9,
+    transform: [
+      { scale: interpolate(rings.value, [0, 1], [0.6, 1]) },
+      { rotate: `${spin.value * 360}deg` },
+    ],
+  }));
+  const ringMid = useAnimatedStyle(() => ({
+    opacity: rings.value * 0.7,
+    transform: [
+      { scale: interpolate(rings.value, [0, 1], [0.4, 1]) },
+      { rotate: `${-spin.value * 540 + 60}deg` },
+    ],
+  }));
+  const ringInner = useAnimatedStyle(() => ({
+    opacity: rings.value * 0.5,
+    transform: [
+      { scale: interpolate(rings.value, [0, 1], [0.2, 1]) },
+      { rotate: `${spin.value * 900 + 140}deg` },
+    ],
   }));
 
-  const card2Style = useAnimatedStyle(() => ({
-    opacity: cardOpacity.value,
-    transform: [{ translateY: card2TranslateY.value }],
+  const ruleStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(rule.value, [0, 0.1, 1], [0, 1, 1]),
+    transform: [{ scaleX: rule.value }],
   }));
 
-  const card3Style = useAnimatedStyle(() => ({
-    opacity: cardOpacity.value,
-    transform: [{ translateY: card3TranslateY.value }],
+  const stopStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(stop.value, [0, 0.2], [0, 1], 'clamp'),
+    transform: [
+      { translateY: interpolate(stop.value, [0, 1], [-60, 0]) },
+      { scale: interpolate(stop.value, [0, 1], [0.3, 1]) },
+    ],
   }));
 
-  const orb1Style = useAnimatedStyle(() => ({
-    transform: [{ scale: orb1Scale.value }],
+  const tickerStyle = useAnimatedStyle(() => ({
+    opacity: ticker.value,
   }));
 
-  const orb2Style = useAnimatedStyle(() => ({
-    transform: [{ scale: orb2Scale.value }],
+  const buttonStyle = useAnimatedStyle(() => ({
+    opacity: button.value,
+    transform: [{ translateY: interpolate(button.value, [0, 1], [40, 0]) }],
+  }));
+
+  const shimmerStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: interpolate(shimmer.value, [0, 1], [-160, SCREEN_W]) },
+      { skewX: '-20deg' },
+    ],
   }));
 
   if (!fontsLoaded) {
     return <View style={styles.container} />;
   }
 
-  const handleGetStarted = () => {
-    router.push('/onboarding/welcome' as Href);
-  };
-
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={LexiColors.surfaceContainerLowest} />
+      <StatusBar barStyle="light-content" backgroundColor={INK} />
 
-      {/* Decorative Ambient Floating Orbs */}
-      <Animated.View style={[styles.ambientOrb1, orb1Style]} />
-      <Animated.View style={[styles.ambientOrb2, orb2Style]} />
+      {/* Ambient drifting glow */}
+      <Animated.View pointerEvents="none" style={[styles.glow, glowStyle]} />
 
-      <View style={styles.content}>
-        {/* Top Chip Badge */}
-        <Animated.View style={[styles.topBadge, heroAnimatedStyle]}>
-          <Ionicons name="sparkles" size={14} color={LexiColors.tertiary} />
-          <Text style={styles.topBadgeText}>NEXT-GEN CAMPUS ASSISTANT</Text>
-        </Animated.View>
+      {/* Orbit rings (partial arcs) */}
+      <View pointerEvents="none" style={styles.ringsWrap}>
+        <Animated.View style={[styles.ring, styles.ringOuter, ringOuter]} />
+        <Animated.View style={[styles.ring, styles.ringMid, ringMid]} />
+        <Animated.View style={[styles.ring, styles.ringInner, ringInner]} />
+      </View>
 
-        {/* Center Hero Section */}
-        <Animated.View style={[styles.heroContainer, heroAnimatedStyle]}>
-          <View style={styles.iconWrapper}>
-            <AnimatedIcon />
-          </View>
-
-          <Text style={styles.brandTitle}>Lexi</Text>
-
-          <View style={styles.taglineWrapper}>
-            <Text
-              style={[
-                styles.taglineText,
-                { opacity: taglineFading ? 0 : 0.85 },
-              ]}
-            >
-              {TAGLINES[taglineIndex]}
-            </Text>
-          </View>
-        </Animated.View>
-
-        {/* Creative Feature Highlights */}
-        <View style={styles.featuresContainer}>
-          <Animated.View style={[styles.featureCard, card1Style]}>
-            <View style={styles.featureIconBox}>
-              <Ionicons name={FEATURES[0].icon} size={20} color={LexiColors.primaryContainer} />
-            </View>
-            <View style={styles.featureTextBox}>
-              <Text style={styles.featureTitle}>{FEATURES[0].title}</Text>
-              <Text style={styles.featureSubtitle}>{FEATURES[0].subtitle}</Text>
-            </View>
-          </Animated.View>
-
-          <Animated.View style={[styles.featureCard, card2Style]}>
-            <View style={styles.featureIconBox}>
-              <Ionicons name={FEATURES[1].icon} size={20} color={LexiColors.primaryContainer} />
-            </View>
-            <View style={styles.featureTextBox}>
-              <Text style={styles.featureTitle}>{FEATURES[1].title}</Text>
-              <Text style={styles.featureSubtitle}>{FEATURES[1].subtitle}</Text>
-            </View>
-          </Animated.View>
-
-          <Animated.View style={[styles.featureCard, card3Style]}>
-            <View style={styles.featureIconBox}>
-              <Ionicons name={FEATURES[2].icon} size={20} color={LexiColors.primaryContainer} />
-            </View>
-            <View style={styles.featureTextBox}>
-              <Text style={styles.featureTitle}>{FEATURES[2].title}</Text>
-              <Text style={styles.featureSubtitle}>{FEATURES[2].subtitle}</Text>
-            </View>
-          </Animated.View>
+      <View style={[styles.content, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 28 }]}>
+        <View style={styles.topRow}>
+          <Text style={styles.edition}>EST. 2026</Text>
+          <Text style={styles.edition}>CAMPUS EDITION</Text>
         </View>
 
-        {/* Primary Action Button Footer */}
-        <Animated.View style={[styles.footerContainer, heroAnimatedStyle]}>
-          <Pressable
-            style={({ pressed }) => [styles.primaryButton, pressed && styles.buttonPressed]}
-            onPress={handleGetStarted}
-          >
-            <Text style={styles.buttonText}>Get Started</Text>
-            <Ionicons name="arrow-forward" size={18} color="#ffffff" />
-          </Pressable>
-        </Animated.View>
+        {/* Wordmark */}
+        <View style={styles.center}>
+          <View style={styles.wordmarkRow}>
+            {LETTERS.map((letter, i) => (
+              <RevealLetter
+                key={letter + i}
+                letter={letter}
+                delay={T.letters + i * T.letterStagger}
+                instant={reduceMotion}
+              />
+            ))}
+            <Animated.View style={[styles.stop, stopStyle]} />
+          </View>
+
+          <Animated.View style={[styles.rule, ruleStyle]} />
+
+          <View style={styles.taglineRow}>
+            {TAGLINE.map((word, i) => (
+              <RevealWord
+                key={word + i}
+                word={word}
+                accent={i === TAGLINE.length - 1}
+                delay={T.tagline + i * T.wordStagger}
+                instant={reduceMotion}
+              />
+            ))}
+          </View>
+        </View>
+
+        {/* Bottom: ticker + CTA */}
+        <View>
+          <Animated.View style={tickerStyle}>
+            <Ticker paused={reduceMotion} />
+          </Animated.View>
+
+          <Animated.View style={[styles.buttonWrap, buttonStyle]}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Get started"
+              onPress={() => router.push('/onboarding/welcome' as Href)}
+              style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+            >
+              <Animated.View pointerEvents="none" style={[styles.shimmer, shimmerStyle]} />
+              <Text style={styles.buttonText}>Get Started</Text>
+              <View style={styles.buttonArrow}>
+                <Ionicons name="arrow-forward" size={18} color={CREAM} />
+              </View>
+            </Pressable>
+          </Animated.View>
+        </View>
       </View>
     </View>
   );
 }
 
+// ─── Pieces ────────────────────────────────────────────────────────
+
+function RevealLetter({ letter, delay, instant }: { letter: string; delay: number; instant: boolean }) {
+  const p = useSharedValue(instant ? 1 : 0);
+
+  useEffect(() => {
+    if (instant) {
+      p.value = 1;
+      return;
+    }
+    p.value = withDelay(delay, withSpring(1, { damping: 14, stiffness: 120, mass: 0.8 }));
+  }, [instant]);
+
+  const style = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: interpolate(p.value, [0, 1], [110, 0]) },
+      { rotate: `${interpolate(p.value, [0, 1], [12, 0])}deg` },
+    ],
+  }));
+
+  return (
+    <View style={styles.letterMask}>
+      <Animated.Text style={[styles.letter, style]}>{letter}</Animated.Text>
+    </View>
+  );
+}
+
+function RevealWord({
+  word,
+  delay,
+  accent,
+  instant,
+}: {
+  word: string;
+  delay: number;
+  accent: boolean;
+  instant: boolean;
+}) {
+  const p = useSharedValue(instant ? 1 : 0);
+
+  useEffect(() => {
+    if (instant) {
+      p.value = 1;
+      return;
+    }
+    p.value = withDelay(delay, withTiming(1, { duration: 600, easing: Easing.bezier(0.16, 1, 0.3, 1) }));
+  }, [instant]);
+
+  const style = useAnimatedStyle(() => ({
+    opacity: p.value,
+    transform: [{ translateY: interpolate(p.value, [0, 1], [18, 0]) }],
+  }));
+
+  return (
+    <View style={styles.wordMask}>
+      <Animated.Text style={[styles.word, accent && styles.wordAccent, style]}>{word}</Animated.Text>
+    </View>
+  );
+}
+
+/** Endless horizontal ticker of academic words. */
+function Ticker({ paused }: { paused: boolean }) {
+  const [rowWidth, setRowWidth] = useState(0);
+  const x = useSharedValue(0);
+
+  useEffect(() => {
+    if (!rowWidth || paused) return;
+    x.value = 0;
+    x.value = withRepeat(
+      withTiming(-rowWidth, { duration: rowWidth * 28, easing: Easing.linear }),
+      -1,
+      false
+    );
+  }, [rowWidth, paused]);
+
+  const style = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
+
+  const row = (measure: boolean) => (
+    <View
+      style={styles.tickerRow}
+      onLayout={measure ? (e) => setRowWidth(e.nativeEvent.layout.width) : undefined}
+    >
+      {TICKER.map((t) => (
+        <View key={t} style={styles.tickerItem}>
+          <Text style={styles.tickerText}>{t}</Text>
+          <View style={styles.tickerDot} />
+        </View>
+      ))}
+    </View>
+  );
+
+  return (
+    <View style={styles.tickerClip}>
+      <Animated.View style={[styles.tickerTrack, style]}>
+        {row(true)}
+        {row(false)}
+      </Animated.View>
+    </View>
+  );
+}
+
+// ─── Styles ────────────────────────────────────────────────────────
+
+const RING = Math.min(SCREEN_W * 1.25, 520);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: LexiColors.surfaceContainerLowest,
+    backgroundColor: INK,
     overflow: 'hidden',
   },
-
-  // Ambient floating background blur circles
-  ambientOrb1: {
+  glow: {
     position: 'absolute',
-    top: -60,
-    right: -50,
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: 'rgba(203, 167, 47, 0.12)', // gold accent glow
+    top: '18%',
+    left: SCREEN_W / 2 - 180,
+    width: 360,
+    height: 360,
+    borderRadius: 180,
+    backgroundColor: 'rgba(203, 167, 47, 0.10)',
   },
-  ambientOrb2: {
+  ringsWrap: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -60,
+  },
+  ring: {
     position: 'absolute',
-    bottom: -80,
-    left: -60,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: 'rgba(44, 57, 48, 0.07)', // dark green tint glow
+    borderColor: 'transparent',
   },
-
+  ringOuter: {
+    width: RING,
+    height: RING,
+    borderRadius: RING / 2,
+    borderWidth: 1,
+    borderTopColor: 'rgba(233, 195, 73, 0.55)',
+    borderRightColor: 'rgba(233, 195, 73, 0.15)',
+  },
+  ringMid: {
+    width: RING * 0.74,
+    height: RING * 0.74,
+    borderRadius: (RING * 0.74) / 2,
+    borderWidth: 1.5,
+    borderLeftColor: 'rgba(251, 249, 248, 0.22)',
+    borderBottomColor: 'rgba(251, 249, 248, 0.08)',
+  },
+  ringInner: {
+    width: RING * 0.5,
+    height: RING * 0.5,
+    borderRadius: (RING * 0.5) / 2,
+    borderWidth: 2,
+    borderTopColor: 'rgba(233, 195, 73, 0.35)',
+  },
   content: {
     flex: 1,
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+  },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  edition: {
+    fontFamily: LexiFonts.labelSmBold,
+    fontSize: 10,
+    letterSpacing: 2.4,
+    color: 'rgba(251, 249, 248, 0.38)',
+  },
+  center: {
+    alignItems: 'center',
+    marginTop: -40,
+  },
+  wordmarkRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  letterMask: {
+    overflow: 'hidden',
+    height: 112,
+    justifyContent: 'flex-end',
+  },
+  letter: {
+    fontFamily: LexiFonts.displayBold,
+    fontSize: 96,
+    lineHeight: 112,
+    color: CREAM,
+    letterSpacing: -3,
+    includeFontPadding: false,
+  },
+  stop: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: GOLD,
+    marginLeft: 4,
+    marginBottom: 24,
+  },
+  rule: {
+    width: 120,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: GOLD_DEEP,
+    marginTop: 10,
+    marginBottom: 22,
+  },
+  taglineRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    maxWidth: 320,
+  },
+  wordMask: {
+    overflow: 'hidden',
+    paddingHorizontal: 3,
+  },
+  word: {
+    fontFamily: LexiFonts.bodyMedium,
+    fontSize: 17,
+    lineHeight: 26,
+    color: MUTED,
+  },
+  wordAccent: {
+    color: GOLD,
+  },
+  tickerClip: {
+    overflow: 'hidden',
+    marginHorizontal: -24,
+    marginBottom: 24,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(251, 249, 248, 0.12)',
+    paddingVertical: 12,
+  },
+  tickerTrack: {
+    flexDirection: 'row',
+  },
+  tickerRow: {
+    flexDirection: 'row',
+  },
+  tickerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  tickerText: {
+    fontFamily: LexiFonts.labelSmBold,
+    fontSize: 12,
+    letterSpacing: 3,
+    color: 'rgba(251, 249, 248, 0.5)',
+  },
+  tickerDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: GOLD_DEEP,
+    marginHorizontal: 18,
+  },
+  buttonWrap: {
+    width: '100%',
+  },
+  button: {
+    height: 58,
+    borderRadius: 999,
+    backgroundColor: CREAM,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: LexiSpacing.md,
-    paddingTop: 64,
-    paddingBottom: 48,
-  },
-
-  // Top Badge
-  topBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: LexiRadius.full,
-    backgroundColor: LexiColors.surfaceContainerLow,
-    borderWidth: 1,
-    borderColor: 'rgba(203, 167, 47, 0.25)',
-  },
-  topBadgeText: {
-    fontFamily: LexiFonts.labelSmBold,
-    fontSize: 11,
-    letterSpacing: 0.8,
-    color: LexiColors.primaryContainer,
-  },
-
-  // Hero Section
-  heroContainer: {
-    alignItems: 'center',
-    marginVertical: 12,
-  },
-  iconWrapper: {
-    marginBottom: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandTitle: {
-    fontFamily: LexiFonts.headlineLg,
-    fontSize: 44,
-    color: LexiColors.primaryContainer,
-    letterSpacing: -1.2,
-  },
-  taglineWrapper: {
-    height: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  taglineText: {
-    fontFamily: LexiFonts.bodyLg,
-    fontSize: 16,
-    color: LexiColors.onSurfaceVariant,
-    textAlign: 'center',
-  },
-
-  // Features Cards Stack
-  featuresContainer: {
-    width: '100%',
-    maxWidth: 380,
-    gap: 12,
-    marginVertical: 12,
-  },
-  featureCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    padding: 16,
-    borderRadius: LexiRadius.xl,
-    backgroundColor: LexiColors.surfaceContainerLow,
-    borderWidth: 1,
-    borderColor: 'rgba(225, 223, 220, 0.6)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 8,
-    elevation: 1,
-  },
-  featureIconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: LexiRadius.lg,
-    backgroundColor: LexiColors.surfaceContainerLowest,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(203, 167, 47, 0.2)',
-  },
-  featureTextBox: {
-    flex: 1,
-  },
-  featureTitle: {
-    fontFamily: LexiFonts.labelSmBold,
-    fontSize: 15,
-    color: LexiColors.primaryContainer,
-    marginBottom: 2,
-  },
-  featureSubtitle: {
-    fontFamily: LexiFonts.bodyMd,
-    fontSize: 13,
-    color: LexiColors.onSurfaceVariant,
-  },
-
-  // Footer Button
-  footerContainer: {
-    width: '100%',
-    maxWidth: 380,
-    alignItems: 'center',
-  },
-  primaryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    width: '100%',
-    height: 54,
-    borderRadius: LexiRadius.full,
-    backgroundColor: LexiColors.primaryContainer,
-    shadowColor: LexiColors.primaryContainer,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 4,
+    paddingLeft: 28,
+    paddingRight: 6,
+    overflow: 'hidden',
   },
   buttonPressed: {
-    opacity: 0.88,
     transform: [{ scale: 0.98 }],
+    opacity: 0.92,
+  },
+  shimmer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 70,
+    backgroundColor: 'rgba(233, 195, 73, 0.28)',
   },
   buttonText: {
     fontFamily: LexiFonts.labelSmBold,
     fontSize: 16,
-    color: '#ffffff',
+    color: INK,
     letterSpacing: 0.2,
+  },
+  buttonArrow: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: INK_SOFT,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
