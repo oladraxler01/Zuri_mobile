@@ -4,6 +4,7 @@ import type { Href } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import { useSession } from '@/context/session-context';
 import { useAcademic } from '@/context/academic-context';
+import { usePlanner } from '@/context/planner-context';
 import { notificationsSupported, syncLectureReminders } from '@/services/notifications';
 
 /**
@@ -13,24 +14,35 @@ import { notificationsSupported, syncLectureReminders } from '@/services/notific
 export function ReminderSync() {
   const { role } = useSession();
   const { state, hydrated } = useAcademic();
-  const { lectureReminders, reminderLeadMinutes } = state.preferences;
+  const { lectureReminders, reminderLeadMinutes, assignmentAlerts, examCountdown } = state.preferences;
+  const { assessments, hydrated: plannerReady } = usePlanner();
 
   useEffect(() => {
-    if (!hydrated || !notificationsSupported) return;
+    if (!hydrated || !plannerReady || !notificationsSupported) return;
+    const student = role === 'student';
+    // Wait for a pause so rapid edits (ticking steps) reschedule once.
+    const timer = setTimeout(() => {
     syncLectureReminders({
-      enabled: role === 'student' && lectureReminders,
+      enabled: student && lectureReminders,
       leadMinutes: reminderLeadMinutes,
       timetable: state.timetable,
       courses: state.courses,
+      assessments: student ? assessments : [],
+      assignmentAlerts,
+      examAlerts: examCountdown,
     }).catch((e) => console.warn('Reminder sync failed', e));
-  }, [hydrated, role, lectureReminders, reminderLeadMinutes, state.timetable, state.courses]);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [hydrated, plannerReady, role, lectureReminders, reminderLeadMinutes, assignmentAlerts, examCountdown, state.timetable, state.courses, assessments]);
 
   useEffect(() => {
     if (!notificationsSupported) return;
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-      const slotId = response.notification.request.content.data?.slotId;
-      if (typeof slotId === 'string') {
-        router.push({ pathname: '/upcoming-lecture', params: { slotId } } as unknown as Href);
+      const data = response.notification.request.content.data ?? {};
+      if (typeof data.slotId === 'string') {
+        router.push({ pathname: '/upcoming-lecture', params: { slotId: data.slotId } } as unknown as Href);
+      } else if (typeof data.assessmentId === 'string') {
+        router.push(`/assessment/${data.assessmentId}` as Href);
       }
     });
     return () => sub.remove();

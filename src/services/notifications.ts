@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import type { CourseItem, TimetableSlot } from '@/context/academic-context';
+import type { Assessment } from '@/types/planner';
 import { parseTimeOfDay } from '@/utils/time';
 
 /**
@@ -57,25 +58,33 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   }
 }
 
-/** Replace all scheduled reminders with one weekly reminder per timetable slot. */
+/**
+ * Replace all scheduled reminders:
+ * - one weekly reminder per timetable class (`leadMinutes` before)
+ * - deadline reminders the day before and a few hours before each
+ *   assignment/project (assignmentAlerts) and test/exam (examAlerts)
+ */
 export async function syncLectureReminders(opts: {
   enabled: boolean;
   leadMinutes: number;
   timetable: TimetableSlot[];
   courses: CourseItem[];
+  assessments?: Assessment[];
+  assignmentAlerts?: boolean;
+  examAlerts?: boolean;
 }): Promise<number> {
   if (!notificationsSupported) return 0;
   if ((await getNotificationPermission()) !== 'granted') return 0;
 
   await Notifications.cancelAllScheduledNotificationsAsync();
-  if (!opts.enabled || !opts.timetable.length) return 0;
-
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-      name: 'Lecture reminders',
+      name: 'Class and deadline reminders',
       importance: Notifications.AndroidImportance.HIGH,
     });
   }
+  const deadlineCount = await scheduleDeadlines(opts);
+  if (!opts.enabled || !opts.timetable.length) return deadlineCount;
 
   let count = 0;
   for (const slot of opts.timetable) {
@@ -107,6 +116,44 @@ export async function syncLectureReminders(opts: {
       count++;
     } catch (e) {
       console.warn('Could not schedule reminder', slot.id, e);
+    }
+  }
+  return count + deadlineCount;
+}
+
+async function scheduleDeadlines(opts: {
+  assessments?: Assessment[];
+  assignmentAlerts?: boolean;
+  examAlerts?: boolean;
+}): Promise<number> {
+  const now = Date.now();
+  let count = 0;
+  for (const a of opts.assessments ?? []) {
+    if (a.status === 'done') continue;
+    const timed = a.kind === 'exam' || a.kind === 'test';
+    if (timed ? !opts.examAlerts : !opts.assignmentAlerts) continue;
+    const due = new Date(a.dueAt).getTime();
+    const label = timed ? 'starts' : 'is due';
+    const reminders = [
+      { at: due - 24 * 60 * 60 * 1000, when: 'tomorrow' },
+      { at: due - (timed ? 2 : 3) * 60 * 60 * 1000, when: `in ${timed ? 2 : 3} hours` },
+    ];
+    for (const [i, r] of reminders.entries()) {
+      if (r.at <= now) continue;
+      try {
+        await Notifications.scheduleNotificationAsync({
+          identifier: `due-${a.id}-${i}`,
+          content: {
+            title: `${a.courseCode} ${a.kind} ${label} ${r.when}`,
+            body: `${a.title}${a.venue ? ` · ${a.venue}` : ''}. Tap to see your checklist.`,
+            data: { assessmentId: a.id },
+          },
+          trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: new Date(r.at), channelId: CHANNEL_ID },
+        });
+        count++;
+      } catch (e) {
+        console.warn('Could not schedule deadline reminder', a.id, e);
+      }
     }
   }
   return count;

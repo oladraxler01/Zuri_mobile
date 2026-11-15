@@ -39,6 +39,12 @@ export function LexiBottomTabBar({ state, descriptors, emitter, navigateToTab, i
           iconOutline: 'school-outline' as const,
           iconFilled: 'school' as const,
         };
+      case 'plan':
+        return {
+          label: 'Plan',
+          iconOutline: 'calendar-outline' as const,
+          iconFilled: 'calendar' as const,
+        };
       case 'research':
         return {
           label: 'Research',

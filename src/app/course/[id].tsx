@@ -11,12 +11,19 @@ import { useAcademic, type TimetableSlot } from '@/context/academic-context';
 import { useLectures } from '@/context/lectures-context';
 import { LectureCard } from '@/components/lecture/lecture-card';
 import { EmptyState } from '@/components/states/state-view';
+import { useMaterials } from '@/context/materials-context';
+import { usePlanner } from '@/context/planner-context';
+import { MaterialCard } from '@/components/materials/material-card';
+import { AssessmentCard } from '@/components/planner/assessment-card';
+import { pickAndUploadMaterial } from '@/utils/pick-material';
 import { describeStart, formatDuration, upcomingClasses } from '@/utils/time';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'schedule', label: 'Schedule' },
   { key: 'lectures', label: 'Lectures' },
+  { key: 'materials', label: 'Materials' },
+  { key: 'assessments', label: 'Assessments' },
 ] as const;
 type TabKey = (typeof TABS)[number]['key'];
 
@@ -36,6 +43,11 @@ export default function CourseDetailScreen() {
   const [fontsLoaded] = useLexiFonts();
   const { state } = useAcademic();
   const { lectures } = useLectures();
+  const { materials } = useMaterials();
+  const { assessments } = usePlanner();
+  const courseMaterials = materials.filter((m) => m.courseId === params.id).sort((a, b) => b.addedAt.localeCompare(a.addedAt));
+  const courseAssessments = assessments.filter((a) => a.courseId === params.id).sort((a, b) => a.dueAt.localeCompare(b.dueAt));
+  const nextDue = courseAssessments.find((a) => a.status !== 'done' && new Date(a.dueAt) > new Date());
 
   const course = state.courses.find((c) => c.id === params.id);
   const [tab, setTab] = useState<TabKey>(
@@ -120,7 +132,7 @@ export default function CourseDetailScreen() {
         </View>
       </View>
 
-      <View style={styles.tabs} accessibilityRole="tablist">
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={styles.tabs} accessibilityRole="tablist">
         {TABS.map((t) => (
           <Pressable
             key={t.key}
@@ -132,7 +144,7 @@ export default function CourseDetailScreen() {
             <Text style={[styles.tabText, tab === t.key && { color: '#fff' }]}>{t.label}</Text>
           </Pressable>
         ))}
-      </View>
+      </ScrollView>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {tab === 'overview' && (
@@ -156,6 +168,13 @@ export default function CourseDetailScreen() {
               <View style={styles.card}>
                 <Text style={styles.cardMeta}>No classes on your timetable for this course.</Text>
               </View>
+            )}
+
+            {nextDue && (
+              <>
+                <Text style={styles.sectionLabel}>NEXT DEADLINE</Text>
+                <AssessmentCard item={nextDue} showCourse={false} />
+              </>
             )}
 
             <Text style={styles.sectionLabel}>LATEST LECTURE</Text>
@@ -245,6 +264,49 @@ export default function CourseDetailScreen() {
               primary={{ label: 'Record a lecture', icon: 'mic', onPress: record }}
             />
           ))}
+        {tab === 'materials' && (
+          <>
+            <Pressable style={styles.inlineAction} onPress={() => pickAndUploadMaterial(course.id)}>
+              <Ionicons name="cloud-upload-outline" size={18} color={UI.ink} />
+              <Text style={styles.inlineActionText}>Upload material</Text>
+            </Pressable>
+            {courseMaterials.length ? (
+              <View style={{ gap: 10 }}>
+                {courseMaterials.map((m) => (
+                  <MaterialCard key={m.id} m={m} showCourse={false} />
+                ))}
+              </View>
+            ) : (
+              <EmptyState
+                compact
+                icon="folder-open-outline"
+                title="No materials yet"
+                message={`Upload ${course.code} notes, slides or past questions to study from them.`}
+              />
+            )}
+          </>
+        )}
+
+        {tab === 'assessments' && (
+          <>
+            <Pressable
+              style={styles.inlineAction}
+              onPress={() => router.push({ pathname: '/assessment/edit', params: { courseId: course.id } } as any)}
+            >
+              <Ionicons name="add" size={18} color={UI.ink} />
+              <Text style={styles.inlineActionText}>Add assignment, test or exam</Text>
+            </Pressable>
+            {courseAssessments.length ? (
+              <View style={{ gap: 10 }}>
+                {courseAssessments.map((a) => (
+                  <AssessmentCard key={a.id} item={a} showCourse={false} />
+                ))}
+              </View>
+            ) : (
+              <EmptyState compact icon="calendar-outline" title="Nothing due" message={`No assignments or exams added for ${course.code}.`} />
+            )}
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -308,6 +370,19 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   tab: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
+  inlineAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    height: 46,
+    borderRadius: 23,
+    borderWidth: 1,
+    borderColor: UI.border,
+    borderStyle: 'dashed',
+    marginBottom: 12,
+  },
+  inlineActionText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.ink },
   tabOn: { backgroundColor: UI.ink },
   tabText: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.inkSoft },
   scroll: { padding: 20, paddingBottom: 48, maxWidth: 640, width: '100%', alignSelf: 'center' },

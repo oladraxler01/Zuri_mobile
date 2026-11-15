@@ -13,8 +13,8 @@ Each finished phase gets its own git commit (`Phase N: ...`), so `git log` is th
 | 1 | Role-based app structure (Student / Lecturer / Institution) | Done 2026-11-15 |
 | 2 | Close the student lecture loop (record → upload → process → transcript/summary, archive, course detail) | Done 2026-11-15 |
 | 3 | System states & permissions (mic, notifications, loading, errors, empty states) | Done 2026-11-15 |
-| 4 | Materials & assignments (needed for Ask Lexi with sources) | Next |
-| 5 | Lecturer app, then institution web dashboard | Not started (shells exist) |
+| 4 | Materials & assignments (needed for Ask Lexi with sources) | Done 2026-11-15 |
+| 5 | Lecturer app, then institution web dashboard | Next (shells exist) |
 | 6 | Full checklist from the top, starting with onboarding | Not started |
 
 ## Phase log
@@ -75,3 +75,17 @@ Each finished phase gets its own git commit (`Phase N: ...`), so `git log` is th
 - Shared components `src/components/states/`: `StateView`, `EmptyState`, `ErrorState`, `PermissionState`, `LoadingState`, `Skeleton`, `SkeletonCard`. Used by recording permission, archive (skeletons + empty/no-match), course detail, notification permission.
 - Notifications: `src/services/notifications.ts` schedules a weekly reminder per timetable class (`reminderLeadMinutes` before), on Android in a "Lecture reminders" channel; `ReminderSync` keeps them in step with timetable/preferences and opens the class when a reminder is tapped. Permission screen `src/app/permissions/notifications.tsx` is the last onboarding step when reminders are on; the You → Preferences toggle asks for permission too.
 - Known limits: reminders don't run on web. Verification of the Android release build's Hermes step failed locally with a Windows file lock (`spawn EBUSY`); the JS bundle itself builds fine (`--no-bytecode`).
+
+### Phase 4 — Materials, assignments & Ask with sources (done 2026-11-15)
+- New packages: `expo-document-picker` (pick files), `@react-native-community/datetimepicker` (due dates), `expo-sharing` (share / open fallback).
+- Materials: `materials-context.tsx` (saved, files copied into app storage, offline queue like lectures), `services/material-api.ts` (`POST {base}/materials/process`; without a backend: text/Markdown analysed on the phone from the real text, other files get labelled sample results).
+  - `src/app/materials.tsx` library (search, type/course filters, sort, pinned first), `material/new.tsx` upload details (course, type, who can see it), `material/[id].tsx` (Open in the phone's viewer via `File.preview()`, Share, Summary / Concepts / Quiz / Passages, type/course/visibility settings, pin, delete).
+- Planning: `planner-context.tsx` (assignments, tests, exams, projects with default prep checklists; sample entries + sample academic calendar on first launch), `utils/planner.ts` (due wording, grouping, study-plan builder that spreads sessions before each deadline within the weekly study goal).
+  - New **Plan** tab `src/app/(tabs)/plan.tsx`: This week (classes, deadlines, planned study sessions), Deadlines (overdue / this week / next week / later / completed), Calendar (month grid, day detail, academic calendar).
+  - `assessment/edit.tsx` (add/edit with date & time picker), `assessment/[id].tsx` (countdown, checklist, study sessions, topics to revise + weak spots for tests/exams, related materials and lectures, ask).
+- Ask with sources: `src/app/ask.tsx` + `utils/source-search.ts` search lecture transcripts and material passages (all, one course, or one document); answers are numbered source cards that open the lecture at that second (`lecture/[id]?t=`) or the material's passages.
+- Course detail: new Materials and Assessments tabs; overview shows the next deadline.
+- Home: deadline card (overdue or due within 3 days), exam-prep countdown card (tests/exams within 14 days), Materials and Ask shortcuts; "Open Syllabus" (hardcoded popup) now opens the course's materials.
+- Reminders: deadline notifications the day before and 2–3 hours before (respecting Assignment alerts / Exam countdown); tapping opens the item. Android channel always created; rescheduling debounced.
+- Verified: study-plan, due-date wording, grouping and source search with a scripted test; on-phone text analysis tested on a sample Markdown file.
+- Note: the PC's C: drive was full (0 bytes free) during verification; Android and web bundles compiled but the export couldn't be written. Freed ~95 MB of build caches.

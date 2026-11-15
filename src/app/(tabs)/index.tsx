@@ -19,15 +19,25 @@ import { useAcademic } from '@/context/academic-context';
 import { useLectures } from '@/context/lectures-context';
 import { describeStart, upcomingClasses, formatDuration } from '@/utils/time';
 import { lectureTitle } from '@/components/lecture/lecture-card';
+import { usePlanner } from '@/context/planner-context';
+import { describeDue, daysUntil } from '@/utils/planner';
+import { kindMeta } from '@/components/planner/assessment-card';
 
 export default function AcademicHomeScreen() {
   const router = useRouter();
   const [fontsLoaded] = useLexiFonts();
   const { state } = useAcademic();
   const { lectures } = useLectures();
+  const { assessments } = usePlanner();
+  const openWork = assessments
+    .filter((a) => a.status !== 'done')
+    .sort((a, b) => a.dueAt.localeCompare(b.dueAt));
+  // Deadline intervention: overdue or due within 3 days.
+  const urgent = openWork.find((a) => daysUntil(a.dueAt) <= 3 && (a.kind === 'assignment' || a.kind === 'project' || new Date(a.dueAt) > new Date()));
+  // Exam preparation: next test/exam within 14 days (if it isn't already the urgent card).
+  const exam = openWork.find((a) => (a.kind === 'exam' || a.kind === 'test') && new Date(a.dueAt) > new Date() && daysUntil(a.dueAt) <= 14 && a.id !== urgent?.id);
 
   // Modals for interactive actions
-  const [syllabusVisible, setSyllabusVisible] = useState(false);
   const [focusSessionVisible, setFocusSessionVisible] = useState(false);
 
   if (!fontsLoaded) {
@@ -150,6 +160,52 @@ export default function AcademicHomeScreen() {
           </Pressable>
         )}
 
+        {/* Deadline intervention */}
+        {urgent && (
+          <Pressable
+            style={({ pressed }) => [styles.dueCard, new Date(urgent.dueAt) < new Date() && styles.dueCardLate, pressed && styles.btnPressed]}
+            onPress={() => router.push(`/assessment/${urgent.id}` as Href)}
+          >
+            <View style={styles.dueIcon}>
+              <Ionicons name={kindMeta(urgent.kind).icon} size={20} color="#7a4f12" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.dueTag}>
+                {urgent.courseCode} · {describeDue(urgent).toUpperCase()}
+              </Text>
+              <Text style={styles.dueTitle} numberOfLines={2}>
+                {urgent.title}
+              </Text>
+              <Text style={styles.dueMeta}>
+                {urgent.steps.filter((s) => s.done).length} of {urgent.steps.length} preparation steps done
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#7a4f12" />
+          </Pressable>
+        )}
+
+        {/* Exam preparation */}
+        {exam && (
+          <Pressable
+            style={({ pressed }) => [styles.examCard, pressed && styles.btnPressed]}
+            onPress={() => router.push(`/assessment/${exam.id}` as Href)}
+          >
+            <View style={styles.examCount}>
+              <Text style={styles.examDays}>{daysUntil(exam.dueAt)}</Text>
+              <Text style={styles.examDaysLabel}>{daysUntil(exam.dueAt) === 1 ? 'day' : 'days'}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.examTag}>
+                {kindMeta(exam.kind).label.toUpperCase()} PREP · {exam.courseCode}
+              </Text>
+              <Text style={styles.examTitle} numberOfLines={2}>
+                {exam.title}
+              </Text>
+              <Text style={styles.examMeta}>Open your revision plan and past questions</Text>
+            </View>
+          </Pressable>
+        )}
+
         {/* Proactive Lecture Recording Alert Banner */}
         {nextOcc && (
         <View style={styles.proactiveAlertCard}>
@@ -220,9 +276,9 @@ export default function AcademicHomeScreen() {
               <View style={styles.actionButtonsRow}>
                 <Pressable
                   style={styles.primaryActionBtn}
-                  onPress={() => setSyllabusVisible(true)}
+                  onPress={() => router.push({ pathname: '/course/[id]', params: { id: nextClass.courseId, tab: 'materials' } } as any)}
                 >
-                  <Text style={styles.primaryActionBtnText}>Open Syllabus</Text>
+                  <Text style={styles.primaryActionBtnText}>Materials</Text>
                 </Pressable>
 
                 <Pressable
@@ -322,6 +378,16 @@ export default function AcademicHomeScreen() {
                 <Text style={styles.quickActionTitle}>Start Focus Session</Text>
               </Pressable>
 
+              <Pressable style={styles.quickActionCard} onPress={() => router.push('/ask' as Href)}>
+                <Ionicons name="chatbubble-ellipses-outline" size={20} color="#272e0a" />
+                <Text style={styles.quickActionTitle}>Ask about your notes</Text>
+              </Pressable>
+
+              <Pressable style={styles.quickActionCard} onPress={() => router.push('/materials' as Href)}>
+                <Ionicons name="folder-open-outline" size={20} color="#272e0a" />
+                <Text style={styles.quickActionTitle}>Materials</Text>
+              </Pressable>
+
               <Pressable
                 style={styles.quickActionCard}
                 onPress={() => router.push('/lectures' as Href)}
@@ -335,35 +401,6 @@ export default function AcademicHomeScreen() {
           </View>
         </View>
       </ScrollView>
-
-      {/* Syllabus Modal */}
-      <Modal
-        visible={syllabusVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setSyllabusVisible(false)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>CSC 301 Syllabus & Outline</Text>
-              <Pressable onPress={() => setSyllabusVisible(false)}>
-                <Ionicons name="close" size={24} color={LexiColors.primary} />
-              </Pressable>
-            </View>
-            <ScrollView style={{ maxHeight: 340 }}>
-              <Text style={styles.modalBodyText}>
-                • Week 1-2: Asymptotic Notations ($O$, $\Omega$, $\Theta$){'\n'}
-                • Week 3-4: Divide & Conquer (MergeSort, QuickSort Analysis){'\n'}
-                • Week 5-6: Dynamic Programming (Optimal Substructure & Memoization){'\n'}
-                • Week 7-8: Greedy Algorithms (Huffman Coding, Kruskal/Prim){'\n'}
-                • Week 9-10: Graph Algorithms (BFS, DFS, Dijkstra, Bellman-Ford){'\n'}
-                • Week 11-12: NP-Completeness & Approximation
-              </Text>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
 
       {/* Focus Session Modal */}
       <Modal
@@ -405,6 +442,53 @@ export default function AcademicHomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  dueCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#fdf1df',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#f1d7ab',
+    padding: 16,
+    marginBottom: 14,
+  },
+  dueCardLate: { backgroundColor: '#fff1ef', borderColor: '#f6c9c2' },
+  dueIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dueTag: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: '#9a5b0b' },
+  dueTitle: { fontFamily: LexiFonts.headlineMd, fontSize: 17, lineHeight: 22, color: '#272e0a', marginTop: 2 },
+  dueMeta: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: '#6b5a3a', marginTop: 3 },
+  examCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(199, 199, 185, 0.4)',
+    padding: 16,
+    marginBottom: 14,
+  },
+  examCount: {
+    width: 58,
+    height: 58,
+    borderRadius: 14,
+    backgroundColor: '#272e0a',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  examDays: { fontFamily: LexiFonts.headlineMd, fontSize: 22, color: '#e9c349', lineHeight: 26 },
+  examDaysLabel: { fontFamily: LexiFonts.labelSmBold, fontSize: 10, color: 'rgba(255,255,255,0.75)' },
+  examTag: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: '#c5832b' },
+  examTitle: { fontFamily: LexiFonts.headlineMd, fontSize: 17, lineHeight: 22, color: '#272e0a', marginTop: 2 },
+  examMeta: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: '#77786c', marginTop: 3 },
   postLectureCard: {
     backgroundColor: '#272e0a',
     borderRadius: 20,
@@ -839,10 +923,12 @@ const styles = StyleSheet.create({
   },
   quickActionsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
   },
   quickActionCard: {
-    flex: 1,
+    flexBasis: '46%',
+    flexGrow: 1,
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 14,

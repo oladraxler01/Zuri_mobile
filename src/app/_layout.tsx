@@ -6,6 +6,8 @@ import { AcademicProvider, useAcademic } from '@/context/academic-context';
 import { SessionProvider, useSession } from '@/context/session-context';
 import { LecturesProvider } from '@/context/lectures-context';
 import { NetworkProvider } from '@/context/network-context';
+import { MaterialsProvider } from '@/context/materials-context';
+import { PlannerProvider } from '@/context/planner-context';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
 import { OfflineBanner } from '@/components/states/offline-banner';
 import { ReminderSync } from '@/components/reminder-sync';
@@ -22,7 +24,11 @@ export default function RootLayout() {
       <SessionProvider>
         <AcademicProvider>
           <LecturesProvider>
-            <AppShell />
+            <MaterialsProvider>
+              <PlannerProvider>
+                <AppShell />
+              </PlannerProvider>
+            </MaterialsProvider>
           </LecturesProvider>
         </AcademicProvider>
       </SessionProvider>
@@ -59,6 +65,12 @@ function AppShell() {
         <Stack.Screen name="course/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="upcoming-lecture" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="permissions/notifications" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="materials" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="material/[id]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="material/new" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="assessment/[id]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="assessment/edit" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="ask" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="status/[kind]" options={{ animation: 'fade', gestureEnabled: false }} />
       </Stack>
       <OfflineBanner />

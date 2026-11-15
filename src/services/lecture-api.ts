@@ -10,7 +10,7 @@ import { buildSampleAnalysis } from '@/data/sample-lecture-analysis';
  * Until then, a local stand-in simulates the upload and returns sample results.
  */
 
-const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, '');
+export const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, '');
 
 export const isBackendConfigured = !!API_BASE && !API_BASE.includes('yourdomain');
 
@@ -32,7 +32,7 @@ export class ApiError extends Error {
   }
 }
 
-function errorForStatus(status: number): ApiError {
+export function errorForStatus(status: number): ApiError {
   if (status === 401) return new ApiError('session-expired', 'Your session has expired. Please sign in again.');
   if (status === 426) return new ApiError('update-required', 'A newer version of the app is required.');
   if (status === 503) return new ApiError('maintenance', 'The service is down for maintenance.');

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -29,7 +29,7 @@ type TabKey = (typeof TABS)[number]['key'];
 
 export default function LectureScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ id: string; tab?: string }>();
+  const params = useLocalSearchParams<{ id: string; tab?: string; t?: string }>();
   const [fontsLoaded] = useLexiFonts();
   const { getLecture, loaded, updateLecture, retryProcessing, deleteLecture } = useLectures();
   const lecture = getLecture(params.id);
@@ -41,6 +41,14 @@ export default function LectureScreen() {
   const player = useAudioPlayer(lecture?.audioUri ? { uri: lecture.audioUri } : null);
   const status = useAudioPlayerStatus(player);
   const canSeek = !!lecture?.audioUri && status.isLoaded;
+
+  // Opened from a cited source: jump to that moment once the audio is ready.
+  const jumped = useRef(false);
+  useEffect(() => {
+    if (!canSeek || jumped.current || !params.t) return;
+    jumped.current = true;
+    player.seekTo(Number(params.t) || 0);
+  }, [canSeek, params.t]);
 
   const goBack = () => {
     if (router.canGoBack()) router.back();
