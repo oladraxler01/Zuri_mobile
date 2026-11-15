@@ -118,3 +118,9 @@ Part 2 — institution:
 - New `permissions/microphone.tsx` step and `onboarding/complete.tsx` summary (profile, courses, timetable, reminders, microphone).
 - Fix: course and class IDs were based on the millisecond, so bulk adds could collide; now unique. `addCourse` returns the new ID.
 - Parser tested on 9 sample lines (7 formats): all parsed correctly, clash found, unreadable line reported.
+
+### Phase 6.2 — Home / proactive intelligence (done 2026-11-15)
+- `utils/recommendations.ts`: one feed built from real data (classes within 2 h, overdue/due-soon work, exams within 14 days, lectures ready/waiting/failed, concepts to revisit, materials processed, today's planned study), ranked by priority. Tested on sample data.
+- `context/feed-context.tsx`: read / dismissed / snoozed-until-tomorrow state (saved), rebuilt every minute.
+- New `notifications.tsx` (notification centre: needs attention / recommended / updates, unread dots, mark all read, dismiss) and `recommendation/[id].tsx` (why, what to do, actions, remind me tomorrow, dismiss).
+- Home: bell with unread count; "Recommended for you" now shows the top recommendation of any kind; "Get started" checklist for new students (timetable, first lecture, upload, add a deadline), dismissible.

@@ -8,6 +8,7 @@ import { LecturesProvider } from '@/context/lectures-context';
 import { NetworkProvider } from '@/context/network-context';
 import { MaterialsProvider } from '@/context/materials-context';
 import { PlannerProvider } from '@/context/planner-context';
+import { FeedProvider } from '@/context/feed-context';
 import { LecturerProvider } from '@/context/lecturer-context';
 import { InstitutionProvider } from '@/context/institution-context';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
@@ -28,11 +29,13 @@ export default function RootLayout() {
           <LecturesProvider>
             <MaterialsProvider>
               <PlannerProvider>
-                <LecturerProvider>
-                  <InstitutionProvider>
-                    <AppShell />
-                  </InstitutionProvider>
-                </LecturerProvider>
+                <FeedProvider>
+                  <LecturerProvider>
+                    <InstitutionProvider>
+                      <AppShell />
+                    </InstitutionProvider>
+                  </LecturerProvider>
+                </FeedProvider>
               </PlannerProvider>
             </MaterialsProvider>
           </LecturesProvider>
@@ -78,6 +81,8 @@ function AppShell() {
         <Stack.Screen name="assessment/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="assessment/edit" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="ask" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="notifications" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="recommendation/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="teach" />
         <Stack.Screen name="admin" />
         <Stack.Screen name="status/[kind]" options={{ animation: 'fade', gestureEnabled: false }} />

@@ -20,6 +20,8 @@ import { useLectures } from '@/context/lectures-context';
 import { describeStart, upcomingClasses, formatDuration } from '@/utils/time';
 import { lectureTitle } from '@/components/lecture/lecture-card';
 import { usePlanner } from '@/context/planner-context';
+import { useFeed } from '@/context/feed-context';
+import { useMaterials } from '@/context/materials-context';
 import { describeDue, daysUntil } from '@/utils/planner';
 import { kindMeta } from '@/components/planner/assessment-card';
 
@@ -28,6 +30,8 @@ export default function AcademicHomeScreen() {
   const [fontsLoaded] = useLexiFonts();
   const { state } = useAcademic();
   const { lectures } = useLectures();
+  const { materials } = useMaterials();
+  const feed = useFeed();
   const { assessments } = usePlanner();
   const openWork = assessments
     .filter((a) => a.status !== 'done')
@@ -65,11 +69,17 @@ export default function AcademicHomeScreen() {
       ? 'No more classes today. A good time to review your recent lectures.'
       : `You have ${todayCount} ${todayCount === 1 ? 'class' : 'classes'} left today.`;
 
+  // Getting started checklist for students who haven't used the main features yet.
+  const startSteps = [
+    { label: 'Set up your timetable', done: state.timetable.length > 0, onPress: () => router.push('/onboarding/student-timetable' as Href) },
+    { label: 'Record your first lecture', done: lectures.length > 0, onPress: () => handleStartRecording(nextClass?.courseId) },
+    { label: 'Upload notes or past questions', done: materials.length > 0, onPress: () => router.push('/materials' as Href) },
+    { label: 'Add an assignment or exam', done: assessments.some((a) => !a.id.startsWith('a_seed')), onPress: () => router.push('/assessment/edit' as Href) },
+  ];
+  const startDone = startSteps.filter((s) => s.done).length;
+  const showStart = startDone < startSteps.length && !feed.isHidden('welcome');
+
   // Recommended review: the concept to revisit from your latest processed lecture.
-  const reviewLecture = [...lectures]
-    .filter((l) => l.status === 'ready' && l.analysis?.knowledgeGap)
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
-  const reviewGap = reviewLecture?.analysis?.knowledgeGap;
 
   const handleStartRecording = (courseId?: string) => {
     const course = state.courses.find((c) => c.id === courseId);
@@ -93,6 +103,21 @@ export default function AcademicHomeScreen() {
           <Text style={styles.headerLogo}>LEXI</Text>
         </View>
 
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <Pressable
+          style={styles.profileBtn}
+          onPress={() => router.push('/notifications' as Href)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={`Notifications${feed.unread ? `, ${feed.unread} unread` : ''}`}
+        >
+          <Ionicons name="notifications-outline" size={24} color="#272e0a" />
+          {feed.unread > 0 && (
+            <View style={styles.bellBadge}>
+              <Text style={styles.bellBadgeText}>{feed.unread > 9 ? '9+' : feed.unread}</Text>
+            </View>
+          )}
+        </Pressable>
         <Pressable
           style={styles.profileBtn}
           onPress={() => router.push('/(tabs)/you' as Href)}
@@ -102,6 +127,7 @@ export default function AcademicHomeScreen() {
         >
           <Ionicons name="person-circle-outline" size={28} color="#272e0a" />
         </Pressable>
+        </View>
       </View>
 
       <ScrollView
@@ -158,6 +184,28 @@ export default function AcademicHomeScreen() {
               </View>
             )}
           </Pressable>
+        )}
+
+        {/* New student: getting started */}
+        {showStart && (
+          <View style={styles.startCard}>
+            <View style={styles.startHead}>
+              <Text style={styles.startTitle}>Get started with your semester</Text>
+              <Pressable onPress={() => feed.dismiss('welcome')} hitSlop={10} accessibilityLabel="Hide getting started">
+                <Ionicons name="close" size={18} color="#77786c" />
+              </Pressable>
+            </View>
+            <Text style={styles.startSub}>
+              {startDone} of {startSteps.length} done
+            </Text>
+            {startSteps.map((st) => (
+              <Pressable key={st.label} style={styles.startRow} onPress={st.onPress} disabled={st.done}>
+                <Ionicons name={st.done ? 'checkmark-circle' : 'ellipse-outline'} size={22} color={st.done ? '#2f6b3a' : '#77786c'} />
+                <Text style={[styles.startText, st.done && styles.startTextDone]}>{st.label}</Text>
+                {!st.done && <Ionicons name="chevron-forward" size={16} color="#77786c" />}
+              </Pressable>
+            ))}
+          </View>
         )}
 
         {/* Deadline intervention */}
@@ -302,35 +350,30 @@ export default function AcademicHomeScreen() {
 
           )}
 
-          {/* RECOMMENDED REVIEW Section ("From Your Last Class") */}
-          {reviewLecture && reviewGap && (
+          {/* RECOMMENDED FOR YOU — the most important suggestion from the feed */}
+          {feed.top && (
           <View style={styles.timelineSection}>
             <View style={styles.milestoneDotBulb}>
               <Ionicons name="bulb-outline" size={12} color="#272e0a" />
             </View>
 
             <View style={styles.sectionHeaderRow}>
-              <Text style={styles.tagMuted}>RECOMMENDED REVIEW</Text>
+              <Text style={styles.tagMuted}>RECOMMENDED FOR YOU</Text>
             </View>
 
-            <View style={styles.reviewCard}>
+            <Pressable style={styles.reviewCard} onPress={() => router.push(feed.top!.href as Href)}>
               <View style={styles.reviewCardTop}>
-                <Text style={styles.reviewTopicTitle}>{reviewGap.concept}</Text>
-                <View style={styles.durationChip}>
-                  <Text style={styles.durationChipText}>{reviewLecture.courseCode}</Text>
-                </View>
+                <Text style={styles.reviewTopicTitle}>{feed.top.title}</Text>
+                <Ionicons name={feed.top.icon} size={18} color="#c5832b" />
               </View>
 
-              <Text style={styles.reviewDesc}>{reviewGap.reason}</Text>
+              <Text style={styles.reviewDesc}>{feed.top.recommendation?.why ?? feed.top.body}</Text>
 
-              <Pressable
-                style={styles.reviewLinkRow}
-                onPress={() => router.push(`/lecture/${reviewLecture.id}` as Href)}
-              >
-                <Text style={styles.reviewLinkText}>Review from your lecture</Text>
+              <View style={styles.reviewLinkRow}>
+                <Text style={styles.reviewLinkText}>See what to do</Text>
                 <Ionicons name="arrow-forward" size={15} color="#c5832b" />
-              </Pressable>
-            </View>
+              </View>
+            </Pressable>
           </View>
           )}
 
@@ -442,6 +485,33 @@ export default function AcademicHomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  bellBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 0,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#ba1a1a',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  bellBadgeText: { fontFamily: LexiFonts.labelSmBold, fontSize: 10, color: '#ffffff' },
+  startCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(199, 199, 185, 0.4)',
+    padding: 16,
+    marginBottom: 14,
+  },
+  startHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  startTitle: { fontFamily: LexiFonts.headlineMd, fontSize: 18, color: '#272e0a', flex: 1 },
+  startSub: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: '#c5832b', marginTop: 2, marginBottom: 6 },
+  startRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9 },
+  startText: { flex: 1, fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: '#272e0a' },
+  startTextDone: { color: '#77786c', textDecorationLine: 'line-through' },
   dueCard: {
     flexDirection: 'row',
     alignItems: 'center',
