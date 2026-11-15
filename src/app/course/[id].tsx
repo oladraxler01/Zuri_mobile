@@ -328,7 +328,7 @@ export default function CourseDetailScreen() {
           </>
         )}
 
-        {tab === 'topics' && <CourseTopics concepts={mastery} onRecord={record} />}
+        {tab === 'topics' && <CourseTopics concepts={mastery} onRecord={record} courseId={course.id} />}
 
         {tab === 'activity' && <ActivityList items={activity} />}
 

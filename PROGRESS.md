@@ -131,3 +131,10 @@ Part 2 — institution:
 - `utils/mastery.ts`: per-concept mastery (recency-weighted % of last 6 answers) → Strong / Developing / Weak / Not tested, plus concepts flagged by lecture analysis.
 - `utils/activity.ts`: course activity (recordings, uploads, deadlines added, quiz rounds and flashcard sessions grouped by day).
 - Course page: "Your standing" on the overview (mastery, strong/weak/untested, answers, weakest topic); new Topics tab (strength map with practise-weakest, and all topics with where each was covered) and Activity tab.
+
+### Phase 6.4 — Study / learning (done 2026-11-15)
+- `utils/study-session.ts`: builds a personalised session (≈8 items, 2 questions per flashcard) from lectures and materials, weakest concepts first; modes: mixed, weak-topic review, or one focus concept. Tested on sample data.
+- `study/session.tsx`: one item at a time with timer; wrong answers offer "Explain it" (right answer, concept summary, the lecture moments where it was taught, ask more); every answer feeds mastery; completion screen with score, flashcards known, time and topics that moved level; logs a study-session event.
+- `study/index.tsx` hub (start session, review weak topics, per-course sessions, week minutes, strong topics, planned today), `study/mastery.tsx` (all courses), `study/history.tsx` (minutes per day chart, day streak, accuracy, full activity).
+- Topic "practise" buttons and the concept/exam recommendations now start focused study sessions. Home's fake "Focus Session" popup is replaced by a Study session tile.
+- Interactive tutoring is guided by your own sources; AI-written tutoring still needs the backend.

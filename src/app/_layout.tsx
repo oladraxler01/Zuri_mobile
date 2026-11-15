@@ -85,6 +85,10 @@ function AppShell() {
         <Stack.Screen name="assessment/edit" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="ask" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="notifications" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="study/index" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="study/session" options={{ presentation: 'modal', animation: 'slide_from_bottom', gestureEnabled: false }} />
+        <Stack.Screen name="study/mastery" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="study/history" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="recommendation/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="teach" />
         <Stack.Screen name="admin" />

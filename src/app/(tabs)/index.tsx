@@ -6,8 +6,6 @@ import {
   Pressable,
   ScrollView,
   StatusBar,
-  Modal,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -42,7 +40,6 @@ export default function AcademicHomeScreen() {
   const exam = openWork.find((a) => (a.kind === 'exam' || a.kind === 'test') && new Date(a.dueAt) > new Date() && daysUntil(a.dueAt) <= 14 && a.id !== urgent?.id);
 
   // Modals for interactive actions
-  const [focusSessionVisible, setFocusSessionVisible] = useState(false);
 
   if (!fontsLoaded) {
     return <View style={styles.container} />;
@@ -415,10 +412,10 @@ export default function AcademicHomeScreen() {
             <View style={styles.quickActionsRow}>
               <Pressable
                 style={styles.quickActionCard}
-                onPress={() => setFocusSessionVisible(true)}
+                onPress={() => router.push('/study' as Href)}
               >
-                <Ionicons name="timer-outline" size={20} color="#272e0a" />
-                <Text style={styles.quickActionTitle}>Start Focus Session</Text>
+                <Ionicons name="book-outline" size={20} color="#272e0a" />
+                <Text style={styles.quickActionTitle}>Study session</Text>
               </Pressable>
 
               <Pressable style={styles.quickActionCard} onPress={() => router.push('/ask' as Href)}>
@@ -445,41 +442,6 @@ export default function AcademicHomeScreen() {
         </View>
       </ScrollView>
 
-      {/* Focus Session Modal */}
-      <Modal
-        visible={focusSessionVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setFocusSessionVisible(false)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Pomodoro Focus Session</Text>
-              <Pressable onPress={() => setFocusSessionVisible(false)}>
-                <Ionicons name="close" size={24} color={LexiColors.primary} />
-              </Pressable>
-            </View>
-            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-              <Text style={{ fontFamily: LexiFonts.headlineLgMobile, fontSize: 40, color: '#272e0a' }}>
-                25:00
-              </Text>
-              <Text style={{ fontFamily: LexiFonts.bodyMd, color: LexiColors.onSurfaceVariant, marginTop: 4 }}>
-                Algorithm Analysis Study Interval
-              </Text>
-            </View>
-            <Pressable
-              style={styles.doneBtn}
-              onPress={() => {
-                setFocusSessionVisible(false);
-                Alert.alert('Focus Session Started', 'Do Not Disturb mode active for the next 25 minutes.');
-              }}
-            >
-              <Text style={styles.doneBtnText}>Start 25m Timer</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }

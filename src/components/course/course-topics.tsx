@@ -28,7 +28,7 @@ function LevelBadge({ level }: { level: MasteryLevel }) {
 }
 
 /** Strength map + full topic list for one course. */
-export function CourseTopics({ concepts, onRecord }: { concepts: ConceptMastery[]; onRecord: () => void }) {
+export function CourseTopics({ concepts, onRecord, courseId }: { concepts: ConceptMastery[]; onRecord: () => void; courseId?: string }) {
   const [view, setView] = useState<'map' | 'all'>('map');
 
   if (!concepts.length) {
@@ -48,11 +48,8 @@ export function CourseTopics({ concepts, onRecord }: { concepts: ConceptMastery[
     n: concepts.filter((c) => c.level === l).length,
   }));
   const weakest = concepts.find((c) => c.level === 'weak') ?? concepts.find((c) => c.level === 'developing') ?? concepts.find((c) => c.level === 'new');
-  const practise = (c: ConceptMastery) => {
-    const src = c.sources.find((s) => s.kind === 'lecture') ?? c.sources[0];
-    if (!src) return;
-    router.push((src.kind === 'lecture' ? `/lecture/${src.id}?tab=questions` : `/material/${src.id}?tab=questions`) as Href);
-  };
+  const practise = (c: ConceptMastery) =>
+    router.push({ pathname: '/study/session', params: { concept: c.concept, courseId: courseId ?? '' } } as any);
 
   return (
     <View style={{ gap: 12 }}>

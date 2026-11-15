@@ -85,6 +85,7 @@ export function buildFeed(input: FeedInput): FeedItem[] {
           why: `Your ${a.kind} is ${describeDue(a, now).toLowerCase()}. Starting revision now spreads the work out instead of cramming.`,
           steps: left.length ? left.map((s) => s.text) : ['Review your notes once more', 'Rest well the night before'],
           actions: [
+            { label: `Study session for ${a.courseCode}`, href: `/study/session?courseId=${a.courseId}` },
             { label: 'Open revision plan', href: `/assessment/${a.id}` },
             { label: `Ask about ${a.courseCode}`, href: `/ask?courseId=${a.courseId}` },
           ],
@@ -158,6 +159,7 @@ export function buildFeed(input: FeedInput): FeedItem[] {
             'Go through the flashcards',
           ],
           actions: [
+            { label: 'Start a 5-minute review', href: `/study/session?concept=${encodeURIComponent(gap.concept)}&courseId=${l.courseId ?? ''}` },
             { label: 'Open the lecture', href: `/lecture/${l.id}` },
             { label: 'Take the quiz', href: `/lecture/${l.id}?tab=questions` },
             { label: `Ask about ${gap.concept}`, href: `/ask?courseId=${l.courseId ?? ''}&q=${encodeURIComponent(`What is ${gap.concept}?`)}` },
