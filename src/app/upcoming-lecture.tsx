@@ -137,7 +137,7 @@ export default function UpcomingLectureScreen() {
 
         <Text style={styles.sectionLabel}>BEFORE YOU START</Text>
         <View style={styles.card}>
-          {['Arrive early and sit near the front.', 'Charge your phone; long lectures use battery.', 'Keep Lexi open while recording.'].map(
+          {['Arrive early and sit near the front.', 'Charge your phone; long lectures use battery.', 'Keep Zuri open while recording.'].map(
             (tip) => (
               <View key={tip} style={styles.tip}>
                 <Ionicons name="checkmark-circle-outline" size={18} color={UI.success} />

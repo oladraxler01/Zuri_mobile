@@ -431,7 +431,7 @@ function Tips() {
       {[
         'Sit near the front, close to the lecturer.',
         'Place your phone face-up on the desk.',
-        'Keep Lexi open while the lecture runs.',
+        'Keep Zuri open while the lecture runs.',
       ].map((tip) => (
         <View key={tip} style={styles.tipRow}>
           <View style={styles.tipDot} />

@@ -1,5 +1,5 @@
 /**
- * Lexi Design System
+ * Zuri Design System
  * Extracted from the Stitch-generated design tokens.
  * All colors follow Material Design 3 naming conventions.
  */

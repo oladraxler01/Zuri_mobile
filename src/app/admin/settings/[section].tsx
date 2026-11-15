@@ -309,7 +309,7 @@ function ApiSection() {
         <Text style={styles.hint}>Rotating invalidates the old key immediately. The full key is shown once, on the web dashboard.</Text>
       </Panel>
       <Panel title="Webhook" subtitle="We'll send events (lecture processed, quiz published) to this URL">
-        <TextInput style={styles.input} value={url} onChangeText={setUrl} placeholder="https://it.university.edu/lexi-events" placeholderTextColor={UI.muted} autoCapitalize="none" />
+        <TextInput style={styles.input} value={url} onChangeText={setUrl} placeholder="https://it.university.edu/zuri-events" placeholderTextColor={UI.muted} autoCapitalize="none" />
         <Pressable style={[styles.primary, { marginTop: 12 }, url === webhookUrl && { opacity: 0.4 }]} disabled={url === webhookUrl} onPress={() => setWebhook(url.trim())}>
           <Text style={styles.primaryText}>Save webhook</Text>
         </Pressable>

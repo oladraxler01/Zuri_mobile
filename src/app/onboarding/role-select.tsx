@@ -102,7 +102,7 @@ export default function RoleSelectScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={LexiColors.primary} />
         </Pressable>
-        <Text style={styles.headerTitle}>Lexi</Text>
+        <Text style={styles.headerTitle}>Zuri</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -112,7 +112,7 @@ export default function RoleSelectScreen() {
       >
         {/* Header Group */}
         <View style={styles.headerGroup}>
-          <Text style={styles.headline}>How will you use Lexi?</Text>
+          <Text style={styles.headline}>How will you use Zuri?</Text>
           <Text style={styles.subtitle}>This helps us personalize your experience.</Text>
         </View>
 

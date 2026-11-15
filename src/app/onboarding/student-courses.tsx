@@ -105,7 +105,7 @@ export default function StudentCoursesScreen() {
         </Pressable>
 
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Lexi</Text>
+          <Text style={styles.headerTitle}>Zuri</Text>
           <View style={styles.stepBadge}>
             <Text style={styles.stepBadgeText}>Step 1 of 3</Text>
           </View>
@@ -123,7 +123,7 @@ export default function StudentCoursesScreen() {
         <View style={styles.titleGroup}>
           <Text style={styles.headline}>Personalize your semester</Text>
           <Text style={styles.subtitle}>
-            Set up your current academic level and registered courses so Lexi can organize your lecture summaries and smart reminders.
+            Set up your current academic level and registered courses so Zuri can organize your lecture summaries and smart reminders.
           </Text>
         </View>
 

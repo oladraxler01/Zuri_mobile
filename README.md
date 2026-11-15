@@ -1,7 +1,7 @@
-# Lexi Mobile 🎓⚡
+# Zuri 🎓⚡
 
 > **An AI-powered academic companion and lecture intelligence mobile app built with Expo, React Native, and TypeScript.**  
-> Designed specifically for tertiary education environments, Lexi records lectures in noisy hall environments, isolates voices, transcribes speech with specialized academic vocabulary recognition, and synthesizes structured post-lecture intelligence (Bento summaries, diagnostic quizzes, knowledge gap analysis, and flashcards).
+> Designed specifically for tertiary education environments, Zuri records lectures in noisy hall environments, isolates voices, transcribes speech with specialized academic vocabulary recognition, and synthesizes structured post-lecture intelligence (Bento summaries, diagnostic quizzes, knowledge gap analysis, and flashcards).
 
 ---
 
@@ -13,7 +13,7 @@
   - [2. Student Academic State & Timetable](#2-student-academic-state--timetable)
   - [3. Lecture Audio Ingestion & Transcription](#3-lecture-audio-ingestion--transcription)
   - [4. Post-Lecture Intelligence (Structured JSON Schema)](#4-post-lecture-intelligence-structured-json-schema)
-  - [5. AI Academic Chat ("Ask Lexi")](#5-ai-academic-chat-ask-lexi)
+  - [5. AI Academic Chat ("Ask Zuri")](#5-ai-academic-chat-ask-lexi)
 - [Mobile Frontend Architecture](#mobile-frontend-architecture)
   - [Directory Structure](#directory-structure)
   - [Key Frontend Technologies](#key-frontend-technologies)
@@ -33,7 +33,7 @@ The following diagram outlines how the mobile front-end interacts with your back
 
 ```mermaid
 flowchart TD
-    subgraph MobileClient ["📱 Lexi Mobile App (Expo / React Native)"]
+    subgraph MobileClient ["📱 Zuri App (Expo / React Native)"]
         UI["UI Screens (Onboarding, Timetable, Dashboard)"]
         AudioRec["Audio Recording (Hardware Voice Isolation, AAC/WAV)"]
         State["AcademicContext (Courses, Timetable, Preferences)"]
@@ -79,7 +79,7 @@ flowchart TD
 
 ## 🔌 Backend Integration Guide (API Specification)
 
-If you are developing or connecting an existing backend to Lexi Mobile, this section details the expected REST endpoints, request payloads, and response structures.
+If you are developing or connecting an existing backend to Zuri, this section details the expected REST endpoints, request payloads, and response structures.
 
 ### Environment Variable for Mobile API
 Set the backend URL in `.env`:
@@ -285,7 +285,7 @@ Once the backend processes the raw transcript via Whisper, it feeds the text int
 
 ---
 
-### 5. AI Academic Chat ("Ask Lexi")
+### 5. AI Academic Chat ("Ask Zuri")
 
 #### `POST /lectures/:lectureId/chat`
 Enables the contextual study assistant on the Lecture Analysis screen to answer student follow-ups based on the lecture's audio transcript.

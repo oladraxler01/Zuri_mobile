@@ -1,4 +1,4 @@
-# Lexi — Build Progress
+# Zuri — Build Progress
 
 Shared team checklist (full item-by-item list, tick boxes there):
 https://claude.ai/artifact/G8ZY5iJc2xdZo1YvXzQEgf
@@ -13,7 +13,7 @@ Each finished phase gets its own git commit (`Phase N: ...`), so `git log` is th
 | 1 | Role-based app structure (Student / Lecturer / Institution) | Done 2026-11-15 |
 | 2 | Close the student lecture loop (record → upload → process → transcript/summary, archive, course detail) | Done 2026-11-15 |
 | 3 | System states & permissions (mic, notifications, loading, errors, empty states) | Done 2026-11-15 |
-| 4 | Materials & assignments (needed for Ask Lexi with sources) | Done 2026-11-15 |
+| 4 | Materials & assignments (needed for Ask Zuri with sources) | Done 2026-11-15 |
 | 5 | Lecturer app, then institution web dashboard | Done 2026-11-15 |
 | 6 | Full checklist from the top, starting with onboarding | Next |
 
@@ -33,7 +33,7 @@ Each finished phase gets its own git commit (`Phase N: ...`), so `git log` is th
 - Known limit: role is in memory only; it resets when the app restarts (fixed with real auth/persistence).
 
 ### Extra — Splash redesign (2026-11-15)
-- `src/app/onboarding/index.tsx` rebuilt: dark forest-green kinetic splash (gold rule draw, rotating orbit arcs, "Lexi." letters rising from a mask, word-by-word tagline, endless academic ticker, shimmer CTA). No AI wording. Respects the OS "reduce motion" setting.
+- `src/app/onboarding/index.tsx` rebuilt: dark forest-green kinetic splash (gold rule draw, rotating orbit arcs, "Zuri." letters rising from a mask, word-by-word tagline, endless academic ticker, shimmer CTA). No AI wording. Respects the OS "reduce motion" setting.
 - `app.json` native splash background changed from Expo blue to `#17231b` so launch → splash is seamless (needs a new native build to show).
 
 ### Phase 2 — Student lecture loop (done 2026-11-15)

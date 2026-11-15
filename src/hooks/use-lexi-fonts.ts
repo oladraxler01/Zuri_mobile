@@ -10,7 +10,7 @@ import {
 } from '@expo-google-fonts/source-serif-4';
 
 /**
- * Loads all Lexi brand fonts.
+ * Loads all Zuri brand fonts.
  * Returns [fontsLoaded, fontError] — same API as useFonts.
  */
 export function useLexiFonts() {

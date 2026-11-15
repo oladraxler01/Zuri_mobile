@@ -64,7 +64,7 @@ export default function StudentProfileScreen() {
           <Pressable onPress={() => setIsEditModalVisible(true)} style={styles.avatarWrapper}>
             <Text style={styles.avatarInitials}>{initials}</Text>
           </Pressable>
-          <Text style={styles.appTitle}>Lexi</Text>
+          <Text style={styles.appTitle}>Zuri</Text>
         </View>
 
         <Pressable

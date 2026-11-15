@@ -59,7 +59,7 @@ export default function ResearchScreen() {
         <View style={styles.appBarLeft}>
           <Text style={styles.appTitle}>Research</Text>
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>Lexi Scholar</Text>
+            <Text style={styles.badgeText}>Zuri Scholar</Text>
           </View>
         </View>
         <Pressable
@@ -104,7 +104,7 @@ export default function ResearchScreen() {
           </Text>
 
           <View style={styles.featuredFooter}>
-            <Text style={styles.authorText}>Lexi AI Research Collective</Text>
+            <Text style={styles.authorText}>Zuri AI Research Collective</Text>
             <Pressable style={styles.readButton}>
               <Text style={styles.readButtonText}>Read Paper</Text>
               <Ionicons name="arrow-forward" size={14} color="#ffffff" />

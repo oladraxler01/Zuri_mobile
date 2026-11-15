@@ -1,4 +1,4 @@
-# Lexi Backend Specification: Audio Voice Isolation & Speech-to-Text Pipeline
+# Zuri Backend Specification: Audio Voice Isolation & Speech-to-Text Pipeline
 
 **Document Version:** 1.0.0  
 **Target Audience:** Backend Engineers & AI/ML Infrastructure  

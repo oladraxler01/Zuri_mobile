@@ -78,7 +78,7 @@ export default function SignInScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={LexiColors.primary} />
         </Pressable>
-        <Text style={styles.headerTitle}>Lexi</Text>
+        <Text style={styles.headerTitle}>Zuri</Text>
         <View style={styles.headerSpacer} />
       </View>
 

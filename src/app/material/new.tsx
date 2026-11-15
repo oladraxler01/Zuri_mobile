@@ -109,7 +109,7 @@ export default function NewMaterialScreen() {
           <VisibilityOption
             icon="people-outline"
             title={`My ${course?.code ?? 'course'} classmates`}
-            desc="Classmates on Lexi in this course can view it once sharing is live."
+            desc="Classmates on Zuri in this course can view it once sharing is live."
             on={visibility === 'course'}
             onPress={() => setVisibility('course')}
           />

@@ -84,7 +84,7 @@ export default function StudentPreferencesScreen() {
         </Pressable>
 
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Lexi</Text>
+          <Text style={styles.headerTitle}>Zuri</Text>
           <View style={styles.stepBadge}>
             <Text style={styles.stepBadgeText}>Step 3 of 3</Text>
           </View>
@@ -101,7 +101,7 @@ export default function StudentPreferencesScreen() {
         <View style={styles.titleGroup}>
           <Text style={styles.headline}>Goals & smart sync</Text>
           <Text style={styles.subtitle}>
-            Set your target GPA and lecture alarms so Lexi proactively notifies you and keeps you ahead of your coursework.
+            Set your target GPA and lecture alarms so Zuri proactively notifies you and keeps you ahead of your coursework.
           </Text>
         </View>
 

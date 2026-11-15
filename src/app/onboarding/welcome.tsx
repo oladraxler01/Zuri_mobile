@@ -107,7 +107,7 @@ export default function WelcomeScreen() {
 
           {/* Typography Content */}
           <View style={styles.textBlock}>
-            <Text style={styles.headline}>Welcome to Lexi.</Text>
+            <Text style={styles.headline}>Welcome to Zuri.</Text>
             <Text style={styles.bodyText}>
               Your proactive academic companion. Stay ahead with smart insights, lecture tools, and personalized guidance.
             </Text>

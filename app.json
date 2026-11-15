@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "LexiMobile",
+    "name": "Zuri",
     "slug": "LexiMobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -40,7 +40,7 @@
       [
         "expo-audio",
         {
-          "microphonePermission": "Lexi uses the microphone to record your lectures when you tap record.",
+          "microphonePermission": "Zuri uses the microphone to record your lectures when you tap record.",
           "enableBackgroundRecording": true
         }
       ],

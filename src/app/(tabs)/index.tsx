@@ -97,7 +97,7 @@ export default function AcademicHomeScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Ionicons name="school" size={24} color="#272e0a" />
-          <Text style={styles.headerLogo}>LEXI</Text>
+          <Text style={styles.headerLogo}>ZURI</Text>
         </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>

@@ -169,7 +169,7 @@ export default function StudentTimetableScreen() {
         </Pressable>
 
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Lexi</Text>
+          <Text style={styles.headerTitle}>Zuri</Text>
           <View style={styles.stepBadge}>
             <Text style={styles.stepBadgeText}>Step 2 of 3</Text>
           </View>
