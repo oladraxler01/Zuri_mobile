@@ -51,7 +51,7 @@ export default function LectureArchiveScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={UI.bg} />
+      <StatusBar barStyle="dark-content" />
       <View style={styles.topBar}>
         <Pressable
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)' as Href))}

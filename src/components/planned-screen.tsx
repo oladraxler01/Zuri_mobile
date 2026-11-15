@@ -38,7 +38,7 @@ export function PlannedScreen({ eyebrow, title, description, planned, showSignOu
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={LexiColors.background} />
+      <StatusBar barStyle="dark-content" />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.brandRow}>
           <Text style={styles.brand}>Lexi</Text>

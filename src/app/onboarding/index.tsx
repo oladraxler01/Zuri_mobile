@@ -172,7 +172,7 @@ export default function OnboardingSplashScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={INK} />
+      <StatusBar barStyle="light-content" />
 
       {/* Ambient drifting glow */}
       <Animated.View pointerEvents="none" style={[styles.glow, glowStyle]} />
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(203, 167, 47, 0.10)',
   },
   ringsWrap: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: -60,

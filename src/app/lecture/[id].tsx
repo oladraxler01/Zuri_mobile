@@ -75,7 +75,7 @@ export default function LectureScreen() {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={UI.bg} />
+      <StatusBar barStyle="dark-content" />
 
       {/* Top bar */}
       <View style={styles.topBar}>

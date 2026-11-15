@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, StatusBar, Linking, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams, useNavigation } from 'expo-router';
+import { useRouter, useLocalSearchParams, useNavigation, usePreventRemove } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
@@ -96,15 +96,14 @@ export default function LectureRecordingScreen() {
 
   // ── Block accidental exits while recording ──
   const isActive = phase === 'recording' || phase === 'paused' || phase === 'completed';
-  useEffect(() => {
-    const unsub = navigation.addListener('beforeRemove', (e: any) => {
-      if (!isActive || allowLeave.current) return;
-      e.preventDefault();
-      pendingLeave.current = e.data.action;
-      setConfirmLeave(true);
-    });
-    return unsub;
-  }, [navigation, isActive]);
+  usePreventRemove(isActive, ({ data }) => {
+    if (allowLeave.current) {
+      navigation.dispatch(data.action);
+      return;
+    }
+    pendingLeave.current = data.action;
+    setConfirmLeave(true);
+  });
 
   const requestPermission = async () => {
     const perm = await requestRecordingPermissionsAsync();
@@ -188,7 +187,7 @@ export default function LectureRecordingScreen() {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={UI.bg} />
+      <StatusBar barStyle="dark-content" />
 
       <View style={styles.topBar}>
         <Pressable style={styles.closeBtn} onPress={close} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">

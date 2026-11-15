@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import type { BottomTabBarProps } from 'expo-router/tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LexiColors, LexiFonts } from '@/constants/lexi-theme';
@@ -17,7 +17,7 @@ interface LexiBottomTabBarProps extends BottomTabBarProps {
   icons?: Record<string, LexiTabIcon>;
 }
 
-export function LexiBottomTabBar({ state, descriptors, navigation, icons }: LexiBottomTabBarProps) {
+export function LexiBottomTabBar({ state, descriptors, emitter, navigateToTab, icons }: LexiBottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
   const getTabConfig = (routeName: string, title?: string) => {
@@ -76,19 +76,19 @@ export function LexiBottomTabBar({ state, descriptors, navigation, icons }: Lexi
           const config = getTabConfig(route.name, descriptors[route.key]?.options.title);
 
           const onPress = () => {
-            const event = navigation.emit({
+            const event = emitter.emit({
               type: 'tabPress',
               target: route.key,
               canPreventDefault: true,
             });
 
             if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
+              navigateToTab(route.key);
             }
           };
 
           const onLongPress = () => {
-            navigation.emit({
+            emitter.emit({
               type: 'tabLongPress',
               target: route.key,
             });

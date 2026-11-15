@@ -60,7 +60,7 @@ export default function AcademicHomeScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f9f7f2" />
+      <StatusBar barStyle="dark-content" />
 
       {/* Top Navigation Header */}
       <View style={styles.header}>

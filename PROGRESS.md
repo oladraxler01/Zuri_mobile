@@ -50,3 +50,10 @@ Each finished phase gets its own git commit (`Phase N: ...`), so `git log` is th
 - Removed `src/app/lecture-analysis.tsx` (replaced by `lecture/[id]`).
 - `app.json`: expo-audio plugin with microphone permission text and background recording.
 - Known limits: background recording needs a development/store build (not Expo Go). "Ask about this lecture" searches the transcript; it is not AI yet. On web, saved audio doesn't survive a page reload.
+
+### Upgrade — Expo SDK 54 → 58 (2026-11-15)
+- Reason: Expo Go on phones now only runs SDK 58 projects.
+- Packages: expo 58, React Native 0.88, React 19.3, expo-router 58, Reanimated 4.7, TypeScript 6; added `expo-asset` (required by expo-audio).
+- Removed direct `metro`, `metro-resolver`, `@expo/metro-config`, `@react-native/js-polyfills` deps (Expo manages these; mismatched copies cause crashes). `expo-doctor`: 20/20.
+- Code changes for new APIs: custom tab bar uses `emitter` + `navigateToTab`; recording leave-guard uses `usePreventRemove`; `StatusBar backgroundColor` removed (edge-to-edge); `StyleSheet.absoluteFillObject` → `absoluteFill`; ref types `ScrollViewInstance` / `TextInputInstance`.
+- `app.json` web output `static` → `single` (server pre-rendering broke on the audio player; web now builds as a single-page app).

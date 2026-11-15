@@ -89,7 +89,7 @@ export default function CourseDetailScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={UI.bg} />
+      <StatusBar barStyle="dark-content" />
       <View style={styles.topBar}>
         <Pressable onPress={goBack} hitSlop={10} accessibilityLabel="Go back">
           <Ionicons name="arrow-back" size={24} color={UI.ink} />

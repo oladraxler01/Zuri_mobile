@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, Pressable, ScrollView, TextInput, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView, TextInput, StyleSheet, type ScrollViewInstance } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LexiFonts } from '@/constants/lexi-theme';
 import { UI } from '@/constants/lexi-ui';
@@ -19,7 +19,7 @@ interface Props {
 export function TranscriptTab({ transcript, currentTime, playing, canSeek, onSeek }: Props) {
   const [query, setQuery] = useState('');
   const [follow, setFollow] = useState(true);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const positions = useRef<Record<number, number>>({});
 
   const activeIdx = useMemo(

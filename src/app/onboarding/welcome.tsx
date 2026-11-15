@@ -90,7 +90,7 @@ export default function WelcomeScreen() {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={LexiColors.background} />
+      <StatusBar barStyle="dark-content" />
 
       <View style={styles.innerWrapper}>
         {/* Top Section: Hero Image & Heading */}
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   cardOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(255, 224, 136, 0.04)',
   },
 

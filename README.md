@@ -363,7 +363,7 @@ LexiMobile/
 ```
 
 ### Key Frontend Technologies
-- **Framework:** [Expo SDK 54](https://docs.expo.dev/) with [React Native 0.81](https://reactnative.dev/)
+- **Framework:** [Expo SDK 58](https://docs.expo.dev/) with [React Native 0.88](https://reactnative.dev/)
 - **Routing:** [Expo Router v6](https://docs.expo.dev/router/introduction/) (File-based routing)
 - **Typography:** `Inter` (UI / data density) + `Source Serif 4` (Editorial headers)
 - **Animations:** React Native Animated API + Reanimated

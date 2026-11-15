@@ -9,6 +9,7 @@ import {
   Platform,
   StatusBar,
   Alert,
+  type TextInputInstance,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -27,7 +28,7 @@ export default function VerifyEmailScreen() {
   const [resendTimer, setResendTimer] = useState<number>(45);
   const [canResend, setCanResend] = useState<boolean>(false);
 
-  const inputsRef = useRef<(TextInput | null)[]>([]);
+  const inputsRef = useRef<(TextInputInstance | null)[]>([]);
 
   // Mask email for display
   const displayEmail = params.email
@@ -124,7 +125,7 @@ export default function VerifyEmailScreen() {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={LexiColors.background} />
+      <StatusBar barStyle="dark-content" />
 
       {/* Top App Bar */}
       <View style={styles.header}>

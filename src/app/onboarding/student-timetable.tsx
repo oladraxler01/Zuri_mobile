@@ -121,7 +121,7 @@ export default function StudentTimetableScreen() {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={LexiColors.background} />
+      <StatusBar barStyle="dark-content" />
 
       {/* Top App Bar */}
       <View style={styles.header}>
