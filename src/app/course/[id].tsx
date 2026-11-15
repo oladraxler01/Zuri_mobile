@@ -10,6 +10,7 @@ import { useLexiFonts } from '@/hooks/use-lexi-fonts';
 import { useAcademic, type TimetableSlot } from '@/context/academic-context';
 import { useLectures } from '@/context/lectures-context';
 import { LectureCard } from '@/components/lecture/lecture-card';
+import { EmptyState } from '@/components/states/state-view';
 import { describeStart, formatDuration, upcomingClasses } from '@/utils/time';
 
 const TABS = [
@@ -220,7 +221,12 @@ export default function CourseDetailScreen() {
               ))}
             </View>
           ) : (
-            <Text style={styles.emptyText}>No classes scheduled. Add them from your timetable.</Text>
+            <EmptyState
+              compact
+              icon="calendar-outline"
+              title="No classes scheduled"
+              message={`${course.code} isn’t on your timetable yet, so there are no reminders for it.`}
+            />
           ))}
 
         {tab === 'lectures' &&
@@ -231,7 +237,13 @@ export default function CourseDetailScreen() {
               ))}
             </View>
           ) : (
-            <Text style={styles.emptyText}>No lectures recorded for {course.code} yet.</Text>
+            <EmptyState
+              compact
+              icon="mic-outline"
+              title="No lectures yet"
+              message={`Record a ${course.code} class to get its transcript, notes and questions here.`}
+              primary={{ label: 'Record a lecture', icon: 'mic', onPress: record }}
+            />
           ))}
       </ScrollView>
     </SafeAreaView>

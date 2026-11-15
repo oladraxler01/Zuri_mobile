@@ -12,8 +12,8 @@ Each finished phase gets its own git commit (`Phase N: ...`), so `git log` is th
 | --- | --- | --- |
 | 1 | Role-based app structure (Student / Lecturer / Institution) | Done 2026-11-15 |
 | 2 | Close the student lecture loop (record → upload → process → transcript/summary, archive, course detail) | Done 2026-11-15 |
-| 3 | System states & permissions (mic, notifications, loading, errors, empty states) | Next |
-| 4 | Materials & assignments (needed for Ask Lexi with sources) | Not started |
+| 3 | System states & permissions (mic, notifications, loading, errors, empty states) | Done 2026-11-15 |
+| 4 | Materials & assignments (needed for Ask Lexi with sources) | Next |
 | 5 | Lecturer app, then institution web dashboard | Not started (shells exist) |
 | 6 | Full checklist from the top, starting with onboarding | Not started |
 
@@ -57,3 +57,21 @@ Each finished phase gets its own git commit (`Phase N: ...`), so `git log` is th
 - Removed direct `metro`, `metro-resolver`, `@expo/metro-config`, `@react-native/js-polyfills` deps (Expo manages these; mismatched copies cause crashes). `expo-doctor`: 20/20.
 - Code changes for new APIs: custom tab bar uses `emitter` + `navigateToTab`; recording leave-guard uses `usePreventRemove`; `StatusBar backgroundColor` removed (edge-to-edge); `StyleSheet.absoluteFillObject` → `absoluteFill`; ref types `ScrollViewInstance` / `TextInputInstance`.
 - `app.json` web output `static` → `single` (server pre-rendering broke on the audio player; web now builds as a single-page app).
+
+### Cleanup & fixes (2026-11-15)
+- Splash wordmark renamed to **ZURI** (`src/app/onboarding/index.tsx`).
+- Removed Expo starter leftovers (themed components, collapsible, web badge, animated icon, theme constants, colour-scheme hooks, `global.css`, `scripts/reset-project.js`, unused logo/tab images) and unused packages (`expo-device`, `expo-web-browser`, `expo-symbols`, `expo-image`).
+- Safe upgrades: `@expo-google-fonts/source-serif-4` 0.4.2; `npm audit fix` cleared the critical `shell-quote` issue (3 moderate build-tool issues need a breaking forced upgrade; left). All Expo packages already at the newest SDK 58 versions.
+- Home: greeting follows the time of day and uses your name; "classes left today"; Recommended Review comes from your latest lecture (hidden until there is one); profile icon opens You; removed two hardcoded popups.
+- You: name saved from sign-up and editable; initials avatar replaces a remote stock photo; reminder toggle shows your real lead time.
+
+### Phase 3 — System states & permissions (done 2026-11-15)
+- New packages: `expo-notifications` (local reminders), `@react-native-community/netinfo` (online/offline).
+- Saved on the phone (`src/utils/storage.ts`): signed-in role (`session-context`), profile/courses/timetable/preferences (`academic-context`), lectures. The app reopens where you left off.
+- Startup: native launch screen stays up until fonts and saved data are ready (no blank screens) — `src/app/_layout.tsx`.
+- Crash screen: root `ErrorBoundary` with Try again. Branded `+not-found`.
+- Offline: `network-context` + `OfflineBanner` (slides in when offline, "Back online" when it returns). Lectures saved offline get status `waiting` and upload automatically when online; interrupted uploads resume after restart.
+- Backend status screens `src/app/status/[kind].tsx`: session-expired (401), update-required (426), maintenance (503); `lecture-api.ts` throws typed `ApiError`s and the app routes to these.
+- Shared components `src/components/states/`: `StateView`, `EmptyState`, `ErrorState`, `PermissionState`, `LoadingState`, `Skeleton`, `SkeletonCard`. Used by recording permission, archive (skeletons + empty/no-match), course detail, notification permission.
+- Notifications: `src/services/notifications.ts` schedules a weekly reminder per timetable class (`reminderLeadMinutes` before), on Android in a "Lecture reminders" channel; `ReminderSync` keeps them in step with timetable/preferences and opens the class when a reminder is tapped. Permission screen `src/app/permissions/notifications.tsx` is the last onboarding step when reminders are on; the You → Preferences toggle asks for permission too.
+- Known limits: reminders don't run on web. Verification of the Android release build's Hermes step failed locally with a Windows file lock (`spawn EBUSY`); the JS bundle itself builds fine (`--no-bytecode`).

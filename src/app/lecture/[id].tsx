@@ -11,7 +11,7 @@ import { useLexiFonts } from '@/hooks/use-lexi-fonts';
 import { useLectures } from '@/context/lectures-context';
 import { formatDuration, formatLectureDate } from '@/utils/time';
 import { lectureTitle } from '@/components/lecture/lecture-card';
-import { ProcessingView, FailedView, CompleteView } from '@/components/lecture/processing-view';
+import { ProcessingView, FailedView, CompleteView, WaitingView } from '@/components/lecture/processing-view';
 import { OverviewTab } from '@/components/lecture/overview-tab';
 import { TranscriptTab } from '@/components/lecture/transcript-tab';
 import { NotesTab } from '@/components/lecture/notes-tab';
@@ -93,7 +93,9 @@ export default function LectureScreen() {
         </Pressable>
       </View>
 
-      {lecture.status === 'uploading' || lecture.status === 'processing' ? (
+      {lecture.status === 'waiting' ? (
+        <WaitingView lecture={lecture} />
+      ) : lecture.status === 'uploading' || lecture.status === 'processing' ? (
         <ProcessingView lecture={lecture} />
       ) : lecture.status === 'failed' || !lecture.analysis ? (
         <FailedView

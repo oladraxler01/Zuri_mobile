@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   Pressable,
-  Image,
   Modal,
   TextInput,
   Switch,
@@ -17,10 +16,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAcademicContext } from '@/context/academic-context';
 import { useSession } from '@/context/session-context';
+import { getNotificationPermission, type NotificationPermission } from '@/services/notifications';
 import { LexiColors, LexiFonts } from '@/constants/lexi-theme';
 
-const AVATAR_URL =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuC-7a6mo_76vDg5gProosF9AIUlxeh95PMa8ASWk-7JHJiclD1FwhDyoFXv5JC1jsXogDqRKRxv5nYW3nvqVyWO14simo3NRBkz7XyfLlhkRMuVRe8qn30-ooQi0ckFR_gDk8oH-aCEMlD1CsgxROaPYhsu5HmK_yCGKsiKwL6I6g0gTTGxkvPpU_M2Vu5pr-EoLbk2-w_tHJlho6hcU_RwnfBPzjqWQ1DmlVD4yAxfZGJmiTZXGdLU';
 
 export default function StudentProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -28,8 +26,19 @@ export default function StudentProfileScreen() {
   const { signOut } = useSession();
 
   // Local state for profile identity
-  const [studentName, setStudentName] = useState('Alex Mercer');
+  const studentName = state.studentName || 'Student';
+  const initials =
+    studentName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase())
+      .join('') || 'S';
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [notifPerm, setNotifPerm] = useState<NotificationPermission | null>(null);
+  useEffect(() => {
+    getNotificationPermission().then(setNotifPerm);
+  }, []);
   const [isPrefModalVisible, setIsPrefModalVisible] = useState(false);
   const [isUniModalVisible, setIsUniModalVisible] = useState(false);
 
@@ -39,8 +48,8 @@ export default function StudentProfileScreen() {
   const [draftLevel, setDraftLevel] = useState(state.level || '300L');
 
   const handleSaveProfile = () => {
-    setStudentName(draftName.trim() || 'Alex Mercer');
     setAcademicInfo({
+      studentName: draftName.trim(),
       department: draftDepartment.trim() || 'Computer Science',
       level: draftLevel.trim() || '300L',
     });
@@ -53,11 +62,7 @@ export default function StudentProfileScreen() {
       <View style={styles.topAppBar}>
         <View style={styles.appBarLeft}>
           <Pressable onPress={() => setIsEditModalVisible(true)} style={styles.avatarWrapper}>
-            <Image
-              source={{ uri: AVATAR_URL }}
-              style={styles.avatarImage}
-              defaultSource={{ uri: AVATAR_URL }}
-            />
+            <Text style={styles.avatarInitials}>{initials}</Text>
           </Pressable>
           <Text style={styles.appTitle}>Lexi</Text>
         </View>
@@ -292,7 +297,7 @@ export default function StudentProfileScreen() {
               style={styles.textInput}
               value={draftName}
               onChangeText={setDraftName}
-              placeholder="e.g. Alex Mercer"
+              placeholder="Your full name"
               placeholderTextColor="#999"
             />
 
@@ -344,11 +349,25 @@ export default function StudentProfileScreen() {
             <View style={styles.prefRow}>
               <View>
                 <Text style={styles.prefTitle}>Lecture Reminders</Text>
-                <Text style={styles.prefSubtitle}>Alert 15 mins before lectures</Text>
+                <Text style={styles.prefSubtitle}>
+                  {notifPerm === 'denied'
+                    ? 'Turned off in phone settings'
+                    : `Alert ${state.preferences.reminderLeadMinutes} mins before lectures`}
+                </Text>
               </View>
               <Switch
                 value={state.preferences.lectureReminders}
-                onValueChange={(val) => updatePreferences({ lectureReminders: val })}
+                onValueChange={async (val) => {
+                  if (!val) return updatePreferences({ lectureReminders: false });
+                  const perm = await getNotificationPermission();
+                  setNotifPerm(perm);
+                  if (perm === 'granted' || perm === 'unsupported') {
+                    updatePreferences({ lectureReminders: true });
+                  } else {
+                    setIsPrefModalVisible(false);
+                    router.push('/permissions/notifications' as any);
+                  }
+                }}
                 trackColor={{ false: '#e4e2dd', true: '#c5832b' }}
               />
             </View>
@@ -466,9 +485,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#eae8e3',
   },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
+  avatarInitials: {
+    fontFamily: LexiFonts.labelSmBold,
+    fontSize: 14,
+    color: '#272e0a',
+    textAlign: 'center',
+    lineHeight: 38,
   },
   appTitle: {
     fontFamily: LexiFonts.displayBold,

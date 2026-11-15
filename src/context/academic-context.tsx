@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { loadJSON, saveJSON, STORAGE_KEYS } from '@/utils/storage';
 
 export interface CourseItem {
   id: string;
@@ -29,6 +30,8 @@ export interface StudentPreferences {
 }
 
 export interface StudentAcademicState {
+  /** Name entered at sign-up; empty until set */
+  studentName: string;
   university: string;
   department: string;
   level: string; // "100L", "200L", "300L", "400L", "500L"
@@ -40,7 +43,15 @@ export interface StudentAcademicState {
 
 interface AcademicContextType {
   state: StudentAcademicState;
-  setAcademicInfo: (info: { university?: string; department?: string; level?: string; semester?: 'First Semester' | 'Second Semester' }) => void;
+  /** true once saved data has been read from the device */
+  hydrated: boolean;
+  setAcademicInfo: (info: {
+    studentName?: string;
+    university?: string;
+    department?: string;
+    level?: string;
+    semester?: 'First Semester' | 'Second Semester';
+  }) => void;
   addCourse: (course: Omit<CourseItem, 'id'>) => void;
   removeCourse: (id: string) => void;
   addTimetableSlot: (slot: Omit<TimetableSlot, 'id'>) => void;
@@ -65,6 +76,7 @@ const DEFAULT_TIMETABLE: TimetableSlot[] = [
 ];
 
 const initialState: StudentAcademicState = {
+  studentName: '',
   university: 'Veritas University',
   department: 'Computer Science',
   level: '200L',
@@ -85,8 +97,27 @@ const AcademicContext = createContext<AcademicContextType | undefined>(undefined
 
 export function AcademicProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<StudentAcademicState>(initialState);
+  const [hydrated, setHydrated] = useState(false);
 
-  const setAcademicInfo = (info: { university?: string; department?: string; level?: string; semester?: 'First Semester' | 'Second Semester' }) => {
+  // Restore saved courses, timetable and preferences, then keep them saved.
+  useEffect(() => {
+    loadJSON<StudentAcademicState>(STORAGE_KEYS.academic).then((saved) => {
+      if (saved) {
+        setState({
+          ...initialState,
+          ...saved,
+          preferences: { ...initialState.preferences, ...saved.preferences },
+        });
+      }
+      setHydrated(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (hydrated) saveJSON(STORAGE_KEYS.academic, state);
+  }, [state, hydrated]);
+
+  const setAcademicInfo: AcademicContextType['setAcademicInfo'] = (info) => {
     setState((prev) => ({
       ...prev,
       ...info,
@@ -152,6 +183,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     <AcademicContext.Provider
       value={{
         state,
+        hydrated,
         setAcademicInfo,
         addCourse,
         removeCourse,

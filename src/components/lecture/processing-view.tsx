@@ -394,3 +394,19 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.99 }],
   },
 });
+
+/** Saved on the phone but offline: uploads automatically when back online. */
+export function WaitingView({ lecture }: { lecture: Lecture }) {
+  return (
+    <ScrollView contentContainerStyle={styles.wrap}>
+      <View style={[styles.bigIcon, { backgroundColor: UI.cardMuted }]}>
+        <Ionicons name="cloud-offline-outline" size={30} color={UI.inkSoft} />
+      </View>
+      <Text style={[styles.heading, { textAlign: 'center' }]}>Waiting for internet</Text>
+      <Text style={[styles.sub, { textAlign: 'center' }]}>
+        Your {formatDuration(lecture.durationSeconds)} {lecture.courseCode} recording is safe on this phone. It will upload
+        and process automatically as soon as you’re back online.
+      </Text>
+    </ScrollView>
+  );
+}

@@ -10,6 +10,8 @@ import { useLexiFonts } from '@/hooks/use-lexi-fonts';
 import { useLectures } from '@/context/lectures-context';
 import { useAcademic } from '@/context/academic-context';
 import { LectureCard } from '@/components/lecture/lecture-card';
+import { EmptyState } from '@/components/states/state-view';
+import { SkeletonCard } from '@/components/states/loading';
 import type { Lecture } from '@/types/lecture';
 
 function matches(lecture: Lecture, q: string) {
@@ -47,7 +49,7 @@ export default function LectureArchiveScreen() {
 
   const coursesWithLectures = state.courses.filter((c) => lectures.some((l) => l.courseId === c.id));
 
-  if (!fontsLoaded || !loaded) return <View style={styles.container} />;
+  if (!fontsLoaded) return <View style={styles.container} />;
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
@@ -99,22 +101,27 @@ export default function LectureArchiveScreen() {
           </>
         )}
 
-        {lectures.length === 0 ? (
-          <View style={styles.empty}>
-            <View style={styles.emptyIcon}>
-              <Ionicons name="mic-outline" size={28} color={UI.amber} />
-            </View>
-            <Text style={styles.emptyTitle}>No lectures yet</Text>
-            <Text style={styles.emptyText}>
-              Record your first lecture and it will appear here with its transcript, notes and questions.
-            </Text>
-            <Pressable style={styles.emptyBtn} onPress={() => router.push('/lecture-recording' as Href)}>
-              <Ionicons name="mic" size={18} color="#fff" />
-              <Text style={styles.emptyBtnText}>Record a lecture</Text>
-            </Pressable>
+        {!loaded ? (
+          <View style={{ gap: 10 }}>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
           </View>
+        ) : lectures.length === 0 ? (
+          <EmptyState
+            icon="mic-outline"
+            title="No lectures yet"
+            message="Record your first lecture and it will appear here with its transcript, notes and questions."
+            primary={{ label: 'Record a lecture', icon: 'mic', onPress: () => router.push('/lecture-recording' as Href) }}
+          />
         ) : filtered.length === 0 ? (
-          <Text style={styles.noMatch}>No lectures match your search.</Text>
+          <EmptyState
+            compact
+            icon="search-outline"
+            title="No matches"
+            message={`Nothing matches “${query.trim()}”${courseFilter ? ' in this course' : ''}.`}
+            secondary={{ label: 'Clear search', onPress: () => { setQuery(''); setCourseFilter(null); } }}
+          />
         ) : (
           <View style={{ gap: 10 }}>
             {filtered.map((l) => (

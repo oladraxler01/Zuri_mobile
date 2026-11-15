@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, StatusBar, Linking, Platform } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams, useNavigation, usePreventRemove } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -20,6 +20,7 @@ import { useLexiFonts } from '@/hooks/use-lexi-fonts';
 import { useAcademic, type CourseItem } from '@/context/academic-context';
 import { useLectures } from '@/context/lectures-context';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
+import { PermissionState } from '@/components/states/state-view';
 import { formatClock, formatDuration, upcomingClasses } from '@/utils/time';
 
 /** Voice-optimised settings from AUDIO_PROCESSING_SPEC.md: 16 kHz mono AAC, 64 kbps. */
@@ -384,38 +385,20 @@ export default function LectureRecordingScreen() {
 
 function PermissionView({ denied, onAllow }: { denied: boolean; onAllow: () => void }) {
   return (
-    <View style={styles.centerBlock}>
-      <View style={[styles.bigIcon, { backgroundColor: UI.amberSoft }]}>
-        <Ionicons name="mic-outline" size={30} color={UI.amber} />
-      </View>
-      <Text style={styles.blockTitle}>{denied ? 'Microphone is turned off' : 'Allow microphone access'}</Text>
-      <Text style={styles.blockText}>
-        {denied
-          ? 'Lexi needs the microphone to record lectures. Turn it on for Lexi in your phone’s settings, then come back.'
-          : 'Lexi uses the microphone only while you’re recording a lecture. Recordings stay on your phone until you choose to process them.'}
-      </Text>
-
-      <View style={styles.summaryCard}>
-        <SummaryRow icon="radio-button-on-outline" label="When" value="Only after you tap record" />
-        <SummaryRow icon="lock-closed-outline" label="Where" value="Saved on this phone first" />
-        <SummaryRow icon="trash-outline" label="Control" value="Delete any recording anytime" />
-      </View>
-
-      {denied ? (
-        Platform.OS === 'web' ? (
-          <Text style={styles.blockText}>Allow microphone access in your browser's site settings, then reload.</Text>
-        ) : (
-          <Pressable style={({ pressed }) => [styles.primaryWide, pressed && styles.btnPressed]} onPress={() => Linking.openSettings()}>
-            <Ionicons name="settings-outline" size={18} color="#fff" />
-            <Text style={styles.primaryWideText}>Open settings</Text>
-          </Pressable>
-        )
-      ) : (
-        <Pressable style={({ pressed }) => [styles.primaryWide, pressed && styles.btnPressed]} onPress={onAllow}>
-          <Text style={styles.primaryWideText}>Allow microphone</Text>
-        </Pressable>
-      )}
-    </View>
+    <PermissionState
+      icon="mic-outline"
+      title="Allow microphone access"
+      message="The microphone is used only while you’re recording a lecture. Recordings stay on your phone until you choose to process them."
+      deniedMessage="The microphone is turned off for this app. Turn it on in your phone’s settings, then come back."
+      denied={denied}
+      allowLabel="Allow microphone"
+      onAllow={onAllow}
+      points={[
+        { icon: 'radio-button-on-outline', text: 'Only after you tap record' },
+        { icon: 'lock-closed-outline', text: 'Saved on this phone first' },
+        { icon: 'trash-outline', text: 'Delete any recording anytime' },
+      ]}
+    />
   );
 }
 

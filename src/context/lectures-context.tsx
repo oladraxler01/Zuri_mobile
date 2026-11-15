@@ -2,10 +2,14 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Directory, File, Paths } from 'expo-file-system';
+import { router } from 'expo-router';
+import type { Href } from 'expo-router';
 import type { Lecture } from '@/types/lecture';
-import { processLecture } from '@/services/lecture-api';
+import { processLecture, ApiError } from '@/services/lecture-api';
+import { STORAGE_KEYS } from '@/utils/storage';
+import { useNetwork } from '@/context/network-context';
 
-const STORAGE_KEY = 'lexi.lectures.v1';
+const STORAGE_KEY = STORAGE_KEYS.lectures;
 
 interface NewLecture {
   courseId?: string;
@@ -60,6 +64,11 @@ export function LecturesProvider({ children }: { children: React.ReactNode }) {
   const [loaded, setLoaded] = useState(false);
   const lecturesRef = useRef<Lecture[]>([]);
   lecturesRef.current = lectures;
+  const { isOnline } = useNetwork();
+  const onlineRef = useRef(isOnline);
+  onlineRef.current = isOnline;
+  /** ids currently uploading/processing, so a lecture never runs twice at once */
+  const running = useRef(new Set<string>());
 
   // Load saved lectures once.
   useEffect(() => {
@@ -68,12 +77,10 @@ export function LecturesProvider({ children }: { children: React.ReactNode }) {
         const raw = await AsyncStorage.getItem(STORAGE_KEY);
         if (raw) {
           const saved: Lecture[] = JSON.parse(raw);
-          // Anything mid-upload when the app closed was interrupted.
+          // Anything mid-upload when the app closed resumes automatically.
           setLectures(
             saved.map((l) =>
-              l.status === 'uploading' || l.status === 'processing'
-                ? { ...l, status: 'failed', error: 'Processing was interrupted when the app closed.' }
-                : l
+              l.status === 'uploading' || l.status === 'processing' ? { ...l, status: 'waiting', progress: 0 } : l
             )
           );
         }
@@ -103,6 +110,12 @@ export function LecturesProvider({ children }: { children: React.ReactNode }) {
         updateLecture(lecture.id, { status: 'failed', error: 'The recording file is missing.' });
         return;
       }
+      if (running.current.has(lecture.id)) return;
+      if (!onlineRef.current) {
+        updateLecture(lecture.id, { status: 'waiting', progress: 0, error: undefined });
+        return;
+      }
+      running.current.add(lecture.id);
       updateLecture(lecture.id, { status: 'uploading', progress: 0, error: undefined });
       try {
         const analysis = await processLecture(
@@ -116,14 +129,30 @@ export function LecturesProvider({ children }: { children: React.ReactNode }) {
         );
         updateLecture(lecture.id, { status: 'ready', progress: 1, analysis });
       } catch (e) {
-        updateLecture(lecture.id, {
-          status: 'failed',
-          error: e instanceof Error ? e.message : 'Something went wrong while processing.',
-        });
+        if (e instanceof ApiError && e.kind === 'network') {
+          // Lost connection: wait and resume automatically when back online.
+          updateLecture(lecture.id, { status: 'waiting', progress: 0, error: e.message });
+        } else {
+          updateLecture(lecture.id, {
+            status: 'failed',
+            error: e instanceof Error ? e.message : 'Something went wrong while processing.',
+          });
+          if (e instanceof ApiError && e.kind !== 'server') {
+            router.push(`/status/${e.kind}` as Href);
+          }
+        }
+      } finally {
+        running.current.delete(lecture.id);
       }
     },
     [updateLecture]
   );
+
+  // Resume anything waiting once the device is online (and after loading).
+  useEffect(() => {
+    if (!loaded || !isOnline) return;
+    lecturesRef.current.filter((l) => l.status === 'waiting').forEach((l) => run(l));
+  }, [isOnline, loaded, run]);
 
   const saveRecording = useCallback(
     (input: NewLecture) => {

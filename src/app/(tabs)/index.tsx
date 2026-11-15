@@ -28,8 +28,6 @@ export default function AcademicHomeScreen() {
 
   // Modals for interactive actions
   const [syllabusVisible, setSyllabusVisible] = useState(false);
-  const [prepNotesVisible, setPrepNotesVisible] = useState(false);
-  const [reviewVisible, setReviewVisible] = useState(false);
   const [focusSessionVisible, setFocusSessionVisible] = useState(false);
 
   if (!fontsLoaded) {
@@ -46,6 +44,22 @@ export default function AcademicHomeScreen() {
   const recentLecture = [...lectures]
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .find((l) => Date.now() - new Date(l.createdAt).getTime() < 24 * 60 * 60 * 1000);
+
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const firstName = state.studentName.trim().split(/\s+/)[0] ?? '';
+  const todayCount = upcoming.filter((o) => o.start.toDateString() === now.toDateString()).length;
+  const daySummary =
+    todayCount === 0
+      ? 'No more classes today. A good time to review your recent lectures.'
+      : `You have ${todayCount} ${todayCount === 1 ? 'class' : 'classes'} left today.`;
+
+  // Recommended review: the concept to revisit from your latest processed lecture.
+  const reviewLecture = [...lectures]
+    .filter((l) => l.status === 'ready' && l.analysis?.knowledgeGap)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+  const reviewGap = reviewLecture?.analysis?.knowledgeGap;
 
   const handleStartRecording = (courseId?: string) => {
     const course = state.courses.find((c) => c.id === courseId);
@@ -71,7 +85,7 @@ export default function AcademicHomeScreen() {
 
         <Pressable
           style={styles.profileBtn}
-          onPress={() => Alert.alert('Student Profile', `${state.department} • ${state.level}\n${state.university}`)}
+          onPress={() => router.push('/(tabs)/you' as Href)}
           hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel="Account Profile"
@@ -96,6 +110,8 @@ export default function AcademicHomeScreen() {
                   ? 'YOUR NOTES ARE READY'
                   : recentLecture.status === 'failed'
                     ? 'NEEDS ATTENTION'
+                    : recentLecture.status === 'waiting'
+                      ? 'SAVED · WAITING FOR INTERNET'
                     : 'PROCESSING YOUR LECTURE'}
               </Text>
               <Ionicons
@@ -112,6 +128,8 @@ export default function AcademicHomeScreen() {
                 ? `${recentLecture.analysis.concepts.length} key concepts · ${recentLecture.analysis.questions.length} questions · ${recentLecture.analysis.flashcards.length} flashcards`
                 : recentLecture.status === 'failed'
                   ? 'Processing stopped. Tap to try again.'
+                  : recentLecture.status === 'waiting'
+                    ? `${formatDuration(recentLecture.durationSeconds)} recorded · uploads when you’re back online`
                   : `${formatDuration(recentLecture.durationSeconds)} recorded · ${recentLecture.status === 'uploading' ? `uploading ${Math.round((recentLecture.progress ?? 0) * 100)}%` : 'preparing notes'}`}
             </Text>
             {recentLecture.status === 'ready' && (
@@ -163,10 +181,11 @@ export default function AcademicHomeScreen() {
 
         {/* Greeting Section */}
         <View style={styles.greetingSection}>
-          <Text style={styles.greetingTitle}>Good morning,{'\n'}Marvellous.</Text>
-          <Text style={styles.greetingSubtitle}>
-            Your day is structured around algorithm analysis and discrete mathematics.
+          <Text style={styles.greetingTitle}>
+            {greeting}
+            {firstName ? `,\n${firstName}.` : '.'}
           </Text>
+          <Text style={styles.greetingSubtitle}>{daySummary}</Text>
         </View>
 
         {/* Timeline Structure */}
@@ -228,6 +247,7 @@ export default function AcademicHomeScreen() {
           )}
 
           {/* RECOMMENDED REVIEW Section ("From Your Last Class") */}
+          {reviewLecture && reviewGap && (
           <View style={styles.timelineSection}>
             <View style={styles.milestoneDotBulb}>
               <Ionicons name="bulb-outline" size={12} color="#272e0a" />
@@ -239,25 +259,24 @@ export default function AcademicHomeScreen() {
 
             <View style={styles.reviewCard}>
               <View style={styles.reviewCardTop}>
-                <Text style={styles.reviewTopicTitle}>Optimal Substructure</Text>
+                <Text style={styles.reviewTopicTitle}>{reviewGap.concept}</Text>
                 <View style={styles.durationChip}>
-                  <Text style={styles.durationChipText}>7 MIN</Text>
+                  <Text style={styles.durationChipText}>{reviewLecture.courseCode}</Text>
                 </View>
               </View>
 
-              <Text style={styles.reviewDesc}>
-                Based on your notes from the last CSC 301 lecture, reviewing this concept will prepare you for today’s dynamic programming introduction.
-              </Text>
+              <Text style={styles.reviewDesc}>{reviewGap.reason}</Text>
 
               <Pressable
                 style={styles.reviewLinkRow}
-                onPress={() => setReviewVisible(true)}
+                onPress={() => router.push(`/lecture/${reviewLecture.id}` as Href)}
               >
-                <Text style={styles.reviewLinkText}>Start Quick Review</Text>
+                <Text style={styles.reviewLinkText}>Review from your lecture</Text>
                 <Ionicons name="arrow-forward" size={15} color="#c5832b" />
               </Pressable>
             </View>
           </View>
+          )}
 
           {/* COMING UP Section */}
           {laterClasses.length > 0 && (
@@ -342,65 +361,6 @@ export default function AcademicHomeScreen() {
                 • Week 11-12: NP-Completeness & Approximation
               </Text>
             </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Prep Notes Modal */}
-      <Modal
-        visible={prepNotesVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setPrepNotesVisible(false)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>CSC 301: Key Prep Notes</Text>
-              <Pressable onPress={() => setPrepNotesVisible(false)}>
-                <Ionicons name="close" size={24} color={LexiColors.primary} />
-              </Pressable>
-            </View>
-            <ScrollView style={{ maxHeight: 340 }}>
-              <Text style={styles.modalBodyText}>
-                📌 <Text style={{ fontWeight: '700' }}>Dynamic Programming Core Rule:</Text>{'\n'}
-                Problems must exhibit <Text style={{ fontStyle: 'italic' }}>Optimal Substructure</Text> (optimal solution to problem contains optimal solutions to subproblems) and <Text style={{ fontStyle: 'italic' }}>Overlapping Subproblems</Text>.{'\n\n'}
-                💡 <Text style={{ fontWeight: '700' }}>Memoization vs Tabulation:</Text>{'\n'}
-                • Top-down with cache (Memoization){'\n'}
-                • Bottom-up iterative table fill (Tabulation)
-              </Text>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Quick Review Modal */}
-      <Modal
-        visible={reviewVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setReviewVisible(false)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Flash Review: Optimal Substructure</Text>
-              <Pressable onPress={() => setReviewVisible(false)}>
-                <Ionicons name="close" size={24} color={LexiColors.primary} />
-              </Pressable>
-            </View>
-            <View style={styles.flashcardBox}>
-              <Text style={styles.flashcardQ}>What does "Optimal Substructure" mean?</Text>
-              <Text style={styles.flashcardA}>
-                It means that an optimal solution to the problem contains within it optimal solutions to subproblems. For example, the shortest path from A to C through B implies the shortest path from A to B and B to C!
-              </Text>
-            </View>
-            <Pressable
-              style={styles.doneBtn}
-              onPress={() => setReviewVisible(false)}
-            >
-              <Text style={styles.doneBtnText}>Mark as Reviewed (7m)</Text>
-            </Pressable>
           </View>
         </View>
       </Modal>

@@ -17,12 +17,14 @@ import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { useAcademic } from '@/context/academic-context';
 
 export default function SignUpScreen() {
   const router = useRouter();
   const [fontsLoaded] = useLexiFonts();
 
   const [fullName, setFullName] = useState('');
+  const { setAcademicInfo } = useAcademic();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -46,6 +48,7 @@ export default function SignUpScreen() {
       Alert.alert('Passwords Mismatch', 'Your passwords do not match. Please re-enter.');
       return;
     }
+    if (fullName.trim()) setAcademicInfo({ studentName: fullName.trim() });
     router.push({
       pathname: '/onboarding/verify',
       params: { email: email.trim() || 'student@university.edu' },

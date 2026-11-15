@@ -30,6 +30,14 @@ export function StatusPill({ lecture }: { lecture: Lecture }) {
       </View>
     );
   }
+  if (status === 'waiting') {
+    return (
+      <View style={[styles.pill, { backgroundColor: UI.cardMuted }]}>
+        <Ionicons name="cloud-offline-outline" size={12} color={UI.inkSoft} />
+        <Text style={[styles.pillText, { color: UI.inkSoft }]}>Waiting for internet</Text>
+      </View>
+    );
+  }
   const label =
     status === 'uploading'
       ? `Uploading ${Math.round((progress ?? 0) * 100)}%`

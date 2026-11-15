@@ -22,7 +22,7 @@ import { useLexiFonts } from '@/hooks/use-lexi-fonts';
 /**
  * Launch splash: kinetic typography on deep forest green.
  * Motion sequence (≈2.2s), then a calm idle loop:
- *   gold rule draws → orbit rings open → "Lexi" letters rise from a mask →
+ *   gold rule draws → orbit rings open → "ZURI" letters rise from a mask →
  *   gold full stop drops in → tagline words reveal → ticker + button arrive.
  */
 
@@ -35,7 +35,7 @@ const GOLD = '#e9c349'; // tertiaryFixedDim
 const GOLD_DEEP = '#cba72f';
 const MUTED = 'rgba(251, 249, 248, 0.62)';
 
-const LETTERS = ['L', 'e', 'x', 'i'];
+const LETTERS = ['Z', 'U', 'R', 'I'];
 const TAGLINE = ['Every', 'lecture.', 'Every', 'class.', 'In', 'focus.'];
 const TICKER = ['LECTURES', 'NOTES', 'TIMETABLE', 'COURSES', 'EXAMS', 'RESEARCH', 'DEADLINES'];
 
@@ -192,7 +192,7 @@ export default function OnboardingSplashScreen() {
 
         {/* Wordmark */}
         <View style={styles.center}>
-          <View style={styles.wordmarkRow}>
+          <View style={styles.wordmarkRow} accessible accessibilityRole="header" accessibilityLabel="ZURI">
             {LETTERS.map((letter, i) => (
               <RevealLetter
                 key={letter + i}
@@ -428,10 +428,10 @@ const styles = StyleSheet.create({
   },
   letter: {
     fontFamily: LexiFonts.displayBold,
-    fontSize: 96,
+    fontSize: 88,
     lineHeight: 112,
     color: CREAM,
-    letterSpacing: -3,
+    letterSpacing: 2,
     includeFontPadding: false,
   },
   stop: {

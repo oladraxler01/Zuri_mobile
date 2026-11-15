@@ -3,7 +3,8 @@ import type { Ionicons } from '@expo/vector-icons';
 export type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 /** Where a lecture is in the pipeline: record → upload → process → ready. */
-export type LectureStatus = 'uploading' | 'processing' | 'ready' | 'failed';
+/** 'waiting' = saved, but no internet yet; uploads automatically when back online. */
+export type LectureStatus = 'waiting' | 'uploading' | 'processing' | 'ready' | 'failed';
 
 export interface TranscriptSegment {
   /** seconds from the start of the recording */

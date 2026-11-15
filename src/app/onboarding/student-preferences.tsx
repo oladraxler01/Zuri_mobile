@@ -60,7 +60,11 @@ export default function StudentPreferencesScreen() {
       assignmentAlerts,
     });
     setRole('student');
-    router.replace('/(tabs)' as Href);
+    if (lectureReminders) {
+      router.replace({ pathname: '/permissions/notifications', params: { next: '/(tabs)' } } as any);
+    } else {
+      router.replace('/(tabs)' as Href);
+    }
   };
 
   return (

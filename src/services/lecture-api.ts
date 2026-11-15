@@ -16,6 +16,29 @@ export const isBackendConfigured = !!API_BASE && !API_BASE.includes('yourdomain'
 
 export type ProcessingStage = 'uploading' | 'processing';
 
+/**
+ * Errors the app reacts to differently:
+ * - network: no connection → wait and retry when back online
+ * - session-expired (401), update-required (426), maintenance (503) → full-screen status
+ * - server: anything else → "try again"
+ */
+export type ApiErrorKind = 'network' | 'server' | 'session-expired' | 'update-required' | 'maintenance';
+
+export class ApiError extends Error {
+  kind: ApiErrorKind;
+  constructor(kind: ApiErrorKind, message: string) {
+    super(message);
+    this.kind = kind;
+  }
+}
+
+function errorForStatus(status: number): ApiError {
+  if (status === 401) return new ApiError('session-expired', 'Your session has expired. Please sign in again.');
+  if (status === 426) return new ApiError('update-required', 'A newer version of the app is required.');
+  if (status === 503) return new ApiError('maintenance', 'The service is down for maintenance.');
+  return new ApiError('server', `The server had a problem (${status}). Please try again.`);
+}
+
 export interface ProcessLectureInput {
   audioUri: string;
   courseCode: string;
@@ -67,14 +90,14 @@ async function uploadToBackend(
         try {
           resolve(JSON.parse(xhr.responseText));
         } catch {
-          reject(new Error('The server sent a response we could not read.'));
+          reject(new ApiError('server', 'The server sent a response we could not read.'));
         }
       } else {
-        reject(new Error(`Upload failed (${xhr.status}). Please try again.`));
+        reject(errorForStatus(xhr.status));
       }
     };
-    xhr.onerror = () => reject(new Error('Network error. Check your connection and try again.'));
-    xhr.ontimeout = () => reject(new Error('The upload timed out. Please try again.'));
+    xhr.onerror = () => reject(new ApiError('network', 'No connection. We’ll upload when you’re back online.'));
+    xhr.ontimeout = () => reject(new ApiError('network', 'The upload timed out. We’ll try again shortly.'));
     onProgress('uploading', 0);
     xhr.send(form);
   });
