@@ -101,7 +101,16 @@ export default function VerifyEmailScreen() {
     Alert.alert('Code Resent', `A fresh 6-digit code was sent to ${displayEmail}`);
   };
 
+  const codeComplete = otp.every((d) => /^\d$/.test(d));
+  const [codeError, setCodeError] = useState('');
+
   const handleVerify = () => {
+    if (!codeComplete) {
+      setCodeError('Enter all 6 digits from the email we sent you.');
+      return;
+    }
+    // The code is checked by the server once authentication is connected.
+    setCodeError('');
     router.push('/onboarding/institution' as Href);
   };
 
@@ -199,6 +208,7 @@ export default function VerifyEmailScreen() {
             >
               <Text style={styles.verifyButtonText}>Verify</Text>
             </Pressable>
+            {!!codeError && <Text style={{ color: '#ba1a1a', fontSize: 13, textAlign: 'center', marginTop: 10 }}>{codeError}</Text>}
 
             {/* Resend Code Section */}
             <View style={styles.resendContainer}>

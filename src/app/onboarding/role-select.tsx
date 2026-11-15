@@ -69,7 +69,7 @@ export default function RoleSelectScreen() {
     if (selectedRole === 'student') {
       setRole('student');
       router.push({
-        pathname: '/onboarding/student-courses',
+        pathname: '/onboarding/profile-setup',
         params: {
           university: params.universityName || 'Veritas University',
         },

@@ -107,3 +107,14 @@ Part 2 — institution:
 - `data/sample-institution.ts`: sample faculties/departments/courses and metrics.
 - Removed the Phase 1 placeholder screen.
 - Not visually checked in a browser yet; layouts are responsive (1–3 columns).
+
+### Phase 6.1 — Onboarding & identity (done 2026-11-15)
+- Verify email: Verify needs all 6 digits (server checks the code once auth is connected).
+- University choice is now actually saved (was ignored before; profile always showed the default).
+- New `onboarding/profile-setup.tsx`: full name, matric number (format check → verification "pending"), faculty. Academic state gains `matricNumber`, `verification`, `faculty`.
+- Courses step: "Import from course catalogue" (`constants/course-catalogue.ts`, sample by department + level; `components/onboarding/catalogue-sheet.tsx`).
+- Timetable step: the fake "AI scan" is replaced by a real CSV/text import (`utils/timetable-import.ts`): any column order/separator, times like 9-11 / 2:00 PM / 14:00, unknown course codes added automatically, unreadable lines reported. PDFs/photos explain they need the server.
+- New `onboarding/timetable-review.tsx`: classes by day, clash detection, courses without a class time, remove a class.
+- New `permissions/microphone.tsx` step and `onboarding/complete.tsx` summary (profile, courses, timetable, reminders, microphone).
+- Fix: course and class IDs were based on the millisecond, so bulk adds could collide; now unique. `addCourse` returns the new ID.
+- Parser tested on 9 sample lines (7 formats): all parsed correctly, clash found, unreadable line reported.

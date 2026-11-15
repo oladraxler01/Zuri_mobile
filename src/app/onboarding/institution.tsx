@@ -17,10 +17,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
 import { NIGERIAN_UNIVERSITIES, University } from '@/constants/nigerian-universities';
+import { useAcademic } from '@/context/academic-context';
 
 export default function InstitutionSelectScreen() {
   const router = useRouter();
   const [fontsLoaded] = useLexiFonts();
+  const { setAcademicInfo } = useAcademic();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string>('veritas'); // Default to Veritas University as in Stitch mockup
@@ -52,6 +54,7 @@ export default function InstitutionSelectScreen() {
 
   const handleContinue = () => {
     const selectedUni = NIGERIAN_UNIVERSITIES.find((u) => u.id === selectedId);
+    if (selectedUni) setAcademicInfo({ university: selectedUni.name });
     router.push({
       pathname: '/onboarding/role-select',
       params: {

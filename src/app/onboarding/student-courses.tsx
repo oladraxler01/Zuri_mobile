@@ -17,6 +17,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
 import { useAcademic } from '@/context/academic-context';
+import { CatalogueSheet } from '@/components/onboarding/catalogue-sheet';
+import { catalogueFor } from '@/constants/course-catalogue';
 
 const LEVELS = ['100L', '200L', '300L', '400L', '500L'];
 const DEPARTMENTS = [
@@ -41,6 +43,7 @@ export default function StudentCoursesScreen() {
 
   // Modal State for adding course
   const [modalVisible, setModalVisible] = useState(false);
+  const [catalogueOpen, setCatalogueOpen] = useState(false);
   const [newCode, setNewCode] = useState('');
   const [newTitle, setNewTitle] = useState('');
   const [newUnits, setNewUnits] = useState('3');
@@ -234,6 +237,37 @@ export default function StudentCoursesScreen() {
           </Pressable>
         </View>
 
+        {/* Import from the department catalogue */}
+        <Pressable
+          onPress={() => setCatalogueOpen(true)}
+          style={({ pressed }) => [
+            {
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              borderWidth: 1,
+              borderStyle: 'dashed',
+              borderColor: 'rgba(26,28,22,0.18)',
+              borderRadius: 14,
+              padding: 14,
+              marginBottom: 12,
+            },
+            pressed && { opacity: 0.8 },
+          ]}
+          accessibilityRole="button"
+        >
+          <Ionicons name="library-outline" size={20} color={LexiColors.primaryContainer} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: LexiColors.primary }}>Import from course catalogue</Text>
+            <Text style={{ fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: LexiColors.onSurfaceVariant, marginTop: 2 }}>
+              {catalogueFor(department, level).length
+                ? `${catalogueFor(department, level).length} ${department} courses for ${level}`
+                : `Pick your department and level above`}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={LexiColors.outline} />
+        </Pressable>
+
         {/* Course Cards List */}
         <View style={styles.courseList}>
           {state.courses.map((course) => (
@@ -287,6 +321,17 @@ export default function StudentCoursesScreen() {
           <Ionicons name="arrow-forward" size={18} color="#ffffff" />
         </Pressable>
       </View>
+
+      <CatalogueSheet
+        visible={catalogueOpen}
+        department={department}
+        level={level}
+        existingCodes={state.courses.map((c) => c.code)}
+        onClose={() => setCatalogueOpen(false)}
+        onImport={(list) =>
+          list.forEach((c) => addCourse({ code: c.code, title: c.title, units: c.units, lecturer: c.lecturer }))
+        }
+      />
 
       {/* Add Course Modal */}
       <Modal

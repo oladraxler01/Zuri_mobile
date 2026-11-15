@@ -17,9 +17,13 @@ export default function OnboardingLayout() {
       <Stack.Screen name="verify" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="institution" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="role-select" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="profile-setup" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="lecturer-setup" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="student-courses" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="student-timetable" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="timetable-review" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="student-preferences" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="complete" options={{ animation: 'fade' }} />
     </Stack>
   );
 }

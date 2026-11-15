@@ -71,6 +71,7 @@ function AppShell() {
         <Stack.Screen name="course/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="upcoming-lecture" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="permissions/notifications" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="permissions/microphone" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="materials" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="material/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="material/new" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />

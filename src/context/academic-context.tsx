@@ -32,6 +32,10 @@ export interface StudentPreferences {
 export interface StudentAcademicState {
   /** Name entered at sign-up; empty until set */
   studentName: string;
+  /** Matriculation / student ID number, used for student verification */
+  matricNumber: string;
+  verification: 'unverified' | 'pending' | 'verified';
+  faculty: string;
   university: string;
   department: string;
   level: string; // "100L", "200L", "300L", "400L", "500L"
@@ -47,12 +51,15 @@ interface AcademicContextType {
   hydrated: boolean;
   setAcademicInfo: (info: {
     studentName?: string;
+    matricNumber?: string;
+    verification?: 'unverified' | 'pending' | 'verified';
+    faculty?: string;
     university?: string;
     department?: string;
     level?: string;
     semester?: 'First Semester' | 'Second Semester';
   }) => void;
-  addCourse: (course: Omit<CourseItem, 'id'>) => void;
+  addCourse: (course: Omit<CourseItem, 'id'>) => string;
   removeCourse: (id: string) => void;
   addTimetableSlot: (slot: Omit<TimetableSlot, 'id'>) => void;
   removeTimetableSlot: (id: string) => void;
@@ -77,6 +84,9 @@ const DEFAULT_TIMETABLE: TimetableSlot[] = [
 
 const initialState: StudentAcademicState = {
   studentName: '',
+  matricNumber: '',
+  verification: 'unverified',
+  faculty: 'Faculty of Natural & Applied Sciences',
   university: 'Veritas University',
   department: 'Computer Science',
   level: '200L',
@@ -124,16 +134,19 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
+  const uid = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
+
   const addCourse = (course: Omit<CourseItem, 'id'>) => {
     const newCourse: CourseItem = {
       ...course,
-      id: Date.now().toString(),
+      id: uid(),
       color: course.color || '#2c3930',
     };
     setState((prev) => ({
       ...prev,
       courses: [...prev.courses, newCourse],
     }));
+    return newCourse.id;
   };
 
   const removeCourse = (id: string) => {
@@ -147,7 +160,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
   const addTimetableSlot = (slot: Omit<TimetableSlot, 'id'>) => {
     const newSlot: TimetableSlot = {
       ...slot,
-      id: Date.now().toString(),
+      id: uid(),
     };
     setState((prev) => ({
       ...prev,

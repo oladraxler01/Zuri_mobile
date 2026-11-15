@@ -61,9 +61,9 @@ export default function StudentPreferencesScreen() {
     });
     setRole('student');
     if (lectureReminders) {
-      router.replace({ pathname: '/permissions/notifications', params: { next: '/(tabs)' } } as any);
+      router.replace({ pathname: '/permissions/notifications', params: { next: '/permissions/microphone' } } as any);
     } else {
-      router.replace('/(tabs)' as Href);
+      router.replace('/permissions/microphone' as Href);
     }
   };
 

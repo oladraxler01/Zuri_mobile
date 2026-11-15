@@ -18,6 +18,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
 import { useAcademic, TimetableSlot } from '@/context/academic-context';
+import * as DocumentPicker from 'expo-document-picker';
+import { File } from 'expo-file-system';
+import { Platform } from 'react-native';
+import { parseTimetableText, normaliseCode } from '@/utils/timetable-import';
 
 const DAYS: ('Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat')[] = [
   'Mon',
@@ -40,7 +44,8 @@ const POPULAR_TIMES = [
 export default function StudentTimetableScreen() {
   const router = useRouter();
   const [fontsLoaded] = useLexiFonts();
-  const { state, addTimetableSlot, removeTimetableSlot, setTimetableSlots } = useAcademic();
+  const { state, addTimetableSlot, removeTimetableSlot, setTimetableSlots, addCourse } = useAcademic();
+  const [importMsg, setImportMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const [activeTab, setActiveTab] = useState<'manual' | 'upload'>('manual');
   const [selectedDay, setSelectedDay] = useState<'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat'>('Mon');
@@ -87,33 +92,61 @@ export default function StudentTimetableScreen() {
     setModalVisible(false);
   };
 
-  // Simulate file upload & AI OCR parsing
-  const handleSimulateUpload = () => {
+  // Import a timetable from a CSV / text file (read on the phone).
+  const handleSimulateUpload = async () => {
+    setImportMsg(null);
+    const res = await DocumentPicker.getDocumentAsync({
+      type: ['text/*', 'text/csv', 'application/vnd.ms-excel', 'application/pdf', 'image/*'],
+      copyToCacheDirectory: true,
+    });
+    if (res.canceled || !res.assets?.length) return;
+    const f = res.assets[0];
+    setUploadedFileName(f.name);
+    const isText = /^text\//.test(f.mimeType ?? '') || /\.(csv|txt|tsv)$/i.test(f.name);
+    if (!isText) {
+      setImportMsg({
+        ok: false,
+        text: 'Reading PDFs and photos needs the timetable server, which isn’t connected yet. Save the timetable as CSV or text, or add classes manually.',
+      });
+      return;
+    }
     setScanning(true);
-    setUploadedFileName('Departmental_Timetable_Sem1_2026.pdf');
-
-    setTimeout(() => {
-      setScanning(false);
-      // Auto populate timetable slots if empty or augment
-      if (state.courses.length >= 2) {
-        const simulated: TimetableSlot[] = [
-          { id: 'u1', courseId: state.courses[0].id, courseCode: state.courses[0].code, day: 'Mon', startTime: '08:00 AM', endTime: '10:00 AM', venue: 'Faculty Hall 1' },
-          { id: 'u2', courseId: state.courses[1].id, courseCode: state.courses[1].code, day: 'Mon', startTime: '11:00 AM', endTime: '01:00 PM', venue: 'Lab 3' },
-          { id: 'u3', courseId: state.courses[0].id, courseCode: state.courses[0].code, day: 'Wed', startTime: '10:00 AM', endTime: '12:00 PM', venue: 'LT B' },
-          { id: 'u4', courseId: state.courses[1].id, courseCode: state.courses[1].code, day: 'Thu', startTime: '02:00 PM', endTime: '04:00 PM', venue: 'Hall 4' },
-        ];
-        setTimetableSlots([...state.timetable, ...simulated]);
+    try {
+      const text = Platform.OS === 'web' ? await (await fetch(f.uri)).text() : await new File(f.uri).text();
+      const parsed = parseTimetableText(text, state.courses);
+      if (!parsed.slots.length) {
+        setImportMsg({ ok: false, text: 'No classes found. Each line needs a course code, a day, a start and end time, and a venue.' });
+        return;
       }
-      Alert.alert(
-        'Timetable Parsed Successfully',
-        'Lexi AI scanned your timetable and synchronized your weekly lecture schedule! You can edit any class below.'
-      );
+      // Add any courses the file mentions that aren't in the list yet.
+      const idByCode = new Map(state.courses.map((c) => [normaliseCode(c.code), c.id]));
+      for (const code of parsed.unknownCodes) {
+        idByCode.set(code, addCourse({ code, title: code, units: 3 }));
+      }
+      const added: TimetableSlot[] = parsed.slots.map((sl, k) => ({
+        ...sl,
+        id: `imp_${Date.now().toString(36)}_${k}`,
+        courseId: idByCode.get(sl.courseCode) ?? '',
+      }));
+      setTimetableSlots([...state.timetable, ...added]);
+      setImportMsg({
+        ok: true,
+        text:
+          `Imported ${added.length} ${added.length === 1 ? 'class' : 'classes'}` +
+          (parsed.unknownCodes.length ? `, and added ${parsed.unknownCodes.join(', ')} to your courses` : '') +
+          (parsed.skipped.length ? `. ${parsed.skipped.length} line${parsed.skipped.length > 1 ? 's' : ''} couldn’t be read.` : '.') +
+          ' Check them on the next step.',
+      });
       setActiveTab('manual');
-    }, 2000);
+    } catch {
+      setImportMsg({ ok: false, text: 'That file couldn’t be read. Try saving it again as CSV or plain text.' });
+    } finally {
+      setScanning(false);
+    }
   };
 
   const handleProceed = () => {
-    router.push('/onboarding/student-preferences' as Href);
+    router.push('/onboarding/timetable-review' as Href);
   };
 
   // Filter slots for currently selected day
@@ -208,7 +241,7 @@ export default function StudentTimetableScreen() {
               </View>
               <Text style={styles.uploadHeading}>Upload Departmental Timetable</Text>
               <Text style={styles.uploadSubtext}>
-                Upload a photo of your lecture board, PDF document, or syllabus image. Lexi AI will parse your classes instantly.
+                Pick a CSV or text file with one class per line, for example:{'\n'}CSC 201, Mon, 09:00 AM, 11:00 AM, Faculty Lab 2
               </Text>
 
               {uploadedFileName ? (
@@ -221,7 +254,7 @@ export default function StudentTimetableScreen() {
               {scanning ? (
                 <View style={styles.scanningBox}>
                   <ActivityIndicator size="small" color={LexiColors.primaryContainer} />
-                  <Text style={styles.scanningText}>AI is analyzing your timetable schedule...</Text>
+                  <Text style={styles.scanningText}>Reading your timetable…</Text>
                 </View>
               ) : (
                 <Pressable
@@ -233,16 +266,17 @@ export default function StudentTimetableScreen() {
                 >
                   <Ionicons name="cloud-upload" size={18} color="#ffffff" />
                   <Text style={styles.uploadActionBtnText}>
-                    {uploadedFileName ? 'Re-scan Document' : 'Select PDF or Snapshot'}
+                    {uploadedFileName ? 'Import another file' : 'Choose timetable file'}
                   </Text>
                 </Pressable>
               )}
             </View>
 
             <View style={styles.infoCallout}>
-              <Ionicons name="sparkles" size={16} color={LexiColors.tertiary} />
+              <Ionicons name={importMsg ? (importMsg.ok ? 'checkmark-circle' : 'alert-circle') : 'information-circle-outline'} size={16} color={importMsg && !importMsg.ok ? '#ba1a1a' : LexiColors.tertiary} />
               <Text style={styles.infoCalloutText}>
-                Smart sync automatically maps course codes to lecture venues and schedules your reminder alarms.
+                {importMsg?.text ??
+                  'Columns can be in any order and separated by commas, semicolons or tabs. Times like 9-11, 2:00 PM or 14:00 all work. Courses not in your list are added for you.'}
               </Text>
             </View>
           </View>
