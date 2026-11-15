@@ -14,8 +14,8 @@ Each finished phase gets its own git commit (`Phase N: ...`), so `git log` is th
 | 2 | Close the student lecture loop (record → upload → process → transcript/summary, archive, course detail) | Done 2026-11-15 |
 | 3 | System states & permissions (mic, notifications, loading, errors, empty states) | Done 2026-11-15 |
 | 4 | Materials & assignments (needed for Ask Lexi with sources) | Done 2026-11-15 |
-| 5 | Lecturer app, then institution web dashboard | Next (shells exist) |
-| 6 | Full checklist from the top, starting with onboarding | Not started |
+| 5 | Lecturer app, then institution web dashboard | Done 2026-11-15 |
+| 6 | Full checklist from the top, starting with onboarding | Next |
 
 ## Phase log
 
@@ -89,3 +89,21 @@ Each finished phase gets its own git commit (`Phase N: ...`), so `git log` is th
 - Reminders: deadline notifications the day before and 2–3 hours before (respecting Assignment alerts / Exam countdown); tapping opens the item. Android channel always created; rescheduling debounced.
 - Verified: study-plan, due-date wording, grouping and source search with a scripted test; on-phone text analysis tested on a sample Markdown file.
 - Note: the PC's C: drive was full (0 bytes free) during verification; Android and web bundles compiled but the export couldn't be written. Freed ~95 MB of build caches.
+
+### Phase 5 — Lecturer app & institution dashboard (done 2026-11-15)
+Part 1 — lecturer (commit `ea4d05b`):
+- `lecturer-context.tsx` (profile, courses taught + weekly slots, announcements, quizzes, revision packs, assessments; saved).
+- `onboarding/lecturer-setup.tsx`: profile + staff ID → courses taught → done. Role select "Lecturer" now goes here.
+- Tabs `src/app/lecturer/`: Today (next lecture + Record, today's teaching, course alerts, learning signals, top intervention), Courses, Insights (engagement, topic mastery, weak topics, misconceptions, FAQs, grade bands, cohort, trends), Tools, Profile (verification status).
+- Detail screens `src/app/teach/` (lecturer-only): course page, quiz generator + review/publish, revision pack builder, create assessment, announcements + history.
+- Recording screen lists the lecturer's own courses when signed in as a lecturer.
+- `components/dashboard/`: ScreenShell, Grid (1–3 columns by width), Panel, StatTile, StatusBadge (icon + label), BarChart (single amber hue validated against white, tap to read), HBarList, ListRow.
+- `data/sample-class-insights.ts`: deterministic sample class data per course (uses real lecture concepts when available).
+
+Part 2 — institution:
+- `institution-context.tsx` (settings, staff, roles/permissions, calendar, broadcasts, audit log, privacy, integrations, API key/webhook; every change writes an audit entry).
+- Tabs `src/app/institution/`: Overview (KPIs, weekly activity, lectures captured, faculties, system health, interventions), Academics (structure + enrollment, timetable by department, calendar management, library + knowledge-base search), Analytics (learning, engagement, interventions, AI usage & cost, system health), Settings hub.
+- Detail screens `src/app/admin/` (institution-only): faculty, course performance, university-wide intelligence (trends, common difficulties, faculty/department intelligence, course comparison, cross-course knowledge map, intervention opportunities, knowledge search), settings sections (institution, roles, staff, notifications, audit, privacy, integrations, API).
+- `data/sample-institution.ts`: sample faculties/departments/courses and metrics.
+- Removed the Phase 1 placeholder screen.
+- Not visually checked in a browser yet; layouts are responsive (1–3 columns).
