@@ -146,3 +146,11 @@ Part 2 — institution:
 - `context/conversations-context.tsx`: every Ask conversation is kept (history); star to save. Ask screen ("Ask Zuri") saves as you go, reopens past chats (`?conversationId=`), new-chat and history buttons.
 - `ask-history.tsx`: history and saved conversations, search, star, delete.
 - `utils/global-search.ts` + `search.tsx`: one search across courses, deadlines, topics, lectures, materials and the words in transcripts/passages; grouped results with type filters, recent searches, "Ask Zuri instead" when nothing matches. Search icon in the Home header. Tested on sample data.
+
+### Phase 6.6 — Research system (done 2026-11-15)
+- Real papers from OpenAlex (`services/scholar-api.ts`): free open catalogue, no key; only search words are sent. Search with sort (relevance / most cited / newest), date and open-access filters, paging; paper detail; citing and referenced papers.
+- `context/research-context.tsx`: saved papers (cached for offline), projects with sources, evidence (supports / contradicts / background, optional theme), notes, custom themes, citation style, archive.
+- `utils/research.ts`: APA 7 / MLA 9 / Harvard / BibTeX citations and in-text markers, key findings from abstracts, themes from shared topics, source links, synthesis by theme with gaps, answers from a project's abstracts/evidence/notes. Tested on 5 live OpenAlex papers.
+- Editorial design (`components/research/editorial.tsx`): paper background, serif headlines, hairline rules, small-caps kickers.
+- Screens: Research home (tab), `scholar/search`, `scholar/paper/[id]` (metadata, summary, key findings, tap-a-sentence evidence extraction, citations + share, cited by / references, full text), `scholar/project/new`, `scholar/project/[id]` (workspace: tools + sources / evidence / notes), `…/map` (themes + literature map), `…/compare`, `…/synthesis` (share), `…/citations` (citation manager), `…/chat`, `…/settings`, `scholar/library` (saved, all papers, your documents, archived).
+- Research chat quotes your sources; AI-written answers need the backend.

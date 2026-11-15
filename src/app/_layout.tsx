@@ -11,6 +11,7 @@ import { PlannerProvider } from '@/context/planner-context';
 import { FeedProvider } from '@/context/feed-context';
 import { ProgressProvider } from '@/context/progress-context';
 import { ConversationsProvider } from '@/context/conversations-context';
+import { ResearchProvider } from '@/context/research-context';
 import { LecturerProvider } from '@/context/lecturer-context';
 import { InstitutionProvider } from '@/context/institution-context';
 import { useLexiFonts } from '@/hooks/use-lexi-fonts';
@@ -28,6 +29,7 @@ export default function RootLayout() {
     <NetworkProvider>
       <ProgressProvider>
       <ConversationsProvider>
+      <ResearchProvider>
       <SessionProvider>
         <AcademicProvider>
           <LecturesProvider>
@@ -45,6 +47,7 @@ export default function RootLayout() {
           </LecturesProvider>
         </AcademicProvider>
       </SessionProvider>
+      </ResearchProvider>
       </ConversationsProvider>
       </ProgressProvider>
     </NetworkProvider>
