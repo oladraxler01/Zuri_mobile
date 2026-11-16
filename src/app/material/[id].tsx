@@ -19,6 +19,7 @@ import { useProgress } from '@/context/progress-context';
 import { conceptForQuestion } from '@/utils/mastery';
 import { MATERIAL_CATEGORIES, type Material } from '@/types/material';
 import { formatLectureDate } from '@/utils/time';
+import { generateMaterialQuiz } from '@/services/ai-api';
 
 type Tab = 'summary' | 'concepts' | 'questions' | 'passages';
 
@@ -32,6 +33,8 @@ export default function MaterialScreen() {
   );
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [openError, setOpenError] = useState('');
+  const [quizBusy, setQuizBusy] = useState(false);
+  const [quizError, setQuizError] = useState('');
   const progress = useProgress();
 
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/materials' as Href));
@@ -204,8 +207,35 @@ export default function MaterialScreen() {
                         })
                       }
                     />
+                  ) : quizBusy ? (
+                    <View style={{ alignItems: 'center', paddingVertical: 32, gap: 10 }}>
+                      <ActivityIndicator color={UI.ink} />
+                      <Text style={styles.cardBody}>Zuri is writing questions from this document…</Text>
+                    </View>
+                  ) : m.serverId && a.source === 'server' ? (
+                    <StateView
+                      compact
+                      icon="help-circle-outline"
+                      title="No quiz yet"
+                      message={quizError || 'Zuri can write 5 practice questions from this document.'}
+                      primary={{
+                        label: quizError ? 'Try again' : 'Create practice quiz',
+                        onPress: async () => {
+                          setQuizBusy(true);
+                          setQuizError('');
+                          try {
+                            const questions = await generateMaterialQuiz(m.serverId!);
+                            updateMaterial(m.id, { analysis: { ...a, questions } });
+                          } catch (e) {
+                            setQuizError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
+                          } finally {
+                            setQuizBusy(false);
+                          }
+                        },
+                      }}
+                    />
                   ) : (
-                    <StateView compact icon="help-circle-outline" title="No quiz yet" message="Practice questions are generated once the document server is connected." />
+                    <StateView compact icon="help-circle-outline" title="No quiz yet" message="Upload this file again to have Zuri write practice questions." />
                   )}
                 </View>
               )}

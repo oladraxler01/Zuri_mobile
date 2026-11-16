@@ -218,3 +218,7 @@ Part 2 — institution:
 - Fields now match the content service (`mime_type`, `file_size`); the ignored `course_code/content_type/filename/category` are gone.
 - New `services/ai-api.ts` (`POST /ai/execute`). After processing, `reading.analyse` with the `material_id` gives the summary, key points and key terms shown on the material page. Practice questions and passages come in a later step.
 - The server can only read PDF and text for now, so the file picker offers just those. Failures say why (recordings can't be transcribed yet; other types unsupported; scanned PDFs).
+
+### Practice quiz for materials from Zuri's AI (2026-11-16)
+- Material page → Quiz tab → "Create practice quiz": `POST /ai/execute` `study.quiz.generate` with the material's server id (`count: 5`, `multiple_choice`). Options `{A..D}` + `correct_answer` are mapped to the app's question format; malformed questions are skipped. Questions are kept with the material, so it costs one AI request per material. Answers still feed mastery.
+- Fixed: upload progress from expo-file-system arrives as BigInt and crashed the progress label.

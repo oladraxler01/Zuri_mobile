@@ -47,3 +47,40 @@ export interface MaterialSummary {
 export function summariseMaterial(materialId: string): Promise<MaterialSummary> {
   return executeAI<MaterialSummary>('reading.analyse', { material_id: materialId }, { summary_type: 'concise' });
 }
+
+export interface PracticeQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+/**
+ * Multiple-choice practice questions from a processed material.
+ *   study.quiz.generate  input { material_id }, parameters { count, quiz_type: "multiple_choice" }
+ *   → { questions: [{ question, options: { A: "…", B: "…" }, correct_answer: "A", explanation, topic }] }
+ */
+export async function generateMaterialQuiz(materialId: string, count = 5): Promise<PracticeQuestion[]> {
+  const res = await executeAI<{ questions?: any[] }>(
+    'study.quiz.generate',
+    { material_id: materialId },
+    { count, quiz_type: 'multiple_choice' }
+  );
+  const out: PracticeQuestion[] = [];
+  (res.questions ?? []).forEach((q, i) => {
+    const entries = Object.entries((q?.options ?? {}) as Record<string, unknown>).filter(([, v]) => v != null && String(v).trim());
+    const correctKey = String(q?.correct_answer ?? '').trim().toUpperCase();
+    const correctIndex = entries.findIndex(([k]) => k.trim().toUpperCase() === correctKey);
+    if (!q?.question || entries.length < 2 || correctIndex < 0) return; // skip malformed questions
+    out.push({
+      id: `q${i}`,
+      question: String(q.question),
+      options: entries.map(([, v]) => String(v)),
+      correctIndex,
+      explanation: String(q.explanation ?? ''),
+    });
+  });
+  if (!out.length) throw new Error('Zuri couldn’t make questions from this document. Please try again.');
+  return out;
+}
