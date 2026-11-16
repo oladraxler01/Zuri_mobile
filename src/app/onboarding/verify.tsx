@@ -18,7 +18,6 @@ import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
-import { API_BASE } from '@/services/api-config';
 import { verifyEmail, resendVerification, login, getPendingSignIn, setPendingSignIn } from '@/services/auth-api';
 import { useSession, ROLE_HOME } from '@/context/session-context';
 
@@ -104,7 +103,7 @@ export default function VerifyEmailScreen() {
     if (!canResend) return;
     setResendTimer(45);
     setCanResend(false);
-    if (API_BASE && params.email) {
+    if (params.email) {
       try {
         await resendVerification(params.email);
       } catch (e) {
@@ -129,12 +128,6 @@ export default function VerifyEmailScreen() {
       return;
     }
     setCodeError('');
-
-    if (!API_BASE) {
-      // No server configured (offline demo build).
-      router.push('/onboarding/institution' as Href);
-      return;
-    }
 
     const pending = getPendingSignIn();
     const userId = params.userId || pending?.userId;

@@ -19,8 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic } from '@/context/academic-context';
-import { API_BASE } from '@/services/api-config';
-import { register, setPendingSignIn, MIN_PASSWORD_LENGTH } from '@/services/auth-api';
+import { register, login, resendVerification, setPendingSignIn, MIN_PASSWORD_LENGTH } from '@/services/auth-api';
 import { isValidEmail } from '@/utils/validation';
 
 export default function SignUpScreen() {
@@ -63,19 +62,31 @@ export default function SignUpScreen() {
     setFormError('');
     setAcademicInfo({ studentName: fullName.trim(), email: cleanEmail });
 
-    if (!API_BASE) {
-      // No server configured (offline demo build): continue without an account.
-      router.push({ pathname: '/onboarding/verify', params: { email: cleanEmail } } as any);
-      return;
-    }
-
     setBusy(true);
     try {
       const user = await register(cleanEmail, password);
       setPendingSignIn({ email: cleanEmail, password, userId: user.id });
       router.push({ pathname: '/onboarding/verify', params: { email: cleanEmail, userId: user.id } } as any);
     } catch (e) {
-      setFormError(e instanceof Error ? e.message : 'We couldn’t create your account. Please try again.');
+      const msg = e instanceof Error ? e.message : '';
+      if (/already exists/i.test(msg)) {
+        // Signed up before but may never have entered the code: if the password
+        // matches, email a fresh code (unverified) or continue (verified).
+        try {
+          const result = await login(cleanEmail, password);
+          if (result.status === 'needs-verification') {
+            setPendingSignIn({ email: cleanEmail, password, userId: result.userId });
+            await resendVerification(cleanEmail).catch(() => {});
+            router.push({ pathname: '/onboarding/verify', params: { email: cleanEmail, userId: result.userId } } as any);
+          } else {
+            router.replace('/onboarding/institution' as Href);
+          }
+          return;
+        } catch {
+          // wrong password for an existing account: fall through to the message
+        }
+      }
+      setFormError(msg || 'We couldn’t create your account. Please try again.');
     } finally {
       setBusy(false);
     }

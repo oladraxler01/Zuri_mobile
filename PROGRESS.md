@@ -188,3 +188,9 @@ Part 2 — institution:
 - Tested the real service code against the live server with a test account: wrong password, duplicate email, bad email, login, token saved, `/users/me`, reopen with an expired token → refreshed and rotated, material upload (create → presign → storage PUT 200), retry skips re-upload, logout, upload after logout → sign-in prompt.
 - **Blocked on the backend:** uploaded files stay `processing_status: pending` (no summary/transcript ever comes back), so the app shows "Processing" for them. `POST /lectures/transcribe` and `/materials/process` don't exist on the server. Admin (institution) sign-in is still local.
 - New native module `expo-secure-store`: needs a new development build (Expo Go already includes it).
+
+### Fix: email code (OTP) sign-up could be skipped (2026-11-16)
+- Cause: when the app had no server address (no `.env`, and EAS builds never get the git-ignored `.env`), sign-up created no account and sent no email, the code screen accepted any 6 digits, and sign-in let anyone in.
+- The live gateway `https://api.zurilearn.com` is now built in (`.env` can still override it), and the offline bypasses in sign-up, code check and sign-in are removed. Every code is checked by the server.
+- Signing up again with an email that was never verified (and the same password) now emails a fresh code and opens the code screen, instead of stopping at "account already exists".
+- Flow: sign up → 6-digit code by email → enter code → in. Later sign-ins use email + password only.

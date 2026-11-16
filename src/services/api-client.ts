@@ -220,7 +220,6 @@ interface RawResult {
 }
 
 function buildUrl(path: string, query?: RequestOptions['query']): string {
-  if (!API_BASE) throw new ApiError('server', 'The Zuri server address is not set (EXPO_PUBLIC_API_GATEWAY_URL).');
   const qs = query
     ? Object.entries(query)
         .filter(([, v]) => v !== undefined)
