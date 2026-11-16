@@ -1,6 +1,33 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { loadJSON, saveJSON, STORAGE_KEYS } from '@/utils/storage';
 import { onReset } from '@/utils/reset';
+import { isBackendConfigured } from '@/services/api-config';
+import { ApiError, currentUser, loadAuth, onAuthChange } from '@/services/api-client';
+import {
+  actOnIntervention,
+  createPersonalCourse,
+  createTimetableSlot,
+  dismissIntervention,
+  enrollCourse,
+  getEnrolledCourses,
+  getNextClass,
+  getPersonalCourses,
+  getStudyStats,
+  getTimetable,
+  getTodayTimeline,
+  getWeakTopics,
+  recordLearningSignal,
+  updateNotificationPreferences,
+  type AcademicEventDTO,
+  type AcademicTimetableEntry,
+  type CourseSyllabusTopic,
+  type LearningSignalType,
+  type LectureDTO,
+  type NextClassResponse,
+  type StudyStatsDTO,
+  type TodayTimelineResponse,
+  type WeakTopicDTO,
+} from '@/services/academic-api';
 
 export interface CourseItem {
   id: string;
@@ -9,6 +36,14 @@ export interface CourseItem {
   units: number;
   lecturer?: string;
   color?: string;
+  /** The course's id on the server, once it's saved there. */
+  serverId?: string;
+  /** Added on this phone and not on the server yet. */
+  pendingSync?: boolean;
+  /** From the server's course catalogue, when it has them. */
+  syllabus?: CourseSyllabusTopic[];
+  lectures?: LectureDTO[];
+  events?: AcademicEventDTO[];
 }
 
 export interface TimetableSlot {
@@ -19,6 +54,8 @@ export interface TimetableSlot {
   startTime: string; // e.g. "09:00 AM"
   endTime: string;   // e.g. "11:00 AM"
   venue: string;     // e.g. "Lecture Theatre B"
+  serverId?: string;
+  pendingSync?: boolean;
 }
 
 export interface SemesterGoal {
@@ -64,6 +101,25 @@ export interface StudentAcademicState {
   courses: CourseItem[];
   timetable: TimetableSlot[];
   preferences: StudentPreferences;
+  /**
+   * Server courses / slots removed on this phone. The API has no delete yet,
+   * so these are skipped when syncing instead of coming back.
+   */
+  hiddenServerIds?: string[];
+}
+
+/**
+ * - local: not signed in (or no server set up), everything stays on the phone
+ * - syncing / synced: talking to the server / last sync worked
+ * - offline: couldn't reach the server; tries again on the next sync
+ * - error: the server answered with an error
+ */
+export type AcademicSyncStatus = 'local' | 'syncing' | 'synced' | 'offline' | 'error';
+
+export interface AcademicSyncState {
+  status: AcademicSyncStatus;
+  error?: string;
+  lastSyncedAt?: number;
 }
 
 interface AcademicContextType {
@@ -88,6 +144,27 @@ interface AcademicContextType {
   removeTimetableSlot: (id: string) => void;
   setTimetableSlots: (slots: TimetableSlot[]) => void;
   updatePreferences: (prefs: Partial<StudentPreferences>) => void;
+
+  // Server sync (no-ops while signed out)
+  sync: AcademicSyncState;
+  /** Pull courses, timetable, today's timeline and stats; push anything added offline. */
+  syncFromServer: () => Promise<void>;
+  todayTimeline: TodayTimelineResponse | null;
+  nextClass: NextClassResponse | null;
+  studyStats: StudyStatsDTO | null;
+  /** Weak topics for the first course, from the server's mastery model. */
+  weakTopics: WeakTopicDTO[];
+  actOnTimelineCard: (id: string) => Promise<void>;
+  dismissTimelineCard: (id: string) => Promise<void>;
+  /** Report one quiz / review / question result (best effort). */
+  submitLearningSignal: (signal: {
+    courseId: string;
+    topic: string;
+    subtopic: string;
+    signalType: LearningSignalType;
+    score: number;
+    maxScore: number;
+  }) => Promise<void>;
 }
 
 const DEFAULT_COURSES: CourseItem[] = [
@@ -134,22 +211,88 @@ const initialState: StudentAcademicState = {
   },
 };
 
+// ─── Server ⇄ app mapping ─────────────────────────────────────────
+
+const COURSE_COLORS = ['#2c3930', '#735c00', '#17231b', '#546257'];
+const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const normCode = (code: string) => code.replace(/\s+/g, '').toUpperCase();
+
+/** "14:05:00" → "02:05 PM" */
+function to12h(t: string): string {
+  const m = t.match(/^(\d{1,2}):(\d{2})/);
+  if (!m) return t;
+  const h = parseInt(m[1], 10);
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${String(h12).padStart(2, '0')}:${m[2]} ${h >= 12 ? 'PM' : 'AM'}`;
+}
+
+/** "02:05 PM" → "14:05:00" */
+function to24h(t: string): string {
+  const m = t.trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
+  if (!m) return '09:00:00';
+  let h = parseInt(m[1], 10);
+  const ap = m[3]?.toUpperCase();
+  if (ap === 'PM' && h < 12) h += 12;
+  if (ap === 'AM' && h === 12) h = 0;
+  return `${String(h).padStart(2, '0')}:${m[2]}:00`;
+}
+
+function semesterCode(semester: StudentAcademicState['semester']): string {
+  // The academic year starts in September: Sept 2026 → "2026/2027".
+  const now = new Date();
+  const start = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  return `${start}/${start + 1}_${semester === 'Second Semester' ? 'SECOND' : 'FIRST'}`;
+}
+
+const signedIn = () => isBackendConfigured && !!currentUser();
+
 const AcademicContext = createContext<AcademicContextType | undefined>(undefined);
 
 export function AcademicProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<StudentAcademicState>(initialState);
   const [hydrated, setHydrated] = useState(false);
+  const [sync, setSync] = useState<AcademicSyncState>({ status: 'local' });
+  const [todayTimeline, setTodayTimeline] = useState<TodayTimelineResponse | null>(null);
+  const [nextClass, setNextClass] = useState<NextClassResponse | null>(null);
+  const [studyStats, setStudyStats] = useState<StudyStatsDTO | null>(null);
+  const [weakTopics, setWeakTopics] = useState<WeakTopicDTO[]>([]);
+
+  // Async sync code reads the latest state through this ref.
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   // "Delete all my data" empties this store.
-  useEffect(() => onReset(() => setState(initialState)), []);
+  useEffect(
+    () =>
+      onReset(() => {
+        setState(initialState);
+        setSync({ status: 'local' });
+        setTodayTimeline(null);
+        setNextClass(null);
+        setStudyStats(null);
+        setWeakTopics([]);
+      }),
+    []
+  );
 
   // Restore saved courses, timetable and preferences, then keep them saved.
   useEffect(() => {
     loadJSON<StudentAcademicState>(STORAGE_KEYS.academic).then((saved) => {
       if (saved) {
+        // Courses and classes saved before server sync existed are uploaded too
+        // (but not the built-in sample ones).
+        const sampleCourse = new Set(DEFAULT_COURSES.map((c) => c.id));
+        const sampleSlot = new Set(DEFAULT_TIMETABLE.map((t) => t.id));
         setState({
           ...initialState,
           ...saved,
+          courses: (saved.courses ?? initialState.courses).map((c) =>
+            c.serverId || c.pendingSync !== undefined || sampleCourse.has(c.id) ? c : { ...c, pendingSync: true }
+          ),
+          timetable: (saved.timetable ?? initialState.timetable).map((t) =>
+            t.serverId || t.pendingSync !== undefined || sampleSlot.has(t.id) ? t : { ...t, pendingSync: true }
+          ),
           preferences: { ...initialState.preferences, ...saved.preferences },
         });
       }
@@ -160,6 +303,269 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (hydrated) saveJSON(STORAGE_KEYS.academic, state);
   }, [state, hydrated]);
+
+  // ─── Push: courses and slots added on the phone go to the server ───
+
+  /** Save one course on the server: catalogue enrolment first, else a custom course. */
+  const pushCourse = useCallback(async (course: CourseItem) => {
+    let patch: Partial<CourseItem>;
+    try {
+      const d = await enrollCourse(course.code, semesterCode(stateRef.current.semester));
+      patch = { serverId: d.id, syllabus: d.syllabus, lectures: d.lectures, events: d.events };
+    } catch (e) {
+      if (e instanceof ApiError && e.kind !== 'server') throw e; // offline / signed out: try later
+      // Not in the institution's catalogue: save it as the student's own course.
+      const created = await createPersonalCourse({
+        name: course.title,
+        code: course.code,
+        description: course.lecturer ? `Lecturer: ${course.lecturer}` : undefined,
+      });
+      patch = { serverId: created.id };
+    }
+    setState((prev) => ({
+      ...prev,
+      courses: prev.courses.map((c) => (c.id === course.id ? { ...c, ...patch, pendingSync: false } : c)),
+    }));
+  }, []);
+
+  const pushSlot = useCallback(async (slot: TimetableSlot, courseServerId: string) => {
+    const created = await createTimetableSlot({
+      course_id: courseServerId,
+      day_of_week: DAYS.indexOf(slot.day) + 1,
+      start_time: to24h(slot.startTime),
+      end_time: to24h(slot.endTime),
+      venue: slot.venue,
+    });
+    setState((prev) => ({
+      ...prev,
+      timetable: prev.timetable.map((t) => (t.id === slot.id ? { ...t, serverId: created.id, pendingSync: false } : t)),
+    }));
+  }, []);
+
+  const pushPending = useCallback(async () => {
+    for (const course of stateRef.current.courses.filter((c) => c.pendingSync)) {
+      try {
+        await pushCourse(course);
+      } catch (e) {
+        if (e instanceof ApiError && e.kind !== 'server') return; // offline: stop, retry on next sync
+        console.warn(`Could not save ${course.code} on the server`, e);
+      }
+    }
+    // Slots need their course on the server first.
+    for (const slot of stateRef.current.timetable.filter((t) => t.pendingSync)) {
+      const course = stateRef.current.courses.find((c) => c.id === slot.courseId);
+      if (!course?.serverId) continue;
+      try {
+        await pushSlot(slot, course.serverId);
+      } catch (e) {
+        if (e instanceof ApiError && e.kind !== 'server') return;
+        console.warn(`Could not save a ${slot.courseCode} class on the server`, e);
+      }
+    }
+  }, [pushCourse, pushSlot]);
+
+  // One push at a time; changes made during a push run straight after it.
+  const pushing = useRef(false);
+  const pushAgain = useRef(false);
+  const schedulePush = useCallback(async () => {
+    if (!signedIn()) return;
+    if (pushing.current) {
+      pushAgain.current = true;
+      return;
+    }
+    pushing.current = true;
+    try {
+      do {
+        pushAgain.current = false;
+        await pushPending();
+      } while (pushAgain.current);
+    } finally {
+      pushing.current = false;
+    }
+  }, [pushPending]);
+
+  const hasPending = state.courses.some((c) => c.pendingSync) || state.timetable.some((t) => t.pendingSync);
+  useEffect(() => {
+    if (hydrated && hasPending) schedulePush();
+  }, [hydrated, hasPending, state.courses, state.timetable, schedulePush]);
+
+  // ─── Pull: replace sample / stale data with what the server has ───
+
+  const syncing = useRef(false);
+  const syncFromServer = useCallback(async () => {
+    if (!isBackendConfigured) return;
+    await loadAuth();
+    if (!currentUser()) {
+      setSync({ status: 'local' });
+      return;
+    }
+    if (syncing.current) return;
+    syncing.current = true;
+    setSync((s) => ({ ...s, status: 'syncing', error: undefined }));
+    try {
+      await schedulePush();
+
+      const [enrolled, personal, slots, next, today, stats] = await Promise.allSettled([
+        getEnrolledCourses(),
+        getPersonalCourses(),
+        getTimetable(),
+        getNextClass(),
+        getTodayTimeline(),
+        getStudyStats(),
+      ]);
+      const results = [enrolled, personal, slots, next, today, stats];
+      const failure = results.find((r): r is PromiseRejectedResult => r.status === 'rejected');
+      if (failure && results.every((r) => r.status === 'rejected')) throw failure.reason;
+
+      const hidden = new Set(stateRef.current.hiddenServerIds ?? []);
+      type ServerCourse = Omit<CourseItem, 'id' | 'color'> & { serverId: string };
+      const serverCourses: ServerCourse[] = [];
+      const seen = new Set<string>();
+      if (enrolled.status === 'fulfilled') {
+        for (const c of enrolled.value ?? []) {
+          if (hidden.has(c.id) || seen.has(normCode(c.code))) continue;
+          seen.add(normCode(c.code));
+          serverCourses.push({
+            serverId: c.id,
+            code: c.code,
+            title: c.title,
+            units: c.credit_units || 3,
+            syllabus: c.syllabus,
+            lectures: c.lectures,
+            events: c.events,
+          });
+        }
+      }
+      if (personal.status === 'fulfilled') {
+        for (const c of personal.value) {
+          const code = c.code || c.name;
+          if (hidden.has(c.id) || seen.has(normCode(code))) continue;
+          seen.add(normCode(code));
+          serverCourses.push({
+            serverId: c.id,
+            code,
+            title: c.name,
+            units: 3,
+            lecturer: c.description?.replace(/^Lecturer:\s*/, '') || undefined,
+          });
+        }
+      }
+      const serverSlots: AcademicTimetableEntry[] =
+        slots.status === 'fulfilled' ? (slots.value ?? []).filter((e) => !hidden.has(e.id)) : [];
+
+      setState((prev) => {
+        if (!serverCourses.length) return prev; // nothing on the server yet: keep the phone's data
+
+        // Keep each course's id on the phone (lectures, materials… point at it).
+        const localByCode = new Map(prev.courses.map((c) => [normCode(c.code), c]));
+        const merged: CourseItem[] = serverCourses.map((s, i) => {
+          const local = localByCode.get(normCode(s.code));
+          return local
+            ? { ...local, ...s, lecturer: s.lecturer ?? local.lecturer, pendingSync: false }
+            : { ...s, id: s.serverId, color: COURSE_COLORS[i % COURSE_COLORS.length] };
+        });
+        const mergedCodes = new Set(merged.map((c) => normCode(c.code)));
+        const courses = [...merged, ...prev.courses.filter((c) => c.pendingSync && !mergedCodes.has(normCode(c.code)))];
+        const courseIds = new Set(courses.map((c) => c.id));
+
+        let timetable = prev.timetable.filter((t) => courseIds.has(t.courseId));
+        if (slots.status === 'fulfilled') {
+          const idByServerId = new Map(courses.filter((c) => c.serverId).map((c) => [c.serverId!, c.id]));
+          const idByCode = new Map(courses.map((c) => [normCode(c.code), c.id]));
+          const fromServer: TimetableSlot[] = serverSlots
+            .filter((e) => e.day_of_week >= 1 && e.day_of_week <= 6) // the app has no Sunday classes
+            .map((e) => ({
+              id: e.id,
+              serverId: e.id,
+              courseId: idByServerId.get(e.course_id) ?? idByCode.get(normCode(e.course_code)) ?? e.course_id,
+              courseCode: e.course_code,
+              day: DAYS[e.day_of_week - 1],
+              startTime: to12h(e.start_time),
+              endTime: to12h(e.end_time),
+              venue: e.venue || '',
+            }));
+          timetable = [...fromServer, ...timetable.filter((t) => t.pendingSync)];
+        }
+        return { ...prev, courses, timetable };
+      });
+
+      if (next.status === 'fulfilled') setNextClass(next.value);
+      if (today.status === 'fulfilled') setTodayTimeline(today.value);
+      if (stats.status === 'fulfilled') setStudyStats(stats.value);
+
+      const first = serverCourses[0];
+      if (first) {
+        getWeakTopics(first.serverId)
+          .then(setWeakTopics)
+          .catch(() => {}); // the course may not be in the mastery model yet
+      }
+
+      setSync({
+        status: failure ? 'error' : 'synced',
+        error: failure ? (failure.reason as Error)?.message : undefined,
+        lastSyncedAt: Date.now(),
+      });
+    } catch (e) {
+      const offline = e instanceof ApiError && e.kind === 'network';
+      setSync((s) => ({
+        ...s,
+        status: offline ? 'offline' : 'error',
+        error: e instanceof Error ? e.message : 'Could not sync your courses.',
+      }));
+    } finally {
+      syncing.current = false;
+    }
+  }, [schedulePush]);
+
+  // Sync once saved data is loaded, and again whenever someone signs in.
+  useEffect(() => {
+    if (!hydrated) return;
+    syncFromServer();
+    return onAuthChange((user) => {
+      if (user) syncFromServer();
+      else setSync({ status: 'local' });
+    });
+  }, [hydrated, syncFromServer]);
+
+  const actOnTimelineCard = useCallback(async (id: string) => {
+    if (!signedIn()) return;
+    try {
+      await actOnIntervention(id);
+      setTodayTimeline((prev) =>
+        prev ? { ...prev, cards: prev.cards.map((c) => (c.id === id ? { ...c, is_acted_upon: true } : c)) } : prev
+      );
+    } catch (e) {
+      console.warn('Could not update the timeline card', e);
+    }
+  }, []);
+
+  const dismissTimelineCard = useCallback(async (id: string) => {
+    setTodayTimeline((prev) => (prev ? { ...prev, cards: prev.cards.filter((c) => c.id !== id) } : prev));
+    if (!signedIn()) return;
+    try {
+      await dismissIntervention(id);
+    } catch (e) {
+      console.warn('Could not dismiss the timeline card', e);
+    }
+  }, []);
+
+  const submitLearningSignal: AcademicContextType['submitLearningSignal'] = useCallback(async (signal) => {
+    if (!signedIn()) return;
+    const course = stateRef.current.courses.find((c) => c.id === signal.courseId);
+    if (!course?.serverId) return;
+    try {
+      await recordLearningSignal({
+        course_id: course.serverId,
+        topic: signal.topic,
+        subtopic: signal.subtopic,
+        signal_type: signal.signalType,
+        score: signal.score,
+        max_score: signal.maxScore,
+      });
+    } catch {
+      // best effort
+    }
+  }, []);
 
   const setAcademicInfo: AcademicContextType['setAcademicInfo'] = (info) => {
     setState((prev) => ({
@@ -175,6 +581,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
       ...course,
       id: uid(),
       color: course.color || '#2c3930',
+      pendingSync: true,
     };
     setState((prev) => ({
       ...prev,
@@ -183,9 +590,19 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     return newCourse.id;
   };
 
+  /** Server ids of the given rows, added to the "don't bring back" list. */
+  const hide = (prev: StudentAcademicState, rows: { serverId?: string }[]) => {
+    const ids = rows.map((r) => r.serverId).filter((x): x is string => !!x);
+    return ids.length ? [...(prev.hiddenServerIds ?? []), ...ids] : prev.hiddenServerIds;
+  };
+
   const removeCourse = (id: string) => {
     setState((prev) => ({
       ...prev,
+      hiddenServerIds: hide(prev, [
+        ...prev.courses.filter((c) => c.id === id),
+        ...prev.timetable.filter((t) => t.courseId === id),
+      ]),
       courses: prev.courses.filter((c) => c.id !== id),
       timetable: prev.timetable.filter((t) => t.courseId !== id),
     }));
@@ -195,6 +612,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     const newSlot: TimetableSlot = {
       ...slot,
       id: uid(),
+      pendingSync: true,
     };
     setState((prev) => ({
       ...prev,
@@ -205,15 +623,21 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
   const removeTimetableSlot = (id: string) => {
     setState((prev) => ({
       ...prev,
+      hiddenServerIds: hide(prev, prev.timetable.filter((t) => t.id === id)),
       timetable: prev.timetable.filter((t) => t.id !== id),
     }));
   };
 
+  /** Replace the whole timetable (e.g. an import). New slots are saved on the server too. */
   const setTimetableSlots = (slots: TimetableSlot[]) => {
-    setState((prev) => ({
-      ...prev,
-      timetable: slots,
-    }));
+    setState((prev) => {
+      const kept = new Set(slots.map((s) => s.serverId).filter(Boolean));
+      return {
+        ...prev,
+        hiddenServerIds: hide(prev, prev.timetable.filter((t) => t.serverId && !kept.has(t.serverId))),
+        timetable: slots.map((s) => (s.serverId ? s : { ...s, pendingSync: true })),
+      };
+    });
   };
 
   const updatePreferences = (prefs: Partial<StudentPreferences>) => {
@@ -224,6 +648,14 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
         ...prefs,
       },
     }));
+    // Server-side reminders (push / email) follow the phone's switches.
+    if (signedIn() && (prefs.lectureReminders !== undefined || prefs.assignmentAlerts !== undefined)) {
+      const merged = { ...stateRef.current.preferences, ...prefs };
+      updateNotificationPreferences({
+        notify_on_study_reminder: merged.lectureReminders,
+        notify_on_goal_completion: merged.assignmentAlerts,
+      }).catch((e) => console.warn('Could not save reminder settings on the server', e));
+    }
   };
 
   return (
@@ -238,6 +670,15 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
         removeTimetableSlot,
         setTimetableSlots,
         updatePreferences,
+        sync,
+        syncFromServer,
+        todayTimeline,
+        nextClass,
+        studyStats,
+        weakTopics,
+        actOnTimelineCard,
+        dismissTimelineCard,
+        submitLearningSignal,
       }}
     >
       {children}

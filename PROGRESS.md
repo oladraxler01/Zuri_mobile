@@ -188,3 +188,14 @@ Part 2 — institution:
 - Tested the real service code against the live server with a test account: wrong password, duplicate email, bad email, login, token saved, `/users/me`, reopen with an expired token → refreshed and rotated, material upload (create → presign → storage PUT 200), retry skips re-upload, logout, upload after logout → sign-in prompt.
 - **Blocked on the backend:** uploaded files stay `processing_status: pending` (no summary/transcript ever comes back), so the app shows "Processing" for them. `POST /lectures/transcribe` and `/materials/process` don't exist on the server. Admin (institution) sign-in is still local.
 - New native module `expo-secure-store`: needs a new development build (Expo Go already includes it).
+
+### Courses, timetable & today synced with the academic service (2026-11-16)
+- New `services/academic-api.ts`: enrolled courses (`/academic/courses`, enrol), custom courses (`/courses`), timetable (list, next class, add slot), today timeline (act / dismiss), learning signals, knowledge state, weak topics, course study partner, lecture ingest, study stats/sessions, notification preferences.
+- `context/academic-context.tsx` now syncs when signed in, and stays fully on-phone when signed out:
+  - On launch and on every sign-in: uploads anything added offline, then pulls courses (catalogue + custom), timetable, next class, today's timeline, study stats and weak topics for the first course. Server data replaces the sample courses; existing phone ids are kept (matched by course code) so lectures and materials still point at the right course.
+  - Adding a course tries catalogue enrolment first, then saves it as a custom course. New classes are saved once their course is on the server. Offline changes wait and go up on the next sync. Courses saved before this update are uploaded once.
+  - The API has no delete yet, so removed courses/classes are remembered (`hiddenServerIds`) and not brought back by the next sync.
+  - Reminder switches update the server's notification preferences.
+  - New on the context: `sync` (status), `syncFromServer`, `todayTimeline`, `nextClass`, `studyStats`, `weakTopics`, `actOnTimelineCard`, `dismissTimelineCard`, `submitLearningSignal`. Screens don't show the new server data yet.
+- `services/api-config.ts`: a `localhost` gateway URL now works from a real phone in development (uses the computer's address from Metro; `10.0.2.2` on the Android emulator).
+- Checked: `tsc` and an Android `expo export` bundle. Not yet tested against the live server with a signed-in account.
