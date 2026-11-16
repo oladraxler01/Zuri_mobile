@@ -186,3 +186,49 @@ export const PERMISSIONS = [
   'Publish content',
   'Export data',
 ] as const;
+
+// ─── Sample student directory ─────────────────────────────────────
+
+const FIRST = ['Adaeze', 'Tunde', 'Chiamaka', 'Ibrahim', 'Folake', 'Emeka', 'Zainab', 'Oluwaseun', 'Ngozi', 'Musa', 'Temitope', 'Chinedu', 'Aisha', 'Kelechi', 'Bisola', 'Yusuf', 'Ifeoma', 'Segun', 'Halima', 'Obinna'];
+const LAST = ['Okafor', 'Adeyemi', 'Bello', 'Eze', 'Ogunleye', 'Nwosu', 'Abubakar', 'Okonkwo', 'Afolabi', 'Lawal', 'Danjuma', 'Ibe', 'Usman', 'Ojo', 'Chukwu', 'Ahmed'];
+
+export interface SampleStudent {
+  id: string;
+  name: string;
+  matric: string;
+  department: string;
+  level: string;
+  engagement: number;
+  mastery: number;
+  status: 'good' | 'warning' | 'critical';
+}
+
+/** Deterministic sample students per department, sized to show a realistic directory. */
+export function sampleStudents(): SampleStudent[] {
+  const out: SampleStudent[] = [];
+  let seed = 7;
+  const next = () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+  for (const f of FACULTIES)
+    for (const d of f.departments) {
+      const code = d.name.slice(0, 3).toUpperCase();
+      for (let i = 0; i < 12; i++) {
+        const engagement = Math.round(25 + next() * 70);
+        const mastery = Math.round(30 + next() * 65);
+        const score = (engagement + mastery) / 2;
+        out.push({
+          id: `st_${d.id}_${i}`,
+          name: `${FIRST[Math.floor(next() * FIRST.length)]} ${LAST[Math.floor(next() * LAST.length)]}`,
+          matric: `VUG/${code}/${20 + Math.floor(next() * 5)}/${1000 + Math.floor(next() * 9000)}`,
+          department: d.name,
+          level: ['100L', '200L', '300L', '400L'][Math.floor(next() * 4)],
+          engagement,
+          mastery,
+          status: score < 45 ? 'critical' : score < 60 ? 'warning' : 'good',
+        });
+      }
+    }
+  return out;
+}

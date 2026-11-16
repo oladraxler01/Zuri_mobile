@@ -23,6 +23,10 @@ export default function UniversityIntelligenceScreen() {
 
   return (
     <ScreenShell back eyebrow="UNIVERSITY-WIDE" title="Academic intelligence" edges={['top', 'bottom']}>
+      <Panel title="Institutional research" subtitle="Papers published by your university, from OpenAlex" action={{ label: 'Open', onPress: () => router.push('/admin/research' as Href) }}>
+        <Text style={styles.muted}>Search and browse the research output of your staff and students, most cited first.</Text>
+      </Panel>
+
       <Panel title="University knowledge search" subtitle="Search lectures and materials across the institution (research included)">
         <View style={styles.search}>
           <Ionicons name="search" size={16} color={UI.muted} />

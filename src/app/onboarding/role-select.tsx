@@ -83,8 +83,8 @@ export default function RoleSelectScreen() {
       router.push('/onboarding/lecturer-setup' as Href);
       return;
     }
-    setRole('institution');
-    router.replace(ROLE_HOME.institution);
+    // School board / administrators sign in with an institution access code.
+    router.push('/onboarding/admin-sign-in' as Href);
   };
 
   return (

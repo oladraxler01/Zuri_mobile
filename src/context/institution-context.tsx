@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { AUDIT_SEED, PERMISSIONS, ROLES, STAFF_SEED } from '@/data/sample-institution';
+import { AUDIT_SEED, FACULTIES, PERMISSIONS, ROLES, STAFF_SEED, type DeptCourse } from '@/data/sample-institution';
 import { loadJSON, saveJSON, STORAGE_KEYS } from '@/utils/storage';
 import { localDateKey } from '@/utils/planner';
 import { onReset } from '@/utils/reset';
@@ -44,6 +44,26 @@ export interface Integration {
   connected: boolean;
 }
 
+export interface InstSlot {
+  id: string;
+  day: 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat';
+  start: string; // "08:00"
+  end: string; // "10:00"
+  venue: string;
+}
+
+export interface ManagedCourse extends DeptCourse {
+  deptId: string;
+  department: string;
+  faculty: string;
+  capacity: number;
+  archived: boolean;
+  /** added by an admin (not from the records system) */
+  custom: boolean;
+}
+
+export type Moderation = 'approved' | 'hidden' | 'flagged';
+
 interface InstitutionState {
   settings: { name: string; shortName: string; academicYear: string; semester: string; timezone: string };
   staff: StaffMember[];
@@ -56,6 +76,26 @@ interface InstitutionState {
   integrations: Integration[];
   apiKeyLast4: string;
   webhookUrl: string;
+  enrollment: Record<string, number>;
+  capacity: Record<string, number>;
+  extraCourses: (DeptCourse & { deptId: string })[];
+  archivedCourses: string[];
+  slots: Record<string, InstSlot[]>;
+  moderation: Record<string, Moderation>;
+}
+
+const DAYS: InstSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const TIMES = ['08:00', '10:00', '12:00', '14:00', '16:00'];
+const VENUES = ['LT A', 'LT B', 'Auditorium 1', 'Faculty Lab 2', 'Engineering Hall 3'];
+/** Seed slots (replaced by the timetabling integration). */
+function seedSlots(): Record<string, InstSlot[]> {
+  const out: Record<string, InstSlot[]> = {};
+  FACULTIES.flatMap((f) => f.departments.flatMap((d) => d.courses)).forEach((c) => {
+    const h = [...c.code].reduce((n, ch) => n + ch.charCodeAt(0), 0);
+    const start = TIMES[(h >> 2) % 5];
+    out[c.id] = [{ id: `sl_${c.id}`, day: DAYS[h % 5], start, end: `${String(parseInt(start, 10) + 2).padStart(2, '0')}:00`, venue: VENUES[(h >> 3) % 5] }];
+  });
+  return out;
 }
 
 function seed(): InstitutionState {
@@ -97,11 +137,26 @@ function seed(): InstitutionState {
     ],
     apiKeyLast4: '7f3a',
     webhookUrl: '',
+    enrollment: {},
+    capacity: {},
+    extraCourses: [],
+    archivedCourses: [],
+    slots: seedSlots(),
+    moderation: {},
   };
 }
 
 interface InstitutionContextType extends InstitutionState {
   hydrated: boolean;
+  /** every course with enrollment, capacity and archive state applied */
+  courses: ManagedCourse[];
+  setEnrollment: (courseId: string, n: number) => void;
+  setCapacity: (courseId: string, n: number) => void;
+  addCourse: (deptId: string, c: { code: string; title: string; lecturer: string; enrolled: number }) => void;
+  setArchived: (courseId: string, archived: boolean) => void;
+  addSlot: (courseId: string, slot: Omit<InstSlot, 'id'>) => void;
+  removeSlot: (courseId: string, slotId: string) => void;
+  moderate: (materialId: string, status: Moderation, name: string) => void;
   log: (action: string, target: string) => void;
   updateSettings: (p: Partial<InstitutionState['settings']>) => void;
   inviteStaff: (s: Omit<StaffMember, 'id' | 'status'>) => void;
@@ -127,7 +182,7 @@ export function InstitutionProvider({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     loadJSON<InstitutionState>(STORAGE_KEYS.institution).then((saved) => {
-      if (saved) setS({ ...seed(), ...saved });
+      if (saved) setS({ ...seed(), ...saved, slots: saved.slots ?? seed().slots });
       setHydrated(true);
     });
   }, []);
@@ -141,9 +196,64 @@ export function InstitutionProvider({ children }: { children: React.ReactNode })
     audit: [{ id: id('au'), at: new Date().toISOString(), actor: 'You', action, target }, ...x.audit].slice(0, 200),
   });
 
+  const deptOf = new Map(FACULTIES.flatMap((f) => f.departments.map((d) => [d.id, { dept: d, faculty: f }] as const)));
+  const courses: ManagedCourse[] = [
+    ...FACULTIES.flatMap((f) => f.departments.flatMap((d) => d.courses.map((c) => ({ ...c, deptId: d.id, custom: false })))),
+    ...(s.extraCourses ?? []).map((c) => ({ ...c, custom: true })),
+  ].map((c) => {
+    const info = deptOf.get(c.deptId);
+    const enrolled = s.enrollment?.[c.id] ?? c.enrolled;
+    return {
+      ...c,
+      enrolled,
+      department: info?.dept.name ?? '',
+      faculty: info?.faculty.name ?? '',
+      capacity: s.capacity?.[c.id] ?? Math.max(enrolled, Math.ceil((c.enrolled * 1.15) / 10) * 10),
+      archived: (s.archivedCourses ?? []).includes(c.id),
+    };
+  });
+  const courseCode = (cid: string) => courses.find((c) => c.id === cid)?.code ?? cid;
+
   const value: InstitutionContextType = {
     ...s,
     hydrated,
+    courses,
+    setEnrollment: (cid, n) =>
+      setS((x) => withLog({ ...x, enrollment: { ...x.enrollment, [cid]: Math.max(0, n) } }, 'Changed enrollment', `${courseCode(cid)} → ${Math.max(0, n)}`)),
+    setCapacity: (cid, n) => setS((x) => withLog({ ...x, capacity: { ...x.capacity, [cid]: Math.max(0, n) } }, 'Changed capacity', `${courseCode(cid)} → ${Math.max(0, n)}`)),
+    addCourse: (deptId, c) => {
+      const cid = id('ic');
+      setS((x) =>
+        withLog(
+          {
+            ...x,
+            extraCourses: [...(x.extraCourses ?? []), { id: cid, deptId, code: c.code, title: c.title, lecturer: c.lecturer, enrolled: c.enrolled, lecturesCaptured: 0, mastery: 0, engagement: 0 }],
+          },
+          'Added course',
+          `${c.code} · ${c.title}`
+        )
+      );
+    },
+    setArchived: (cid, archived) =>
+      setS((x) =>
+        withLog(
+          { ...x, archivedCourses: archived ? [...(x.archivedCourses ?? []), cid] : (x.archivedCourses ?? []).filter((a) => a !== cid) },
+          archived ? 'Archived course' : 'Restored course',
+          courseCode(cid)
+        )
+      ),
+    addSlot: (cid, slot) =>
+      setS((x) =>
+        withLog(
+          { ...x, slots: { ...x.slots, [cid]: [...(x.slots?.[cid] ?? []), { ...slot, id: id('sl') }] } },
+          'Added class time',
+          `${courseCode(cid)} · ${slot.day} ${slot.start}–${slot.end} · ${slot.venue}`
+        )
+      ),
+    removeSlot: (cid, slotId) =>
+      setS((x) => withLog({ ...x, slots: { ...x.slots, [cid]: (x.slots?.[cid] ?? []).filter((sl) => sl.id !== slotId) } }, 'Removed class time', courseCode(cid))),
+    moderate: (mid, status, name) =>
+      setS((x) => withLog({ ...x, moderation: { ...x.moderation, [mid]: status } }, status === 'approved' ? 'Approved material' : status === 'hidden' ? 'Hid material' : 'Flagged material', name)),
     log: (action, target) => setS((x) => withLog(x, action, target)),
     updateSettings: (p) => setS((x) => withLog({ ...x, settings: { ...x.settings, ...p } }, 'Updated settings', Object.keys(p).join(', '))),
     inviteStaff: (m) =>

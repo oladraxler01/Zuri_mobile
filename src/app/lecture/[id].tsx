@@ -19,6 +19,9 @@ import { QuizTab } from '@/components/lecture/quiz-tab';
 import { AudioPlayerBar } from '@/components/lecture/audio-player-bar';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
 import { useProgress } from '@/context/progress-context';
+import { useSession } from '@/context/session-context';
+import { useLecturer } from '@/context/lecturer-context';
+import { ClassTab } from '@/components/lecture/class-tab';
 import { conceptForQuestion } from '@/utils/mastery';
 
 const TABS = [
@@ -27,7 +30,7 @@ const TABS = [
   { key: 'notes', label: 'Notes' },
   { key: 'questions', label: 'Questions' },
 ] as const;
-type TabKey = (typeof TABS)[number]['key'];
+type TabKey = (typeof TABS)[number]['key'] | 'class';
 
 export default function LectureScreen() {
   const router = useRouter();
@@ -36,7 +39,11 @@ export default function LectureScreen() {
   const { getLecture, loaded, updateLecture, retryProcessing, deleteLecture } = useLectures();
   const lecture = getLecture(params.id);
 
-  const initialTab = TABS.some((t) => t.key === params.tab) ? (params.tab as TabKey) : 'overview';
+  const { role } = useSession();
+  const lecturer = useLecturer();
+  const isLecturer = role === 'lecturer';
+  const tabs: { key: TabKey; label: string }[] = isLecturer ? [...TABS, { key: 'class', label: 'Class' }] : [...TABS];
+  const initialTab = tabs.some((t) => t.key === params.tab) ? (params.tab as TabKey) : 'overview';
   const [tab, setTab] = useState<TabKey>(initialTab);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const progress = useProgress();
@@ -130,7 +137,7 @@ export default function LectureScreen() {
 
           {/* Tabs */}
           <View style={styles.tabs} accessibilityRole="tablist">
-            {TABS.map((t) => (
+            {tabs.map((t) => (
               <Pressable
                 key={t.key}
                 onPress={() => setTab(t.key)}
@@ -176,6 +183,13 @@ export default function LectureScreen() {
               />
             )}
             {tab === 'notes' && <NotesTab notes={lecture.analysis.notes} />}
+            {tab === 'class' && isLecturer && (
+              <ClassTab
+                lecture={lecture}
+                courseId={lecture.courseId}
+                cohortSize={lecturer.courses.find((c) => c.id === lecture.courseId)?.cohortSize || 60}
+              />
+            )}
             {tab === 'questions' && (
               <QuizTab
                 questions={lecture.analysis.questions}

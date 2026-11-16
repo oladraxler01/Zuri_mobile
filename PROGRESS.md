@@ -162,3 +162,13 @@ Part 2 — institution:
 - Preferences now drive behaviour: recording quality sets the recorder; "keep audio" off deletes audio after processing; session length sets study sessions; answer style sets Ask Zuri sources; personalisation off hides activity-based suggestions.
 - `utils/reset.ts`: "Delete all my data" resets every store in memory first (so nothing re-saves), then removes saved keys and recording/material files.
 - Sign-up now saves the email.
+
+### Phase 6.8 — Remaining buildable items (done 2026-11-16)
+- Lecturer: a "Class" tab on lecture pages (lecturers only) with question-by-question results, the most common wrong answer, and per-lecture misconceptions (`components/lecture/class-tab.tsx`, sample responses per lecture).
+- Institution login: `onboarding/admin-sign-in.tsx` (institution email + admin access code, format-checked; server check when connected). Linked from Welcome ("Institution admin? Sign in here") and from choosing School Board.
+- Student overview `admin/students.tsx` (sample directory: search, risk and department filters) and lecturer overview `admin/lecturers.tsx` (courses, lectures captured, outcomes, on Zuri or not).
+- Institution data is now editable and audited (`institution-context`): enrollment and capacity, adding and archiving courses, weekly class times with venue clash checks, material moderation (approve / flag / hide).
+- Admin course page: enrollment stepper with over-capacity warning, timetable editor that blocks double-booked rooms, archive/restore.
+- Academics: add courses per department, links to student/lecturer directories, editable timetable with clashes flagged, material management with moderation and institutional upload.
+- Institutional research search `admin/research.tsx`: finds the university in OpenAlex (Veritas University: 1,324 papers) and lists/searches its publications; verified against the live service.
+- Remaining partial items need the backend, AI or university integrations (see checklist).

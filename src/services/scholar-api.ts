@@ -94,3 +94,35 @@ export async function referencedPapers(id: string, limit = 5): Promise<Paper[]> 
   const json = await get(`/works?filter=cited_by:${encodeURIComponent(id)}&sort=cited_by_count:desc&per-page=${limit}&select=${FIELDS}`);
   return (json.results ?? []).map(toPaper);
 }
+
+// ─── Institutions ─────────────────────────────────────────────────
+
+export interface InstitutionInfo {
+  id: string;
+  name: string;
+  country?: string;
+  worksCount: number;
+}
+
+/** Find the university in OpenAlex by name (prefers a Nigerian match). */
+export async function findInstitution(name: string): Promise<InstitutionInfo | undefined> {
+  const json = await get(`/institutions?search=${encodeURIComponent(name)}&per-page=5&select=id,display_name,country_code,works_count`);
+  const list = (json.results ?? []) as any[];
+  const pick = list.find((r) => r.country_code === 'NG') ?? list[0];
+  return pick
+    ? { id: String(pick.id).replace('https://openalex.org/', ''), name: pick.display_name, country: pick.country_code, worksCount: pick.works_count ?? 0 }
+    : undefined;
+}
+
+/** Papers by authors at an institution, optionally matching a search. */
+export async function institutionWorks(
+  institutionId: string,
+  query?: string,
+  sort: PaperSort = 'cited',
+  page = 1
+): Promise<{ papers: Paper[]; total: number }> {
+  const s = sort === 'cited' ? '&sort=cited_by_count:desc' : sort === 'newest' ? '&sort=publication_date:desc' : '';
+  const q = query?.trim() ? `&search=${encodeURIComponent(query.trim())}` : '';
+  const json = await get(`/works?filter=institutions.id:${institutionId}${q}${q ? '' : s}&per-page=20&page=${page}&select=${FIELDS}`);
+  return { papers: (json.results ?? []).map(toPaper), total: json.meta?.count ?? 0 };
+}

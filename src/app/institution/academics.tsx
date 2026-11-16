@@ -8,26 +8,17 @@ import { UI } from '@/constants/lexi-ui';
 import { useInstitution, type InstCalendarEvent } from '@/context/institution-context';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
-import { ScreenShell, Panel, Grid, StatTile, ListRow, Divider, SampleBanner } from '@/components/dashboard';
+import { ScreenShell, Panel, Grid, StatTile, ListRow, Divider, SampleBanner, StatusBadge } from '@/components/dashboard';
 import { Chip, Segmented } from '@/components/ui/chip';
 import { DateTimeField } from '@/components/ui/date-time-field';
 import { LectureCard } from '@/components/lecture/lecture-card';
-import { MaterialCard } from '@/components/materials/material-card';
 import { SourceCard } from '@/components/source-card';
-import { FACULTIES, allCourses } from '@/data/sample-institution';
+import { FACULTIES } from '@/data/sample-institution';
 import { searchSources } from '@/utils/source-search';
 import { localDateKey } from '@/utils/planner';
+import { pickAndUploadMaterial } from '@/utils/pick-material';
 
 type View_ = 'structure' | 'timetable' | 'calendar' | 'library';
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-const TIMES = ['08:00', '10:00', '12:00', '14:00', '16:00'];
-const VENUES = ['LT A', 'LT B', 'Auditorium 1', 'Faculty Lab 2', 'Engineering Hall 3'];
-
-/** Sample weekly slot for a course (replaced by the timetabling integration). */
-function sampleSlot(code: string) {
-  const h = [...code].reduce((n, c) => n + c.charCodeAt(0), 0);
-  return `${DAYS[h % 5]} ${TIMES[(h >> 2) % 5]} · ${VENUES[(h >> 3) % 5]}`;
-}
 
 export default function InstitutionAcademicsScreen() {
   const [view, setView] = useState<View_>('structure');
@@ -52,29 +43,49 @@ export default function InstitutionAcademicsScreen() {
 }
 
 function Structure() {
-  const { log } = useInstitution();
+  const inst = useInstitution();
   const [query, setQuery] = useState('');
-  const [imported, setImported] = useState(false);
-  const courses = allCourses();
-  const enrolled = courses.reduce((n, c) => n + c.enrolled, 0);
+  const [synced, setSynced] = useState(false);
+  const [addingTo, setAddingTo] = useState<string | null>(null);
+  const [form, setForm] = useState({ code: '', title: '', lecturer: '', enrolled: '' });
+  const live = inst.courses.filter((c) => !c.archived);
+  const enrolled = live.reduce((n, c) => n + c.enrolled, 0);
   const q = query.trim().toLowerCase();
+
+  const add = (deptId: string) => {
+    if (!form.code.trim() || !form.title.trim()) return;
+    inst.addCourse(deptId, {
+      code: form.code.trim().toUpperCase(),
+      title: form.title.trim(),
+      lecturer: form.lecturer.trim() || 'Unassigned',
+      enrolled: parseInt(form.enrolled, 10) || 0,
+    });
+    setForm({ code: '', title: '', lecturer: '', enrolled: '' });
+    setAddingTo(null);
+  };
 
   return (
     <>
       <Grid min={150}>
         <StatTile label="Faculties" value={`${FACULTIES.length}`} icon="business-outline" />
-        <StatTile label="Departments" value={`${FACULTIES.reduce((n, f) => n + f.departments.length, 0)}`} icon="git-branch-outline" />
+        <StatTile label="Active courses" value={`${live.length}`} icon="library-outline" />
         <StatTile label="Course enrollments" value={enrolled.toLocaleString()} icon="people-outline" />
       </Grid>
 
+      <Panel>
+        <ListRow icon="people-outline" title="Student overview" subtitle="Directory with engagement and risk" onPress={() => router.push('/admin/students' as Href)} />
+        <Divider />
+        <ListRow icon="person-outline" title="Lecturer overview" subtitle="Who teaches what, capture and outcomes" onPress={() => router.push('/admin/lecturers' as Href)} />
+      </Panel>
+
       <Panel
-        title="Enrollment"
+        title="Enrollment & courses"
         subtitle="Synced from the student information system"
         action={{
-          label: imported ? 'Synced' : 'Sync now',
+          label: synced ? 'Sync requested' : 'Sync now',
           onPress: () => {
-            log('Requested enrollment sync', 'Student information system');
-            setImported(true);
+            inst.log('Requested enrollment sync', 'Student information system');
+            setSynced(true);
           },
         }}
       >
@@ -87,19 +98,39 @@ function Structure() {
       {FACULTIES.map((f) => (
         <Panel key={f.id} title={f.name} subtitle={`Dean: ${f.dean}`} action={{ label: 'Open', onPress: () => router.push(`/admin/faculty/${f.id}` as Href) }}>
           {f.departments.map((d) => {
-            const list = d.courses.filter((c) => !q || `${c.code} ${c.title} ${c.lecturer}`.toLowerCase().includes(q));
-            if (!list.length) return null;
+            const list = inst.courses.filter((c) => c.deptId === d.id).filter((c) => !q || `${c.code} ${c.title} ${c.lecturer}`.toLowerCase().includes(q));
             return (
               <View key={d.id} style={{ marginBottom: 8 }}>
-                <Text style={styles.dept}>
-                  {d.name} · {d.students} students · {d.lecturers} lecturers
-                </Text>
+                <View style={styles.deptRow}>
+                  <Text style={styles.dept}>
+                    {d.name} · {d.students} students · {d.lecturers} lecturers
+                  </Text>
+                  <Pressable onPress={() => setAddingTo(addingTo === d.id ? null : d.id)} hitSlop={8}>
+                    <Text style={styles.addLink}>{addingTo === d.id ? 'Cancel' : '+ Course'}</Text>
+                  </Pressable>
+                </View>
+                {addingTo === d.id && (
+                  <View style={styles.form}>
+                    <View style={styles.inputs}>
+                      <TextInput style={[styles.input, { width: 110 }]} value={form.code} onChangeText={(v) => setForm({ ...form, code: v })} placeholder="CSC 401" placeholderTextColor={UI.muted} autoCapitalize="characters" />
+                      <TextInput style={[styles.input, { flex: 1 }]} value={form.title} onChangeText={(v) => setForm({ ...form, title: v })} placeholder="Course title" placeholderTextColor={UI.muted} />
+                    </View>
+                    <View style={styles.inputs}>
+                      <TextInput style={[styles.input, { flex: 1 }]} value={form.lecturer} onChangeText={(v) => setForm({ ...form, lecturer: v })} placeholder="Lecturer" placeholderTextColor={UI.muted} />
+                      <TextInput style={[styles.input, { width: 110 }]} value={form.enrolled} onChangeText={(v) => setForm({ ...form, enrolled: v.replace(/\D/g, '') })} placeholder="Enrolled" placeholderTextColor={UI.muted} keyboardType="number-pad" />
+                    </View>
+                    <Pressable style={[styles.primary, (!form.code.trim() || !form.title.trim()) && { opacity: 0.4 }]} onPress={() => add(d.id)}>
+                      <Text style={styles.primaryText}>Add course to {d.name}</Text>
+                    </Pressable>
+                  </View>
+                )}
                 {list.map((c, i) => (
-                  <View key={c.id}>
+                  <View key={c.id} style={c.archived ? { opacity: 0.5 } : undefined}>
                     {i > 0 && <Divider />}
                     <ListRow
                       title={`${c.code} · ${c.title}`}
-                      subtitle={`${c.lecturer} · ${c.enrolled} enrolled`}
+                      subtitle={`${c.lecturer} · ${c.enrolled}/${c.capacity} enrolled${c.archived ? ' · archived' : ''}`}
+                      right={c.enrolled > c.capacity ? <StatusBadge status="critical" label="Over" /> : undefined}
                       onPress={() => router.push(`/admin/course/${c.id}` as Href)}
                     />
                   </View>
@@ -109,15 +140,29 @@ function Structure() {
           })}
         </Panel>
       ))}
-      <SampleBanner text="Sample structure. Faculties, departments, courses and enrollment come from the student information system once connected." />
+      <SampleBanner text="Sample structure. Courses you add, enrollment and capacity changes are saved and recorded in the audit log." />
     </>
   );
 }
 
 function Timetable() {
+  const inst = useInstitution();
   const depts = FACULTIES.flatMap((f) => f.departments);
   const [deptId, setDeptId] = useState(depts[0].id);
   const dept = depts.find((d) => d.id === deptId)!;
+  const toMin = (t: string) => {
+    const [h, m] = t.split(':').map((x) => parseInt(x, 10));
+    return (h || 0) * 60 + (m || 0);
+  };
+  const allSlots = inst.courses
+    .filter((c) => !c.archived)
+    .flatMap((c) => (inst.slots?.[c.id] ?? []).map((sl) => ({ c, sl })));
+  const clash = (cid: string, sl: { id: string; day: string; start: string; end: string; venue: string }) =>
+    allSlots.filter(
+      (o) => o.sl.id !== sl.id && o.sl.day === sl.day && o.sl.venue.toLowerCase() === sl.venue.toLowerCase() && toMin(o.sl.start) < toMin(sl.end) && toMin(sl.start) < toMin(o.sl.end)
+    );
+  const courses = inst.courses.filter((c) => c.deptId === deptId && !c.archived);
+
   return (
     <>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
@@ -125,15 +170,38 @@ function Timetable() {
           <Chip key={d.id} label={d.name} on={d.id === deptId} onPress={() => setDeptId(d.id)} />
         ))}
       </ScrollView>
-      <Panel title={`${dept.name} timetable`} subtitle="Weekly lecture times">
-        {dept.courses.map((c, i) => (
-          <View key={c.id}>
-            {i > 0 && <Divider />}
-            <ListRow icon="time-outline" title={`${c.code} · ${c.title}`} subtitle={`${sampleSlot(c.code)} · ${c.lecturer}`} />
-          </View>
-        ))}
+      <Panel title={`${dept.name} timetable`} subtitle="Tap a course to add or remove class times">
+        {courses.map((c, i) => {
+          const slots = inst.slots?.[c.id] ?? [];
+          return (
+            <View key={c.id}>
+              {i > 0 && <Divider />}
+              <Pressable style={styles.ttRow} onPress={() => router.push(`/admin/course/${c.id}` as Href)}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.ttCourse}>
+                    {c.code} · {c.title}
+                  </Text>
+                  {slots.length ? (
+                    slots.map((sl) => {
+                      const cl = clash(c.id, sl);
+                      return (
+                        <Text key={sl.id} style={[styles.ttSlot, cl.length > 0 && { color: UI.error }]}>
+                          {sl.day} {sl.start}–{sl.end} · {sl.venue}
+                          {cl.length ? `  ·  clashes with ${cl.map((x) => x.c.code).join(', ')}` : ''}
+                        </Text>
+                      );
+                    })
+                  ) : (
+                    <Text style={styles.ttSlot}>No class times</Text>
+                  )}
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={UI.muted} />
+              </Pressable>
+            </View>
+          );
+        })}
       </Panel>
-      <SampleBanner text="Sample times. The official timetable syncs through the Timetabling integration (Settings → Integrations)." />
+      <SampleBanner text="Starting times are samples; changes you make are saved. The official timetable syncs through the Timetabling integration." />
     </>
   );
 }
@@ -201,17 +269,21 @@ function CalendarManager() {
 }
 
 function Library() {
+  const inst = useInstitution();
   const { lectures } = useLectures();
   const { materials } = useMaterials();
   const [query, setQuery] = useState('');
   const hits = useMemo(() => (query.trim() ? searchSources(query, { lectures, materials }, {}, 8) : []), [query, lectures, materials]);
+  const status = (id: string) => inst.moderation?.[id] ?? 'approved';
+  const hidden = materials.filter((m) => status(m.id) === 'hidden').length;
+  const flagged = materials.filter((m) => status(m.id) === 'flagged').length;
 
   return (
     <>
       <Grid min={150}>
         <StatTile label="Lectures archived" value={`${lectures.length}`} icon="mic-outline" />
         <StatTile label="Materials" value={`${materials.length}`} icon="folder-open-outline" />
-        <StatTile label="Shared with courses" value={`${materials.filter((m) => m.visibility === 'course').length}`} icon="people-outline" />
+        <StatTile label="Flagged / hidden" value={`${flagged} / ${hidden}`} icon="flag-outline" />
       </Grid>
 
       <Panel title="Institutional knowledge base" subtitle="Search across every lecture transcript and material">
@@ -226,12 +298,28 @@ function Library() {
         )}
       </Panel>
 
-      <Panel title="Content library" subtitle={materials.length ? undefined : 'No materials on this device yet'}>
-        <View style={{ gap: 10 }}>
-          {materials.slice(0, 6).map((m) => (
-            <MaterialCard key={m.id} m={m} />
-          ))}
-        </View>
+      <Panel title="Material management" subtitle="Approve, flag or hide material shared in the institution library" action={{ label: 'Upload', onPress: () => pickAndUploadMaterial() }}>
+        {materials.length === 0 && <Text style={styles.muted}>No materials yet. Upload handbooks, past questions or course packs.</Text>}
+        {materials.map((m, i) => {
+          const st = status(m.id);
+          return (
+            <View key={m.id}>
+              {i > 0 && <Divider />}
+              <View style={[styles.modRow, st === 'hidden' && { opacity: 0.55 }]}>
+                <Pressable style={{ flex: 1 }} onPress={() => router.push(`/material/${m.id}` as Href)}>
+                  <Text style={styles.ttCourse}>{m.analysis?.title ?? m.name}</Text>
+                  <Text style={styles.ttSlot}>{[m.courseCode, m.category, m.visibility === 'course' ? 'shared with course' : 'private'].filter(Boolean).join(' · ')}</Text>
+                </Pressable>
+                <StatusBadge status={st === 'approved' ? 'good' : st === 'flagged' ? 'warning' : 'critical'} label={st === 'approved' ? 'Approved' : st === 'flagged' ? 'Flagged' : 'Hidden'} />
+              </View>
+              <View style={styles.modActions}>
+                {(['approved', 'flagged', 'hidden'] as const).map((k) => (
+                  <Chip key={k} label={k === 'approved' ? 'Approve' : k === 'flagged' ? 'Flag' : 'Hide'} on={st === k} onPress={() => inst.moderate(m.id, k, m.analysis?.title ?? m.name)} />
+                ))}
+              </View>
+            </View>
+          );
+        })}
       </Panel>
 
       <Panel title="Lecture archive" subtitle={lectures.length ? undefined : 'No lectures on this device yet'}>
@@ -260,6 +348,14 @@ const styles = StyleSheet.create({
   },
   searchInput: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.ink },
   dept: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.amber, marginTop: 6 },
+  deptRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 },
+  addLink: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.amber },
+  inputs: { flexDirection: 'row', gap: 8 },
+  ttRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
+  ttCourse: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.ink },
+  ttSlot: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
+  modRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 10 },
+  modActions: { flexDirection: 'row', gap: 6, paddingVertical: 8 },
   form: { gap: 10, marginBottom: 14, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: UI.borderSoft },
   input: {
     height: 48,

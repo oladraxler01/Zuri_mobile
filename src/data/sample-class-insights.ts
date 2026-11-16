@@ -121,3 +121,36 @@ export function classInsights(course: { code: string }, conceptTitles: string[] 
     trend,
   };
 }
+
+/**
+ * Sample class response to one lecture (lecturer view): how the class did
+ * on each of the lecture's quiz questions and which misconceptions showed
+ * up per concept. Deterministic per lecture so it doesn't change on reload.
+ */
+export function lectureResponse(
+  lecture: { id: string; analysis?: { concepts: { title: string }[]; questions: { id: string; question: string; options: string[]; correctIndex: number }[] } },
+  cohortSize: number
+) {
+  const rand = seeded(lecture.id);
+  const responded = Math.round(cohortSize * (0.45 + rand() * 0.4));
+  const questions = (lecture.analysis?.questions ?? []).map((q) => {
+    const correct = Math.round(35 + rand() * 55);
+    // the most common wrong option
+    const wrongOptions = q.options.map((o, i) => ({ o, i })).filter((x) => x.i !== q.correctIndex);
+    const commonWrong = wrongOptions[Math.floor(rand() * wrongOptions.length)]?.o;
+    return { id: q.id, question: q.question, correct, commonWrong, commonWrongShare: Math.round((100 - correct) * (0.4 + rand() * 0.4)) };
+  });
+  const misconceptions = (lecture.analysis?.concepts ?? [])
+    .map((c) => ({ concept: c.title, share: Math.round(10 + rand() * 40) }))
+    .sort((a, b) => b.share - a.share)
+    .slice(0, 3)
+    .map((m, i) => ({
+      ...m,
+      statement: [
+        `confuse ${m.concept.toLowerCase()} with a closely related idea from the same lecture`,
+        `can state ${m.concept.toLowerCase()} but can’t apply it to a new example`,
+        `apply ${m.concept.toLowerCase()} without checking when it holds`,
+      ][i % 3],
+    }));
+  return { responded, questions, misconceptions };
+}
