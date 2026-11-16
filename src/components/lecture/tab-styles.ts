@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 
 /** Styles shared by the lecture tabs. */
 export const tabStyles = StyleSheet.create({
@@ -12,14 +12,14 @@ export const tabStyles = StyleSheet.create({
     alignSelf: 'center',
   },
   sectionHeading: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 20,
     color: UI.ink,
     marginBottom: 12,
     marginTop: 8,
   },
   body: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     lineHeight: 23,
     color: UI.inkSoft,
@@ -42,7 +42,7 @@ export const tabStyles = StyleSheet.create({
   },
   bannerText: {
     flex: 1,
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     lineHeight: 19,
     color: '#6b4511',
@@ -57,7 +57,7 @@ export const tabStyles = StyleSheet.create({
     gap: 10,
   },
   primaryBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
     color: '#fff',
   },
@@ -73,7 +73,7 @@ export const tabStyles = StyleSheet.create({
     gap: 10,
   },
   secondaryBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
     color: UI.ink,
   },
@@ -89,7 +89,7 @@ export const tabStyles = StyleSheet.create({
     paddingVertical: 2,
   },
   timeChipText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
     color: UI.amber,
     fontVariant: ['tabular-nums'],
@@ -117,7 +117,7 @@ export const tabStyles = StyleSheet.create({
   },
   sheetTitle: {
     flex: 1,
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 20,
     color: UI.ink,
   },
@@ -127,7 +127,7 @@ export const tabStyles = StyleSheet.create({
     gap: 8,
   },
   emptyText: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 14,
     color: UI.muted,
     textAlign: 'center',

@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { HBarList, SampleBanner } from '@/components/dashboard';
 import { lectureResponse } from '@/data/sample-class-insights';
 import type { Lecture } from '@/types/lecture';
@@ -58,6 +58,6 @@ export function ClassTab({ lecture, cohortSize, courseId }: { lecture: Lecture; 
 const styles = StyleSheet.create({
   misc: { backgroundColor: UI.card, borderRadius: 14, borderWidth: 1, borderColor: UI.border, padding: 14, marginBottom: 10, gap: 4 },
   miscHead: { flexDirection: 'row', justifyContent: 'space-between' },
-  miscConcept: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.ink },
-  miscShare: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.error },
+  miscConcept: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.ink },
+  miscShare: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.error },
 });

@@ -4,8 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { useMaterials } from '@/context/materials-context';
 import { MaterialCard } from '@/components/materials/material-card';
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: UI.borderSoft,
   },
-  topTitle: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: UI.ink },
+  topTitle: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.ink },
   uploadPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  uploadText: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: '#fff' },
+  uploadText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: '#fff' },
   scroll: { padding: 20, paddingBottom: 48, maxWidth: 640, width: '100%', alignSelf: 'center' },
   search: {
     flexDirection: 'row',
@@ -188,10 +188,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 12,
   },
-  searchInput: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.ink },
+  searchInput: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.ink },
   chips: { gap: 8, paddingBottom: 10 },
   sortRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, marginTop: 4 },
-  count: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.muted },
+  count: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.muted },
   sortBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  sortText: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.inkSoft },
+  sortText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.inkSoft },
 });

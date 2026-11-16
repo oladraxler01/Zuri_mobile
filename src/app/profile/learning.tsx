@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Text, StyleSheet } from 'react-native';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
@@ -99,6 +99,6 @@ export default function LearningProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  muted: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: UI.muted },
-  body: { fontFamily: LexiFonts.bodyRegular, fontSize: 15, lineHeight: 22, color: UI.inkSoft },
+  muted: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted },
+  body: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, lineHeight: 22, color: UI.inkSoft },
 });

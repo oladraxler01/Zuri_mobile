@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, Linking, Platform, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import type { IoniconName } from '@/types/lecture';
 
 /**
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 24,
     lineHeight: 30,
     color: UI.ink,
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     lineHeight: 25,
   },
   message: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     lineHeight: 22,
     color: UI.inkSoft,
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   pointText: {
     flex: 1,
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 14,
     color: UI.ink,
   },
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   primaryText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
     color: '#fff',
   },
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   secondaryText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
     color: UI.ink,
   },

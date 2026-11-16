@@ -5,9 +5,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useLectures } from '@/context/lectures-context';
 import { formatDuration, formatLectureDate } from '@/utils/time';
 import { lectureTitle } from '@/components/lecture/lecture-card';
@@ -35,7 +35,7 @@ type TabKey = (typeof TABS)[number]['key'] | 'class';
 export default function LectureScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string; tab?: string; t?: string }>();
-  const [fontsLoaded] = useLexiFonts();
+  const [fontsLoaded] = useZuriFonts();
   const { getLecture, loaded, updateLecture, retryProcessing, deleteLecture } = useLectures();
   const lecture = getLecture(params.id);
 
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   missingText: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     color: UI.inkSoft,
     textAlign: 'center',
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   missingBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     color: UI.ink,
   },
   topBar: {
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     borderBottomColor: UI.borderSoft,
   },
   topCourse: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,
     letterSpacing: 1,
     color: UI.ink,
@@ -288,13 +288,13 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   title: {
-    fontFamily: LexiFonts.headlineLg,
+    fontFamily: ZuriFonts.headlineLg,
     fontSize: 26,
     lineHeight: 32,
     color: UI.ink,
   },
   meta: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     color: UI.muted,
     marginTop: 6,
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     backgroundColor: UI.ink,
   },
   tabText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
     color: UI.inkSoft,
   },

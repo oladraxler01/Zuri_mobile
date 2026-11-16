@@ -15,8 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic, TimetableSlot } from '@/context/academic-context';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
@@ -43,7 +43,7 @@ const POPULAR_TIMES = [
 
 export default function StudentTimetableScreen() {
   const router = useRouter();
-  const [fontsLoaded] = useLexiFonts();
+  const [fontsLoaded] = useZuriFonts();
   const { state, addTimetableSlot, removeTimetableSlot, setTimetableSlots, addCourse } = useAcademic();
   const [importMsg, setImportMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -165,7 +165,7 @@ export default function StudentTimetableScreen() {
           accessibilityLabel="Go back"
           hitSlop={12}
         >
-          <Ionicons name="arrow-back" size={24} color={LexiColors.primary} />
+          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
         </Pressable>
 
         <View style={styles.headerCenter}>
@@ -200,7 +200,7 @@ export default function StudentTimetableScreen() {
             <Ionicons
               name="calendar-outline"
               size={18}
-              color={activeTab === 'manual' ? LexiColors.primaryContainer : LexiColors.secondary}
+              color={activeTab === 'manual' ? ZuriColors.primaryContainer : ZuriColors.secondary}
             />
             <Text
               style={[
@@ -219,7 +219,7 @@ export default function StudentTimetableScreen() {
             <Ionicons
               name="cloud-upload-outline"
               size={18}
-              color={activeTab === 'upload' ? LexiColors.primaryContainer : LexiColors.secondary}
+              color={activeTab === 'upload' ? ZuriColors.primaryContainer : ZuriColors.secondary}
             />
             <Text
               style={[
@@ -237,7 +237,7 @@ export default function StudentTimetableScreen() {
           <View style={styles.uploadContainer}>
             <View style={styles.uploadDropZone}>
               <View style={styles.uploadIconCircle}>
-                <Ionicons name="document-text-outline" size={32} color={LexiColors.primaryContainer} />
+                <Ionicons name="document-text-outline" size={32} color={ZuriColors.primaryContainer} />
               </View>
               <Text style={styles.uploadHeading}>Upload Departmental Timetable</Text>
               <Text style={styles.uploadSubtext}>
@@ -253,7 +253,7 @@ export default function StudentTimetableScreen() {
 
               {scanning ? (
                 <View style={styles.scanningBox}>
-                  <ActivityIndicator size="small" color={LexiColors.primaryContainer} />
+                  <ActivityIndicator size="small" color={ZuriColors.primaryContainer} />
                   <Text style={styles.scanningText}>Reading your timetable…</Text>
                 </View>
               ) : (
@@ -273,7 +273,7 @@ export default function StudentTimetableScreen() {
             </View>
 
             <View style={styles.infoCallout}>
-              <Ionicons name={importMsg ? (importMsg.ok ? 'checkmark-circle' : 'alert-circle') : 'information-circle-outline'} size={16} color={importMsg && !importMsg.ok ? '#ba1a1a' : LexiColors.tertiary} />
+              <Ionicons name={importMsg ? (importMsg.ok ? 'checkmark-circle' : 'alert-circle') : 'information-circle-outline'} size={16} color={importMsg && !importMsg.ok ? '#ba1a1a' : ZuriColors.tertiary} />
               <Text style={styles.infoCalloutText}>
                 {importMsg?.text ??
                   'Columns can be in any order and separated by commas, semicolons or tabs. Times like 9-11, 2:00 PM or 14:00 all work. Courses not in your list are added for you.'}
@@ -344,7 +344,7 @@ export default function StudentTimetableScreen() {
             {/* Classes List */}
             {daySlots.length === 0 ? (
               <View style={styles.emptyDayBox}>
-                <Ionicons name="calendar-clear-outline" size={32} color={LexiColors.outline} />
+                <Ionicons name="calendar-clear-outline" size={32} color={ZuriColors.outline} />
                 <Text style={styles.emptyDayTitle}>No lectures on {selectedDay}</Text>
                 <Text style={styles.emptyDaySubtitle}>
                   Free day or no lectures scheduled. Tap "+ Add Class" to schedule a lecture or lab.
@@ -366,7 +366,7 @@ export default function StudentTimetableScreen() {
                         <View style={styles.slotCodeRow}>
                           <Text style={styles.slotCourseCode}>{slot.courseCode}</Text>
                           <View style={styles.venueBadge}>
-                            <Ionicons name="location-outline" size={12} color={LexiColors.primaryContainer} />
+                            <Ionicons name="location-outline" size={12} color={ZuriColors.primaryContainer} />
                             <Text style={styles.venueText}>{slot.venue}</Text>
                           </View>
                         </View>
@@ -384,7 +384,7 @@ export default function StudentTimetableScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={`Remove slot for ${slot.courseCode}`}
                       >
-                        <Ionicons name="close-circle-outline" size={20} color={LexiColors.outline} />
+                        <Ionicons name="close-circle-outline" size={20} color={ZuriColors.outline} />
                       </Pressable>
                     </View>
                   );
@@ -394,7 +394,7 @@ export default function StudentTimetableScreen() {
 
             {/* Sudden Changes Note */}
             <View style={styles.noticeCard}>
-              <Ionicons name="notifications-outline" size={18} color={LexiColors.primaryContainer} />
+              <Ionicons name="notifications-outline" size={18} color={ZuriColors.primaryContainer} />
               <Text style={styles.noticeText}>
                 Sudden lecture hall or time changes? You can modify any class slot directly from your dashboard schedule tab at any time.
               </Text>
@@ -431,7 +431,7 @@ export default function StudentTimetableScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add Class ({selectedDay})</Text>
               <Pressable onPress={() => setModalVisible(false)} hitSlop={8}>
-                <Ionicons name="close" size={24} color={LexiColors.primary} />
+                <Ionicons name="close" size={24} color={ZuriColors.primary} />
               </Pressable>
             </View>
 
@@ -514,7 +514,7 @@ export default function StudentTimetableScreen() {
                     value={startTime}
                     onChangeText={setStartTime}
                     placeholder="09:00 AM"
-                    placeholderTextColor={LexiColors.outline}
+                    placeholderTextColor={ZuriColors.outline}
                   />
                 </View>
                 <View style={[styles.fieldBlock, { flex: 1 }]}>
@@ -524,7 +524,7 @@ export default function StudentTimetableScreen() {
                     value={endTime}
                     onChangeText={setEndTime}
                     placeholder="11:00 AM"
-                    placeholderTextColor={LexiColors.outline}
+                    placeholderTextColor={ZuriColors.outline}
                   />
                 </View>
               </View>
@@ -537,7 +537,7 @@ export default function StudentTimetableScreen() {
                   value={venue}
                   onChangeText={setVenue}
                   placeholder="e.g. Lecture Theatre B, Lab 2"
-                  placeholderTextColor={LexiColors.outline}
+                  placeholderTextColor={ZuriColors.outline}
                 />
               </View>
 
@@ -555,14 +555,14 @@ export default function StudentTimetableScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: LexiColors.background,
+    backgroundColor: ZuriColors.background,
   },
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
   },
   backButton: {
     padding: 6,
@@ -578,13 +578,13 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   headerTitle: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 22,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     fontWeight: '700',
   },
   stepBadge: {
-    backgroundColor: LexiColors.surfaceContainerLow,
+    backgroundColor: ZuriColors.surfaceContainerLow,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
@@ -592,16 +592,16 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(203, 167, 47, 0.3)',
   },
   stepBadgeText: {
-    fontFamily: LexiFonts.labelSm,
+    fontFamily: ZuriFonts.labelSm,
     fontSize: 11,
-    color: LexiColors.tertiary,
+    color: ZuriColors.tertiary,
     fontWeight: '600',
   },
   headerSpacer: {
     width: 32,
   },
   scrollContent: {
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
     paddingTop: 16,
     paddingBottom: 24,
     maxWidth: 420,
@@ -613,16 +613,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   headline: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 26,
     lineHeight: 32,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
   },
   subtitle: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 14,
     lineHeight: 20,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   modeToggleRow: {
     flexDirection: 'row',
@@ -649,12 +649,12 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   modeTabText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
-    color: LexiColors.secondary,
+    color: ZuriColors.secondary,
   },
   modeTabTextSelected: {
-    color: LexiColors.primaryContainer,
+    color: ZuriColors.primaryContainer,
   },
   // Upload
   uploadContainer: {
@@ -679,16 +679,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   uploadHeading: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 17,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     marginBottom: 6,
     textAlign: 'center',
   },
   uploadSubtext: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 13,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
     textAlign: 'center',
     lineHeight: 18,
     marginBottom: 16,
@@ -697,16 +697,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: LexiColors.primaryFixed,
+    backgroundColor: ZuriColors.primaryFixed,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
     marginBottom: 16,
   },
   filePillText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 12,
-    color: LexiColors.primaryContainer,
+    color: ZuriColors.primaryContainer,
   },
   scanningBox: {
     flexDirection: 'row',
@@ -715,15 +715,15 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   scanningText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 13,
-    color: LexiColors.primaryContainer,
+    color: ZuriColors.primaryContainer,
   },
   uploadActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
     paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 12,
@@ -732,7 +732,7 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   uploadActionBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
     color: '#ffffff',
   },
@@ -740,7 +740,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: LexiColors.surfaceContainerLow,
+    backgroundColor: ZuriColors.surfaceContainerLow,
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
@@ -748,10 +748,10 @@ const styles = StyleSheet.create({
   },
   infoCalloutText: {
     flex: 1,
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 12,
     lineHeight: 17,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   // Manual
   manualContainer: {
@@ -774,19 +774,19 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   dayButtonSelected: {
-    backgroundColor: LexiColors.primaryContainer,
-    borderColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
+    borderColor: ZuriColors.primaryContainer,
   },
   dayButtonText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 12,
-    color: LexiColors.onSurface,
+    color: ZuriColors.onSurface,
   },
   dayButtonTextSelected: {
     color: '#ffffff',
   },
   dayCountDot: {
-    backgroundColor: LexiColors.surfaceContainerLowest,
+    backgroundColor: ZuriColors.surfaceContainerLowest,
     paddingHorizontal: 4,
     borderRadius: 6,
     marginTop: 2,
@@ -795,9 +795,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.25)',
   },
   dayCountText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 9,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
   },
   dayCountTextSelected: {
     color: '#ffffff',
@@ -809,16 +809,16 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   daySectionTitle: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 18,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     fontWeight: '600',
   },
   addClassBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
@@ -827,7 +827,7 @@ const styles = StyleSheet.create({
     opacity: 0.88,
   },
   addClassBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 12,
     color: '#ffffff',
   },
@@ -843,15 +843,15 @@ const styles = StyleSheet.create({
     borderColor: '#E5E3DF',
   },
   emptyDayTitle: {
-    fontFamily: LexiFonts.bodyLg,
+    fontFamily: ZuriFonts.bodyLg,
     fontSize: 15,
     fontWeight: '600',
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
   },
   emptyDaySubtitle: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 12,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
     textAlign: 'center',
   },
   slotsList: {
@@ -876,23 +876,23 @@ const styles = StyleSheet.create({
     width: 68,
     paddingRight: 10,
     borderRightWidth: 1,
-    borderRightColor: LexiColors.surfaceContainerHigh,
+    borderRightColor: ZuriColors.surfaceContainerHigh,
   },
   slotTimeStart: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
   },
   timeLineBar: {
     width: 2,
     height: 12,
-    backgroundColor: LexiColors.tertiaryFixedDim,
+    backgroundColor: ZuriColors.tertiaryFixedDim,
     marginVertical: 2,
   },
   slotTimeEnd: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 11,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   slotInfoColumn: {
     flex: 1,
@@ -905,9 +905,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   slotCourseCode: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
   },
   venueBadge: {
     flexDirection: 'row',
@@ -919,14 +919,14 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   venueText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 11,
-    color: LexiColors.primaryContainer,
+    color: ZuriColors.primaryContainer,
   },
   slotCourseTitle: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 12,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   deleteSlotBtn: {
     padding: 6,
@@ -944,16 +944,16 @@ const styles = StyleSheet.create({
   },
   noticeText: {
     flex: 1,
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 12,
     lineHeight: 17,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   footer: {
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
     paddingTop: 12,
     paddingBottom: 20,
-    backgroundColor: LexiColors.background,
+    backgroundColor: ZuriColors.background,
     maxWidth: 420,
     width: '100%',
     alignSelf: 'center',
@@ -964,9 +964,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
     borderRadius: 14,
-    shadowColor: LexiColors.primaryContainer,
+    shadowColor: ZuriColors.primaryContainer,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
@@ -977,9 +977,9 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.985 }],
   },
   proceedButtonText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,
-    color: LexiColors.onPrimary,
+    color: ZuriColors.onPrimary,
     letterSpacing: 1,
     fontWeight: '700',
   },
@@ -994,11 +994,11 @@ const styles = StyleSheet.create({
   modalSheet: {
     width: '100%',
     maxWidth: 380,
-    backgroundColor: LexiColors.background,
+    backgroundColor: ZuriColors.background,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: LexiColors.outlineVariant,
+    borderColor: ZuriColors.outlineVariant,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
@@ -1012,9 +1012,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   modalTitle: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 18,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     fontWeight: '600',
   },
   modalForm: {
@@ -1024,9 +1024,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   fieldLabel: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 12,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
   },
   courseSelectRow: {
     gap: 8,
@@ -1040,13 +1040,13 @@ const styles = StyleSheet.create({
     borderColor: '#E5E3DF',
   },
   courseChipSelected: {
-    backgroundColor: LexiColors.primaryContainer,
-    borderColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
+    borderColor: ZuriColors.primaryContainer,
   },
   courseChipText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
-    color: LexiColors.onSurface,
+    color: ZuriColors.onSurface,
   },
   courseChipTextSelected: {
     color: '#ffffff',
@@ -1063,13 +1063,13 @@ const styles = StyleSheet.create({
     borderColor: '#E5E3DF',
   },
   timeChipSelected: {
-    backgroundColor: LexiColors.primaryContainer,
-    borderColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
+    borderColor: ZuriColors.primaryContainer,
   },
   timeChipText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 12,
-    color: LexiColors.onSurface,
+    color: ZuriColors.onSurface,
   },
   timeChipTextSelected: {
     color: '#ffffff',
@@ -1081,25 +1081,25 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 46,
-    backgroundColor: LexiColors.surfaceContainerLowest,
+    backgroundColor: ZuriColors.surfaceContainerLowest,
     borderWidth: 1,
-    borderColor: LexiColors.outlineVariant,
+    borderColor: ZuriColors.outlineVariant,
     borderRadius: 10,
     paddingHorizontal: 12,
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 13,
-    color: LexiColors.onSurface,
+    color: ZuriColors.onSurface,
   },
   saveSlotBtn: {
     height: 48,
-    backgroundColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
   },
   saveSlotBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,
     color: '#ffffff',
     fontWeight: '600',

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
 import { useProgress } from '@/context/progress-context';
@@ -100,11 +100,11 @@ function MemoryRow({ title, detail, onClear }: { title: string; detail: string; 
 }
 
 const styles = StyleSheet.create({
-  lead: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
+  lead: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
   memRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
-  memTitle: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink },
-  memDetail: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
+  memTitle: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink },
+  memDetail: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
   clearBtn: { borderWidth: 1, borderColor: UI.border, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6 },
-  clearText: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.error },
-  link: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.amber, textAlign: 'center' },
+  clearText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.error },
+  link: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.amber, textAlign: 'center' },
 });

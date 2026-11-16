@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAcademicContext, CourseItem } from '@/context/academic-context';
 import { useLectures } from '@/context/lectures-context';
-import { LexiColors, LexiFonts } from '@/constants/lexi-theme';
+import { ZuriColors, ZuriFonts } from '@/constants/zuri-theme';
 
 export default function CoursesScreen() {
   const insets = useSafeAreaInsets();
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   appTitle: {
-    fontFamily: LexiFonts.displayBold,
+    fontFamily: ZuriFonts.displayBold,
     fontSize: 26,
     color: '#272e0a',
   },
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   summaryLabel: {
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.8,
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   summaryValue: {
-    fontFamily: LexiFonts.headlineMedium,
+    fontFamily: ZuriFonts.headlineMedium,
     fontSize: 16,
     fontWeight: '700',
     color: '#272e0a',
@@ -322,13 +322,13 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   sectionTitle: {
-    fontFamily: LexiFonts.headlineMedium,
+    fontFamily: ZuriFonts.headlineMedium,
     fontSize: 20,
     fontWeight: '700',
     color: '#1b1c19',
   },
   sectionSubtitle: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     color: '#77786c',
     marginTop: 2,
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   codePillText: {
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 12,
     fontWeight: '700',
     color: '#dfe7b3',
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
     color: '#46483d',
   },
   courseTitle: {
-    fontFamily: LexiFonts.headlineMedium,
+    fontFamily: ZuriFonts.headlineMedium,
     fontSize: 17,
     fontWeight: '700',
     color: '#1b1c19',
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   lecturerText: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     color: '#46483d',
   },
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   slotsText: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     color: '#77786c',
   },
@@ -461,13 +461,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   modalHeading: {
-    fontFamily: LexiFonts.headlineMedium,
+    fontFamily: ZuriFonts.headlineMedium,
     fontSize: 18,
     fontWeight: '700',
     color: '#1b1c19',
   },
   inputLabel: {
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 13,
     fontWeight: '600',
     color: '#46483d',

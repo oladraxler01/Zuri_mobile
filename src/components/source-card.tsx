@@ -2,8 +2,8 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import type { SourceHit } from '@/utils/source-search';
 
 /** A cited source: quote + where it came from; tap to open it at that spot. */
@@ -60,8 +60,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  numText: { fontFamily: LexiFonts.labelSmBold, fontSize: 10, color: '#fff' },
-  title: { flex: 1, fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.ink },
-  loc: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, color: UI.amber, fontVariant: ['tabular-nums'] },
-  quote: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.inkSoft, fontStyle: 'italic' },
+  numText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 10, color: '#fff' },
+  title: { flex: 1, fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.ink },
+  loc: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, color: UI.amber, fontVariant: ['tabular-nums'] },
+  quote: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.inkSoft, fontStyle: 'italic' },
 });

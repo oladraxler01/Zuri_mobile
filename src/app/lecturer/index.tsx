@@ -3,8 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useLecturer } from '@/context/lecturer-context';
 import { useLectures } from '@/context/lectures-context';
 import { ScreenShell, Panel, Grid, StatTile, SampleBanner, ListRow, Divider, StatusBadge } from '@/components/dashboard';
@@ -171,7 +171,7 @@ export default function LecturerTodayScreen() {
 
 const styles = StyleSheet.create({
   setup: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: UI.amberSoft, borderRadius: 14, padding: 14 },
-  setupText: { flex: 1, fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: '#7a4f12' },
+  setupText: { flex: 1, fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: '#7a4f12' },
   hero: { backgroundColor: UI.ink, borderRadius: 22, padding: 20 },
   heroPill: {
     flexDirection: 'row',
@@ -184,22 +184,22 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: UI.error },
-  heroPillText: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1, color: '#7a4f12' },
-  heroCode: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, letterSpacing: 1.4, color: '#e9c349', marginTop: 14 },
-  heroTitle: { fontFamily: LexiFonts.headlineLg, fontSize: 24, lineHeight: 30, color: '#fff', marginTop: 2 },
-  heroMeta: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 6 },
+  heroPillText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1, color: '#7a4f12' },
+  heroCode: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, letterSpacing: 1.4, color: '#e9c349', marginTop: 14 },
+  heroTitle: { fontFamily: ZuriFonts.headlineLg, fontSize: 24, lineHeight: 30, color: '#fff', marginTop: 2 },
+  heroMeta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 6 },
   heroActions: { flexDirection: 'row', gap: 10, marginTop: 16 },
   heroPrimary: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#fff', borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10 },
-  heroPrimaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.ink },
+  heroPrimaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.ink },
   heroGhost: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.4)', borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10 },
-  heroGhostText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: '#fff' },
-  section: { fontFamily: LexiFonts.headlineMd, fontSize: 19, color: UI.ink, marginTop: 6 },
-  muted: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.muted },
-  body: { fontFamily: LexiFonts.bodyRegular, fontSize: 15, lineHeight: 22, color: UI.inkSoft },
-  bold: { fontFamily: LexiFonts.labelSmBold, color: UI.ink },
+  heroGhostText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: '#fff' },
+  section: { fontFamily: ZuriFonts.headlineMd, fontSize: 19, color: UI.ink, marginTop: 6 },
+  muted: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.muted },
+  body: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, lineHeight: 22, color: UI.inkSoft },
+  bold: { fontFamily: ZuriFonts.labelSmBold, color: UI.ink },
   actionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
   darkBtn: { backgroundColor: UI.ink, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10 },
-  darkBtnText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: '#fff' },
+  darkBtnText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: '#fff' },
   outlineBtn: { borderWidth: 1, borderColor: UI.border, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10 },
-  outlineBtnText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.ink },
+  outlineBtnText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.ink },
 });

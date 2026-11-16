@@ -6,8 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import * as Sharing from 'expo-sharing';
 import { File, Paths } from 'expo-file-system';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { useSession } from '@/context/session-context';
 import { useLectures } from '@/context/lectures-context';
@@ -371,14 +371,14 @@ function Help() {
 
 const styles = StyleSheet.create({
   toggle: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
-  toggleTitle: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink, flexShrink: 1 },
-  toggleDesc: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, lineHeight: 17, color: UI.muted, marginTop: 2 },
-  label: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted },
+  toggleTitle: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink, flexShrink: 1 },
+  toggleDesc: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, lineHeight: 17, color: UI.muted, marginTop: 2 },
+  label: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  hint: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, lineHeight: 18, color: UI.muted, marginTop: 6 },
-  body: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
+  hint: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, lineHeight: 18, color: UI.muted, marginTop: 6 },
+  body: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
   primarySm: { alignSelf: 'flex-start', backgroundColor: UI.ink, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 9, marginBottom: 6 },
-  primarySmText: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: '#fff' },
+  primarySmText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: '#fff' },
   faqQ: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingVertical: 12 },
-  faqA: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft, paddingBottom: 12 },
+  faqA: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft, paddingBottom: 12 },
 });

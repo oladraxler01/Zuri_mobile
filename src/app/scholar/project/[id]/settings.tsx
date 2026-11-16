@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import type { Href } from 'expo-router';
-import { LexiFonts } from '@/constants/lexi-theme';
+import { ZuriFonts } from '@/constants/zuri-theme';
 import { useResearch } from '@/context/research-context';
 import { useAcademic } from '@/context/academic-context';
 import { ED, EdPage, Masthead, Rule, edStyles } from '@/components/research/editorial';
@@ -94,7 +94,7 @@ export default function ProjectSettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  label: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.6, color: ED.muted, marginTop: 14 },
+  label: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.6, color: ED.muted, marginTop: 14 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  delete: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: '#ba1a1a' },
+  delete: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: '#ba1a1a' },
 });

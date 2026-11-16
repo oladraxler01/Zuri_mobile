@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { StateView } from '@/components/states/state-view';
-import { UI } from '@/constants/lexi-ui';
+import { UI } from '@/constants/zuri-ui';
 
 /** Shown for any link or route that doesn't exist. */
 export default function NotFoundScreen() {

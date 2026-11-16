@@ -11,8 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useSession, ROLE_HOME } from '@/context/session-context';
 
 type RoleType = 'student' | 'lecturer' | 'school-board';
@@ -48,7 +48,7 @@ const ROLES: RoleOption[] = [
 export default function RoleSelectScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ universityName?: string; universityId?: string }>();
-  const [fontsLoaded] = useLexiFonts();
+  const [fontsLoaded] = useZuriFonts();
   const { setRole } = useSession();
 
   const [selectedRole, setSelectedRole] = useState<RoleType>('student');
@@ -100,7 +100,7 @@ export default function RoleSelectScreen() {
           accessibilityLabel="Go back"
           hitSlop={12}
         >
-          <Ionicons name="arrow-back" size={24} color={LexiColors.primary} />
+          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
         </Pressable>
         <Text style={styles.headerTitle}>Zuri</Text>
         <View style={styles.headerSpacer} />
@@ -135,7 +135,7 @@ export default function RoleSelectScreen() {
               >
                 {/* Role Icon */}
                 <View style={styles.roleIconWrapper}>
-                  <Ionicons name={role.icon} size={22} color={LexiColors.primary} />
+                  <Ionicons name={role.icon} size={22} color={ZuriColors.primary} />
                 </View>
 
                 {/* Role Description */}
@@ -155,7 +155,7 @@ export default function RoleSelectScreen() {
                     <Ionicons
                       name="checkmark-circle"
                       size={24}
-                      color={LexiColors.primaryContainer}
+                      color={ZuriColors.primaryContainer}
                     />
                   )}
                 </View>
@@ -186,14 +186,14 @@ export default function RoleSelectScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: LexiColors.background,
+    backgroundColor: ZuriColors.background,
   },
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
   },
   backButton: {
     padding: 6,
@@ -205,16 +205,16 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.95 }],
   },
   headerTitle: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 24,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     fontWeight: '700',
   },
   headerSpacer: {
     width: 32,
   },
   scrollContent: {
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
     paddingTop: 24,
     paddingBottom: 36,
     maxWidth: 420,
@@ -228,16 +228,16 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   headline: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 28,
     lineHeight: 34,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
   },
   subtitle: {
-    fontFamily: LexiFonts.bodyLg,
+    fontFamily: ZuriFonts.bodyLg,
     fontSize: 16,
     lineHeight: 24,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   rolesGroup: {
     gap: 16,
@@ -257,8 +257,8 @@ const styles = StyleSheet.create({
   },
   roleCardActive: {
     backgroundColor: '#ffffff',
-    borderColor: LexiColors.primaryContainer,
-    shadowColor: LexiColors.primaryContainer,
+    borderColor: ZuriColors.primaryContainer,
+    shadowColor: ZuriColors.primaryContainer,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 10,
@@ -271,28 +271,28 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: LexiColors.surfaceContainerLowest,
+    backgroundColor: ZuriColors.surfaceContainerLowest,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: LexiColors.outlineVariant,
+    borderColor: ZuriColors.outlineVariant,
   },
   roleTextBox: {
     flex: 1,
     paddingRight: 8,
   },
   roleTitle: {
-    fontFamily: LexiFonts.bodyLg,
+    fontFamily: ZuriFonts.bodyLg,
     fontSize: 16,
     fontWeight: '600',
-    color: LexiColors.onSurface,
+    color: ZuriColors.onSurface,
     marginBottom: 4,
   },
   roleDesc: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 13,
     lineHeight: 19,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   checkCircle: {
     width: 24,
@@ -310,11 +310,11 @@ const styles = StyleSheet.create({
   getStartedButton: {
     width: '100%',
     height: 56,
-    backgroundColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: LexiColors.primaryContainer,
+    shadowColor: ZuriColors.primaryContainer,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
@@ -325,9 +325,9 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.985 }],
   },
   getStartedButtonText: {
-    fontFamily: LexiFonts.bodyLg,
+    fontFamily: ZuriFonts.bodyLg,
     fontSize: 16,
-    color: LexiColors.onPrimary,
+    color: ZuriColors.onPrimary,
     fontWeight: '600',
   },
 });

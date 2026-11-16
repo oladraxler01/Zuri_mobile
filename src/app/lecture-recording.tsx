@@ -14,9 +14,9 @@ import {
   requestRecordingPermissionsAsync,
   type RecordingOptions,
 } from 'expo-audio';
-import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic, type CourseItem } from '@/context/academic-context';
 import { useSession } from '@/context/session-context';
 import { useLecturer } from '@/context/lecturer-context';
@@ -44,7 +44,7 @@ export default function LectureRecordingScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   const params = useLocalSearchParams<{ courseId?: string; courseCode?: string; courseTitle?: string }>();
-  const [fontsLoaded] = useLexiFonts();
+  const [fontsLoaded] = useZuriFonts();
   const { state } = useAcademic();
   const { role } = useSession();
   const lecturer = useLecturer();
@@ -210,7 +210,7 @@ export default function LectureRecordingScreen() {
 
       <View style={styles.topBar}>
         <Pressable style={styles.closeBtn} onPress={close} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">
-          <Ionicons name="chevron-down" size={26} color={LexiColors.primary} />
+          <Ionicons name="chevron-down" size={26} color={ZuriColors.primary} />
         </Pressable>
         <Text style={styles.topBarTitle}>Lecture Capture</Text>
         <View style={styles.spacer} />
@@ -308,7 +308,7 @@ export default function LectureRecordingScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={phase === 'paused' ? 'Resume recording' : 'Pause recording'}
                 >
-                  <Ionicons name={phase === 'paused' ? 'play' : 'pause'} size={26} color={LexiColors.primary} />
+                  <Ionicons name={phase === 'paused' ? 'play' : 'pause'} size={26} color={ZuriColors.primary} />
                 </Pressable>
                 <Pressable
                   style={({ pressed }) => [styles.stopBtn, pressed && styles.btnPressed]}
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(26, 28, 22, 0.08)',
   },
@@ -478,16 +478,16 @@ const styles = StyleSheet.create({
     marginLeft: -6,
   },
   topBarTitle: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     letterSpacing: 0.5,
   },
   spacer: {
     width: 36,
   },
   scrollContent: {
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
     paddingTop: 24,
     paddingBottom: 40,
     maxWidth: 440,
@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   label: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
     letterSpacing: 1.2,
     color: UI.muted,
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
     borderColor: UI.ink,
   },
   courseChipText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
     color: UI.ink,
   },
@@ -527,10 +527,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   courseHeadline: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 22,
     lineHeight: 28,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -546,12 +546,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#ba1a1a',
   },
   pulseDotPaused: {
-    backgroundColor: LexiColors.outline,
+    backgroundColor: ZuriColors.outline,
   },
   statusBadgeText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 14,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   hubCard: {
     backgroundColor: '#ffffff',
@@ -569,10 +569,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   timerDisplay: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 44,
     lineHeight: 50,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     letterSpacing: -1,
     marginBottom: 24,
     fontWeight: '700',
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ba1a1a',
   },
   hint: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 14,
     color: UI.muted,
   },
@@ -631,12 +631,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     height: 56,
-    backgroundColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
     paddingHorizontal: 30,
     borderRadius: 28,
   },
   stopBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
     color: '#ffffff',
     letterSpacing: 0.3,
@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
   },
   pausedNoteText: {
     flex: 1,
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     lineHeight: 19,
     color: '#6b4511',
@@ -670,10 +670,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tipsTitle: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
     letterSpacing: 1.2,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
     marginBottom: 4,
   },
   tipRow: {
@@ -689,7 +689,7 @@ const styles = StyleSheet.create({
   },
   tipText: {
     flex: 1,
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 14,
     color: UI.inkSoft,
   },
@@ -706,14 +706,14 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   blockTitle: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 24,
     color: UI.ink,
     textAlign: 'center',
     marginBottom: 8,
   },
   blockText: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     lineHeight: 22,
     color: UI.inkSoft,
@@ -737,14 +737,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   summaryLabel: {
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 14,
     color: UI.muted,
     width: 64,
   },
   summaryValue: {
     flex: 1,
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 14,
     color: UI.ink,
     textAlign: 'right',
@@ -761,7 +761,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   primaryWideText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
     color: '#fff',
   },
@@ -775,7 +775,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   secondaryWideText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
     color: UI.error,
   },

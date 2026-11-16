@@ -13,7 +13,7 @@
   - [2. Student Academic State & Timetable](#2-student-academic-state--timetable)
   - [3. Lecture Audio Ingestion & Transcription](#3-lecture-audio-ingestion--transcription)
   - [4. Post-Lecture Intelligence (Structured JSON Schema)](#4-post-lecture-intelligence-structured-json-schema)
-  - [5. AI Academic Chat ("Ask Zuri")](#5-ai-academic-chat-ask-lexi)
+  - [5. AI Academic Chat ("Ask Zuri")](#5-ai-academic-chat-ask-zuri)
 - [Mobile Frontend Architecture](#mobile-frontend-architecture)
   - [Directory Structure](#directory-structure)
   - [Key Frontend Technologies](#key-frontend-technologies)
@@ -82,11 +82,11 @@ flowchart TD
 If you are developing or connecting an existing backend to Zuri, this section details the expected REST endpoints, request payloads, and response structures.
 
 ### Environment Variable for Mobile API
-Set the backend URL in `.env`:
+Set the API gateway in `.env`:
 ```env
-EXPO_PUBLIC_API_BASE_URL=https://api.lexi.yourdomain.com/v1
-EXPO_PUBLIC_WS_BASE_URL=wss://api.lexi.yourdomain.com/ws
+EXPO_PUBLIC_API_GATEWAY_URL=https://api.zurilearn.com
 ```
+The app calls the REST API at `{gateway}/api/v1` (so the endpoints below are relative to `https://api.zurilearn.com/api/v1`). The gateway's health check is `GET https://api.zurilearn.com/health` and needs no sign-in. Every other route except sign-in, register and token refresh needs an `Authorization` header.
 
 ---
 
@@ -317,7 +317,7 @@ Enables the contextual study assistant on the Lecture Analysis screen to answer 
 ### Directory Structure
 
 ```
-LexiMobile/
+zuri-mobile/
 ├── assets/                     # Splash, icons, and onboarding media
 │   └── images/                 # Welcome heroes, branded assets
 ├── src/
@@ -344,16 +344,16 @@ LexiMobile/
 │   │   ├── index.tsx           # Initial entry routing
 │   │   └── _layout.tsx         # Global app wrapper & font loading
 │   ├── components/             # Reusable UI widgets
-│   │   ├── lexi-bottom-tab-bar.tsx # Custom tactile bottom navigation bar
+│   │   ├── zuri-bottom-tab-bar.tsx # Custom tactile bottom navigation bar
 │   │   ├── animated-icon.tsx   # Smooth animated state icons
 │   │   └── ui/                 # Accessible primitives (collapsible, cards)
 │   ├── constants/              # System design tokens
-│   │   ├── lexi-theme.ts       # Warm editorial palette, spacing, and typography
+│   │   ├── zuri-theme.ts       # Warm editorial palette, spacing, and typography
 │   │   └── nigerian-universities.ts # Comprehensive list of universities & faculties
 │   ├── context/
 │   │   └── academic-context.tsx # Global student academic & timetable state
 │   └── hooks/
-│       ├── use-lexi-fonts.ts   # Inter & Source Serif 4 typography loader
+│       ├── use-zuri-fonts.ts   # Inter & Source Serif 4 typography loader
 │       └── use-theme.ts        # Color scheme & theme accessor
 ├── AUDIO_PROCESSING_SPEC.md   # Detailed audio DSP, Groq Whisper benchmarks & server code
 ├── app.json                    # Expo application manifest
@@ -382,8 +382,8 @@ LexiMobile/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/oladraxler01/leximobile.git
-   cd leximobile/LexiMobile
+   git clone https://github.com/oladraxler01/Zuri_mobile.git
+   cd Zuri_mobile
    ```
 
 2. **Install dependencies:**
@@ -395,7 +395,7 @@ LexiMobile/
    ```bash
    cp .env.example .env
    ```
-   Edit `.env` to point `EXPO_PUBLIC_API_BASE_URL` to your backend instance or local development machine IP (e.g., `http://192.168.1.50:8000/api/v1`).
+   `.env` already points at the live gateway (`https://api.zurilearn.com`). To use a backend running on your own computer instead, set `EXPO_PUBLIC_API_GATEWAY_URL` to its address (e.g. `http://192.168.1.50:8080`; a phone can't reach `localhost`). Restart `npx expo start` after changing `.env`.
 
 ### Running the App
 
@@ -419,8 +419,8 @@ npm run web
 
 | Variable | Description | Default / Example |
 | :--- | :--- | :--- |
-| `EXPO_PUBLIC_API_BASE_URL` | Base endpoint for the backend REST API | `https://api.lexi.yourdomain.com/v1` |
-| `EXPO_PUBLIC_WS_BASE_URL` | WebSocket URL for live speech or chat | `wss://api.lexi.yourdomain.com/ws` |
+| `EXPO_PUBLIC_API_GATEWAY_URL` | Zuri API gateway; REST API is under `/api/v1` | `https://api.zurilearn.com` |
+| `EXPO_PUBLIC_USE_LIVE_API` | Send lectures and materials to the live server (needs server sign-in) | `false` |
 | `EXPO_PUBLIC_APP_ENV` | Environment identifier | `development` / `production` |
 
 ---

@@ -14,8 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic } from '@/context/academic-context';
 import { CatalogueSheet } from '@/components/onboarding/catalogue-sheet';
 import { catalogueFor } from '@/constants/course-catalogue';
@@ -34,7 +34,7 @@ const DEPARTMENTS = [
 
 export default function StudentCoursesScreen() {
   const router = useRouter();
-  const [fontsLoaded] = useLexiFonts();
+  const [fontsLoaded] = useZuriFonts();
   const { state, setAcademicInfo, addCourse, removeCourse } = useAcademic();
 
   const [department, setDepartment] = useState(state.department);
@@ -101,7 +101,7 @@ export default function StudentCoursesScreen() {
           accessibilityLabel="Go back"
           hitSlop={12}
         >
-          <Ionicons name="arrow-back" size={24} color={LexiColors.primary} />
+          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
         </Pressable>
 
         <View style={styles.headerCenter}>
@@ -165,7 +165,7 @@ export default function StudentCoursesScreen() {
                   <Ionicons
                     name={isSelected ? 'radio-button-on' : 'radio-button-off'}
                     size={16}
-                    color={isSelected ? LexiColors.primaryContainer : LexiColors.outline}
+                    color={isSelected ? ZuriColors.primaryContainer : ZuriColors.outline}
                   />
                   <Text
                     style={[
@@ -187,7 +187,7 @@ export default function StudentCoursesScreen() {
             value={department}
             onChangeText={setDepartment}
             placeholder="e.g. Computer Science"
-            placeholderTextColor={LexiColors.outline}
+            placeholderTextColor={ZuriColors.outline}
           />
           {/* Quick Department Suggestions */}
           <ScrollView
@@ -256,16 +256,16 @@ export default function StudentCoursesScreen() {
           ]}
           accessibilityRole="button"
         >
-          <Ionicons name="library-outline" size={20} color={LexiColors.primaryContainer} />
+          <Ionicons name="library-outline" size={20} color={ZuriColors.primaryContainer} />
           <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: LexiColors.primary }}>Import from course catalogue</Text>
-            <Text style={{ fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: LexiColors.onSurfaceVariant, marginTop: 2 }}>
+            <Text style={{ fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: ZuriColors.primary }}>Import from course catalogue</Text>
+            <Text style={{ fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: ZuriColors.onSurfaceVariant, marginTop: 2 }}>
               {catalogueFor(department, level).length
                 ? `${catalogueFor(department, level).length} ${department} courses for ${level}`
                 : `Pick your department and level above`}
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={18} color={LexiColors.outline} />
+          <Ionicons name="chevron-forward" size={18} color={ZuriColors.outline} />
         </Pressable>
 
         {/* Course Cards List */}
@@ -299,7 +299,7 @@ export default function StudentCoursesScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`Remove ${course.code}`}
               >
-                <Ionicons name="trash-outline" size={18} color={LexiColors.error} />
+                <Ionicons name="trash-outline" size={18} color={ZuriColors.error} />
               </Pressable>
             </View>
           ))}
@@ -345,7 +345,7 @@ export default function StudentCoursesScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add New Course</Text>
               <Pressable onPress={() => setModalVisible(false)} hitSlop={8}>
-                <Ionicons name="close" size={24} color={LexiColors.primary} />
+                <Ionicons name="close" size={24} color={ZuriColors.primary} />
               </Pressable>
             </View>
 
@@ -355,7 +355,7 @@ export default function StudentCoursesScreen() {
                 <TextInput
                   style={styles.input}
                   placeholder="e.g. CSC 201"
-                  placeholderTextColor={LexiColors.outline}
+                  placeholderTextColor={ZuriColors.outline}
                   value={newCode}
                   onChangeText={setNewCode}
                   autoCapitalize="characters"
@@ -367,7 +367,7 @@ export default function StudentCoursesScreen() {
                 <TextInput
                   style={styles.input}
                   placeholder="e.g. Data Structures & Algorithms"
-                  placeholderTextColor={LexiColors.outline}
+                  placeholderTextColor={ZuriColors.outline}
                   value={newTitle}
                   onChangeText={setNewTitle}
                   autoCapitalize="words"
@@ -380,7 +380,7 @@ export default function StudentCoursesScreen() {
                   <TextInput
                     style={styles.input}
                     placeholder="3"
-                    placeholderTextColor={LexiColors.outline}
+                    placeholderTextColor={ZuriColors.outline}
                     value={newUnits}
                     onChangeText={setNewUnits}
                     keyboardType="number-pad"
@@ -391,7 +391,7 @@ export default function StudentCoursesScreen() {
                   <TextInput
                     style={styles.input}
                     placeholder="e.g. Dr. Adeyemi"
-                    placeholderTextColor={LexiColors.outline}
+                    placeholderTextColor={ZuriColors.outline}
                     value={newLecturer}
                     onChangeText={setNewLecturer}
                   />
@@ -412,14 +412,14 @@ export default function StudentCoursesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: LexiColors.background,
+    backgroundColor: ZuriColors.background,
   },
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
   },
   backButton: {
     padding: 6,
@@ -435,13 +435,13 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   headerTitle: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 22,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     fontWeight: '700',
   },
   stepBadge: {
-    backgroundColor: LexiColors.surfaceContainerLow,
+    backgroundColor: ZuriColors.surfaceContainerLow,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
@@ -449,16 +449,16 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(203, 167, 47, 0.3)',
   },
   stepBadgeText: {
-    fontFamily: LexiFonts.labelSm,
+    fontFamily: ZuriFonts.labelSm,
     fontSize: 11,
-    color: LexiColors.tertiary,
+    color: ZuriColors.tertiary,
     fontWeight: '600',
   },
   headerSpacer: {
     width: 32,
   },
   scrollContent: {
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
     paddingTop: 16,
     paddingBottom: 24,
     maxWidth: 420,
@@ -470,16 +470,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   headline: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 26,
     lineHeight: 32,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
   },
   subtitle: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 14,
     lineHeight: 20,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   sectionCard: {
     backgroundColor: '#F5F3EF',
@@ -490,9 +490,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionLabel: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     marginBottom: 8,
   },
   levelRow: {
@@ -504,20 +504,20 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: LexiColors.surfaceContainerLowest,
+    backgroundColor: ZuriColors.surfaceContainerLowest,
     borderWidth: 1,
-    borderColor: LexiColors.outlineVariant,
+    borderColor: ZuriColors.outlineVariant,
     alignItems: 'center',
     justifyContent: 'center',
   },
   levelChipSelected: {
-    backgroundColor: LexiColors.primaryContainer,
-    borderColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
+    borderColor: ZuriColors.primaryContainer,
   },
   levelChipText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
-    color: LexiColors.onSurface,
+    color: ZuriColors.onSurface,
   },
   levelChipTextSelected: {
     color: '#ffffff',
@@ -534,33 +534,33 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 11,
     borderRadius: 10,
-    backgroundColor: LexiColors.surfaceContainerLowest,
+    backgroundColor: ZuriColors.surfaceContainerLowest,
     borderWidth: 1,
-    borderColor: LexiColors.outlineVariant,
+    borderColor: ZuriColors.outlineVariant,
   },
   semesterTabSelected: {
-    borderColor: LexiColors.primaryContainer,
+    borderColor: ZuriColors.primaryContainer,
     backgroundColor: '#ffffff',
   },
   semesterTabText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 13,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   semesterTabTextSelected: {
-    color: LexiColors.primaryContainer,
+    color: ZuriColors.primaryContainer,
     fontWeight: '600',
   },
   input: {
     height: 48,
-    backgroundColor: LexiColors.surfaceContainerLowest,
+    backgroundColor: ZuriColors.surfaceContainerLowest,
     borderWidth: 1,
-    borderColor: LexiColors.outlineVariant,
+    borderColor: ZuriColors.outlineVariant,
     borderRadius: 10,
     paddingHorizontal: 14,
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 14,
-    color: LexiColors.onSurface,
+    color: ZuriColors.onSurface,
   },
   deptSuggestions: {
     gap: 8,
@@ -570,18 +570,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: LexiColors.surfaceContainerLowest,
+    backgroundColor: ZuriColors.surfaceContainerLowest,
     borderWidth: 1,
-    borderColor: LexiColors.outlineVariant,
+    borderColor: ZuriColors.outlineVariant,
   },
   deptChipSelected: {
-    backgroundColor: LexiColors.primaryContainer,
-    borderColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
+    borderColor: ZuriColors.primaryContainer,
   },
   deptChipText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 12,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   deptChipTextSelected: {
     color: '#ffffff',
@@ -594,15 +594,15 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   sectionHeadline: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 20,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     fontWeight: '600',
   },
   sectionSubtitle: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 12,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   addCourseBtn: {
     flexDirection: 'row',
@@ -611,14 +611,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
-    backgroundColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
   },
   addCourseBtnPressed: {
     opacity: 0.88,
     transform: [{ scale: 0.98 }],
   },
   addCourseBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
     color: '#ffffff',
   },
@@ -639,12 +639,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
     alignItems: 'center',
     justifyContent: 'center',
   },
   courseBadgeCode: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 12,
     color: '#ffffff',
     fontWeight: '700',
@@ -653,10 +653,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   courseTitle: {
-    fontFamily: LexiFonts.bodyLg,
+    fontFamily: ZuriFonts.bodyLg,
     fontSize: 14,
     fontWeight: '600',
-    color: LexiColors.onSurface,
+    color: ZuriColors.onSurface,
     marginBottom: 4,
   },
   courseMetaRow: {
@@ -665,23 +665,23 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   unitChip: {
-    backgroundColor: LexiColors.surfaceContainerLowest,
+    backgroundColor: ZuriColors.surfaceContainerLowest,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: LexiColors.outlineVariant,
+    borderColor: ZuriColors.outlineVariant,
   },
   unitChipText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 11,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     fontWeight: '600',
   },
   lecturerText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 12,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
     flexShrink: 1,
   },
   deleteBtn: {
@@ -689,10 +689,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   footer: {
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
     paddingTop: 12,
     paddingBottom: 20,
-    backgroundColor: LexiColors.background,
+    backgroundColor: ZuriColors.background,
     maxWidth: 420,
     width: '100%',
     alignSelf: 'center',
@@ -703,9 +703,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
     borderRadius: 14,
-    shadowColor: LexiColors.primaryContainer,
+    shadowColor: ZuriColors.primaryContainer,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
@@ -716,9 +716,9 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.985 }],
   },
   proceedButtonText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,
-    color: LexiColors.onPrimary,
+    color: ZuriColors.onPrimary,
     letterSpacing: 1,
     fontWeight: '700',
   },
@@ -733,11 +733,11 @@ const styles = StyleSheet.create({
   modalSheet: {
     width: '100%',
     maxWidth: 380,
-    backgroundColor: LexiColors.background,
+    backgroundColor: ZuriColors.background,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: LexiColors.outlineVariant,
+    borderColor: ZuriColors.outlineVariant,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
@@ -751,9 +751,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   modalTitle: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 18,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     fontWeight: '600',
   },
   modalForm: {
@@ -763,9 +763,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   fieldLabel: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 12,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
   },
   twoColRow: {
     flexDirection: 'row',
@@ -773,14 +773,14 @@ const styles = StyleSheet.create({
   },
   saveCourseBtn: {
     height: 48,
-    backgroundColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
   },
   saveCourseBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,
     color: '#ffffff',
     fontWeight: '600',

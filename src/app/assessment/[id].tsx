@@ -4,8 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { usePlanner } from '@/context/planner-context';
 import { useLectures } from '@/context/lectures-context';
@@ -203,7 +203,7 @@ export default function AssessmentScreen() {
               <View key={g!.concept} style={styles.gap}>
                 <Ionicons name="flag" size={14} color={UI.error} />
                 <Text style={styles.gapText}>
-                  <Text style={{ fontFamily: LexiFonts.labelSmBold }}>{g!.concept}: </Text>
+                  <Text style={{ fontFamily: ZuriFonts.labelSmBold }}>{g!.concept}: </Text>
                   {g!.reason}
                 </Text>
               </View>
@@ -272,8 +272,8 @@ const styles = StyleSheet.create({
   topActions: { flexDirection: 'row', gap: 20 },
   scroll: { padding: 20, paddingTop: 4, paddingBottom: 48, maxWidth: 640, width: '100%', alignSelf: 'center' },
   hero: { backgroundColor: UI.ink, borderRadius: 22, padding: 22, gap: 4 },
-  heroEyebrow: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: '#e9c349' },
-  heroTitle: { fontFamily: LexiFonts.headlineLg, fontSize: 26, lineHeight: 32, color: '#fff', marginTop: 4, marginBottom: 8 },
+  heroEyebrow: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: '#e9c349' },
+  heroTitle: { fontFamily: ZuriFonts.headlineLg, fontSize: 26, lineHeight: 32, color: '#fff', marginTop: 4, marginBottom: 8 },
   facts: { flexDirection: 'row', marginBottom: 6 },
   dueBadge: {
     flexDirection: 'row',
@@ -285,21 +285,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  dueText: { fontFamily: LexiFonts.labelSmBold, fontSize: 12 },
-  heroMeta: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: 'rgba(255,255,255,0.75)' },
+  dueText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12 },
+  heroMeta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: 'rgba(255,255,255,0.75)' },
   venueRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  section: { fontFamily: LexiFonts.headlineMd, fontSize: 19, color: UI.ink, marginTop: 26, marginBottom: 10 },
+  section: { fontFamily: ZuriFonts.headlineMd, fontSize: 19, color: UI.ink, marginTop: 26, marginBottom: 10 },
   sectionRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  count: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.muted },
-  link: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.amber },
-  body: { fontFamily: LexiFonts.bodyRegular, fontSize: 15, lineHeight: 22, color: UI.inkSoft },
-  muted: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 20, color: UI.muted },
+  count: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.muted },
+  link: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.amber },
+  body: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, lineHeight: 22, color: UI.inkSoft },
+  muted: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 20, color: UI.muted },
   card: { backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border, paddingHorizontal: 14, paddingVertical: 4 },
   step: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: UI.borderSoft },
-  stepText: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 15, color: UI.ink },
+  stepText: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 15, color: UI.ink },
   stepDone: { color: UI.muted, textDecorationLine: 'line-through' },
   addStepRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 },
-  addStepInput: { flex: 1, height: 40, fontFamily: LexiFonts.bodyRegular, fontSize: 15, color: UI.ink },
+  addStepInput: { flex: 1, height: 40, fontFamily: ZuriFonts.bodyRegular, fontSize: 15, color: UI.ink },
   doneBtn: {
     height: 50,
     borderRadius: 25,
@@ -311,15 +311,15 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   doneBtnOn: { backgroundColor: UI.card, borderWidth: 1, borderColor: UI.border },
-  doneText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: '#fff' },
+  doneText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: '#fff' },
   planRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: UI.borderSoft },
-  planDate: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.ink },
-  planMins: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.success },
+  planDate: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink },
+  planMins: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.success },
   topicWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   topic: { backgroundColor: UI.cardMuted, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
-  topicText: { fontFamily: LexiFonts.bodyMedium, fontSize: 13, color: UI.ink },
+  topicText: { fontFamily: ZuriFonts.bodyMedium, fontSize: 13, color: UI.ink },
   gap: { flexDirection: 'row', gap: 8, alignItems: 'flex-start', backgroundColor: '#fff8f6', borderRadius: 12, padding: 12, marginTop: 10 },
-  gapText: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.inkSoft },
+  gapText: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.inkSoft },
   askBtn: {
     height: 52,
     borderRadius: 26,
@@ -331,5 +331,5 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 28,
   },
-  askText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#7a4f12' },
+  askText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#7a4f12' },
 });

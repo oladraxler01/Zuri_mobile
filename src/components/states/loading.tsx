@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, type DimensionValue, type ViewStyle } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 
 /** Centered spinner with an optional label. */
 export function LoadingState({ label, style }: { label?: string; style?: ViewStyle }) {
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   label: {
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 14,
     color: UI.muted,
   },

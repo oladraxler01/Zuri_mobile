@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 
 interface ConfirmSheetProps {
   visible: boolean;
@@ -70,12 +70,12 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   title: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 22,
     color: UI.ink,
   },
   message: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     lineHeight: 22,
     color: UI.inkSoft,
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     backgroundColor: UI.error,
   },
   confirmText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
     color: '#fff',
   },
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cancelText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
     color: UI.ink,
   },

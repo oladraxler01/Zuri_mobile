@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { ScreenShell, Panel } from '@/components/dashboard';
 import { Chip } from '@/components/ui/chip';
@@ -73,12 +73,12 @@ const styles = StyleSheet.create({
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 20, marginBottom: 6 },
   step: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: UI.border, alignItems: 'center', justifyContent: 'center' },
-  hours: { fontFamily: LexiFonts.headlineLg, fontSize: 30, color: UI.ink, minWidth: 70, textAlign: 'center' },
-  muted: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: UI.muted },
+  hours: { fontFamily: ZuriFonts.headlineLg, fontSize: 30, color: UI.ink, minWidth: 70, textAlign: 'center' },
+  muted: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted },
   goal: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: UI.borderSoft },
-  goalText: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 15, color: UI.ink },
+  goalText: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 15, color: UI.ink },
   goalDone: { color: UI.muted, textDecorationLine: 'line-through' },
   addRow: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  input: { flex: 1, height: 46, borderRadius: 12, borderWidth: 1, borderColor: UI.border, backgroundColor: UI.bg, paddingHorizontal: 14, fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.ink },
+  input: { flex: 1, height: 46, borderRadius: 12, borderWidth: 1, borderColor: UI.border, backgroundColor: UI.bg, paddingHorizontal: 14, fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.ink },
   addBtn: { width: 46, height: 46, borderRadius: 23, backgroundColor: UI.ink, alignItems: 'center', justifyContent: 'center' },
 });

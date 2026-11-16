@@ -20,6 +20,8 @@ export function removeKey(key: string): void {
   AsyncStorage.removeItem(key).catch(() => {});
 }
 
+// Keys keep the old 'lexi.' prefix on purpose: renaming them would wipe data
+// already saved on testers' phones (profile, lectures, sign-in).
 export const STORAGE_KEYS = {
   session: 'lexi.session.v1',
   academic: 'lexi.academic.v1',

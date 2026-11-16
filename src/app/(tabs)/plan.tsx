@@ -4,8 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic, type TimetableSlot } from '@/context/academic-context';
 import { usePlanner } from '@/context/planner-context';
 import { Segmented } from '@/components/ui/chip';
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 12,
   },
-  title: { fontFamily: LexiFonts.headlineLg, fontSize: 30, color: UI.ink },
+  title: { fontFamily: ZuriFonts.headlineLg, fontSize: 30, color: UI.ink },
   addBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  addText: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: '#fff' },
+  addText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: '#fff' },
   segmentWrap: { paddingHorizontal: 20, paddingBottom: 12 },
   scroll: { paddingHorizontal: 20, paddingBottom: 120, maxWidth: 640, width: '100%', alignSelf: 'center' },
   summary: {
@@ -419,11 +419,11 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   summaryDivider: { width: 1, height: 28, backgroundColor: UI.border },
-  statValue: { fontFamily: LexiFonts.headlineMd, fontSize: 20, color: UI.ink },
-  statLabel: { fontFamily: LexiFonts.bodyRegular, fontSize: 11, color: UI.muted, marginTop: 2, textAlign: 'center' },
+  statValue: { fontFamily: ZuriFonts.headlineMd, fontSize: 20, color: UI.ink },
+  statLabel: { fontFamily: ZuriFonts.bodyRegular, fontSize: 11, color: UI.muted, marginTop: 2, textAlign: 'center' },
   day: { marginBottom: 18 },
-  dayLabel: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.ink, marginBottom: 8 },
-  free: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: UI.muted },
+  dayLabel: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.ink, marginBottom: 8 },
+  free: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -437,12 +437,12 @@ const styles = StyleSheet.create({
   dueRow: { backgroundColor: '#fff9f0', borderColor: '#f3dfbf' },
   studyRow: { backgroundColor: '#f4f8ee', borderColor: '#dfe8cf' },
   eventRow: { backgroundColor: UI.amberSoft, borderColor: 'transparent' },
-  rowTime: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.muted, width: 64 },
+  rowTime: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.muted, width: 64 },
   rowBar: { width: 3, alignSelf: 'stretch', borderRadius: 2 },
-  rowTitle: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.ink },
-  rowMeta: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 1 },
-  footnote: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, lineHeight: 18, color: UI.muted, marginTop: 4 },
-  groupLabel: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginBottom: 10 },
+  rowTitle: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink },
+  rowMeta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 1 },
+  footnote: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, lineHeight: 18, color: UI.muted, marginTop: 4 },
+  groupLabel: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginBottom: 10 },
   calCard: {
     backgroundColor: UI.card,
     borderRadius: 18,
@@ -452,23 +452,23 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   calHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
-  calMonth: { fontFamily: LexiFonts.headlineMd, fontSize: 18, color: UI.ink },
+  calMonth: { fontFamily: ZuriFonts.headlineMd, fontSize: 18, color: UI.ink },
   calRow: { flexDirection: 'row' },
-  calDow: { flex: 1, textAlign: 'center', fontFamily: LexiFonts.labelSmBold, fontSize: 11, color: UI.muted, marginBottom: 6 },
+  calDow: { flex: 1, textAlign: 'center', fontFamily: ZuriFonts.labelSmBold, fontSize: 11, color: UI.muted, marginBottom: 6 },
   calGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   calCell: { width: `${100 / 7}%`, alignItems: 'center', paddingVertical: 3 },
   calDay: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   calToday: { borderWidth: 1.5, borderColor: UI.amber },
   calSel: { backgroundColor: UI.ink },
-  calDayText: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.ink },
+  calDayText: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink },
   dots: { height: 6, flexDirection: 'row', gap: 2, marginTop: 2 },
   dot: { width: 5, height: 5, borderRadius: 3 },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: UI.borderSoft },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   legendSwatch: { width: 10, height: 10, borderRadius: 5 },
-  legendText: { fontFamily: LexiFonts.bodyRegular, fontSize: 11, color: UI.muted },
+  legendText: { fontFamily: ZuriFonts.bodyRegular, fontSize: 11, color: UI.muted },
   calList: { backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border, paddingHorizontal: 14 },
   calListRow: { flexDirection: 'row', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: UI.borderSoft },
-  calListDate: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.amber, width: 110 },
-  calListTitle: { flex: 1, fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.ink },
+  calListDate: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.amber, width: 110 },
+  calListTitle: { flex: 1, fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink },
 });

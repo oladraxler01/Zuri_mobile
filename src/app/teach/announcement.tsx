@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Switch } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useLecturer } from '@/context/lecturer-context';
 import { ScreenShell, Panel, Divider } from '@/components/dashboard';
 import { Chip } from '@/components/ui/chip';
@@ -98,21 +98,21 @@ const styles = StyleSheet.create({
     borderColor: UI.border,
     backgroundColor: UI.bg,
     paddingHorizontal: 14,
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     color: UI.ink,
     marginBottom: 10,
   },
   body: { height: 130, paddingTop: 12 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
-  rowTitle: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink },
-  rowSub: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted },
+  rowTitle: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink },
+  rowSub: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted },
   primary: { height: 50, borderRadius: 25, backgroundColor: UI.ink, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10 },
-  primaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#fff' },
-  sent: { fontFamily: LexiFonts.bodyMedium, fontSize: 13, color: UI.success, textAlign: 'center', marginTop: 10 },
+  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
+  sent: { fontFamily: ZuriFonts.bodyMedium, fontSize: 13, color: UI.success, textAlign: 'center', marginTop: 10 },
   hItem: { paddingVertical: 12 },
   hHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  hTitle: { flex: 1, fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink },
-  hMeta: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
-  hBody: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 20, color: UI.inkSoft, marginTop: 6 },
+  hTitle: { flex: 1, fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink },
+  hMeta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
+  hBody: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 20, color: UI.inkSoft, marginTop: 6 },
 });

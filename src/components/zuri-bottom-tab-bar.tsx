@@ -3,21 +3,21 @@ import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import type { BottomTabBarProps } from 'expo-router/tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiColors, LexiFonts } from '@/constants/lexi-theme';
+import { ZuriColors, ZuriFonts } from '@/constants/zuri-theme';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
-export interface LexiTabIcon {
+export interface ZuriTabIcon {
   outline: IoniconName;
   filled: IoniconName;
 }
 
-interface LexiBottomTabBarProps extends BottomTabBarProps {
+interface ZuriBottomTabBarProps extends BottomTabBarProps {
   /** Optional per-route icons. Labels come from each screen's `title` option. */
-  icons?: Record<string, LexiTabIcon>;
+  icons?: Record<string, ZuriTabIcon>;
 }
 
-export function LexiBottomTabBar({ state, descriptors, emitter, navigateToTab, icons }: LexiBottomTabBarProps) {
+export function ZuriBottomTabBar({ state, descriptors, emitter, navigateToTab, icons }: ZuriBottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
   const getTabConfig = (routeName: string, title?: string) => {
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     minWidth: 64,
   },
   activeLabel: {
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 11,
     fontWeight: '700',
     color: '#5c3400', // on-secondary-container
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   inactiveLabel: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 11,
     fontWeight: '500',
     color: '#46483d', // on-surface-variant

@@ -3,8 +3,8 @@ import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
 import { ScreenShell, Panel, Grid, HBarList, BarChart, ListRow, Divider, SampleBanner, StatusBadge } from '@/components/dashboard';
@@ -128,13 +128,13 @@ const styles = StyleSheet.create({
     backgroundColor: UI.bg,
     paddingHorizontal: 16,
   },
-  searchInput: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.ink },
-  muted: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: UI.muted },
-  note: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, lineHeight: 18, color: UI.muted, marginTop: 10 },
+  searchInput: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.ink },
+  muted: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted },
+  note: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, lineHeight: 18, color: UI.muted, marginTop: 10 },
   mapRow: { paddingVertical: 10, gap: 6 },
   mapBorder: { borderTopWidth: 1, borderTopColor: UI.borderSoft },
-  mapConcept: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink },
+  mapConcept: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink },
   mapCourses: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   pill: { backgroundColor: UI.cardMuted, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
-  pillText: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, color: UI.ink },
+  pillText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, color: UI.ink },
 });

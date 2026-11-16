@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import type { LectureQuestion } from '@/types/lecture';
 import { tabStyles as t } from './tab-styles';
 
@@ -221,13 +221,13 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   introTitle: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 22,
     color: UI.ink,
     marginBottom: 6,
   },
   best: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
     color: UI.amber,
     marginBottom: 14,
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   progressText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 12,
     color: UI.muted,
   },
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     backgroundColor: UI.amber,
   },
   question: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 21,
     lineHeight: 29,
     color: UI.ink,
@@ -293,13 +293,13 @@ const styles = StyleSheet.create({
     borderColor: UI.ink,
   },
   letterText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
     color: UI.ink,
   },
   optionText: {
     flex: 1,
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 15,
     color: UI.ink,
   },
@@ -309,18 +309,18 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   feedbackTitle: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,
     marginBottom: 4,
   },
   feedbackText: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 14,
     lineHeight: 20,
     color: UI.inkSoft,
   },
   scoreBig: {
-    fontFamily: LexiFonts.headlineLg,
+    fontFamily: ZuriFonts.headlineLg,
     fontSize: 56,
     color: UI.ink,
   },
@@ -336,20 +336,20 @@ const styles = StyleSheet.create({
   },
   reviewQ: {
     flex: 1,
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 15,
     lineHeight: 21,
     color: UI.ink,
   },
   reviewLine: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     color: UI.inkSoft,
     marginLeft: 30,
     marginTop: 2,
   },
   reviewExplain: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     lineHeight: 19,
     color: UI.muted,

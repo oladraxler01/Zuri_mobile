@@ -6,8 +6,8 @@ import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withDelay, withTiming } from 'react-native-reanimated';
 import { getRecordingPermissionsAsync } from 'expo-audio';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { getNotificationPermission } from '@/services/notifications';
 import type { IoniconName } from '@/types/lecture';
@@ -97,13 +97,13 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 18,
   },
-  h1: { fontFamily: LexiFonts.headlineLg, fontSize: 30, color: UI.ink, textAlign: 'center' },
-  lead: { fontFamily: LexiFonts.bodyRegular, fontSize: 15, color: UI.muted, textAlign: 'center', marginTop: 4, marginBottom: 22 },
+  h1: { fontFamily: ZuriFonts.headlineLg, fontSize: 30, color: UI.ink, textAlign: 'center' },
+  lead: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, color: UI.muted, textAlign: 'center', marginTop: 4, marginBottom: 22 },
   card: { backgroundColor: UI.card, borderRadius: 18, borderWidth: 1, borderColor: UI.border, paddingHorizontal: 16 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14 },
   rowBorder: { borderTopWidth: 1, borderTopColor: UI.borderSoft },
-  label: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.ink },
-  value: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: UI.muted, marginTop: 2 },
+  label: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.ink },
+  value: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted, marginTop: 2 },
   primary: {
     height: 54,
     borderRadius: 27,
@@ -114,6 +114,6 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 24,
   },
-  primaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#fff' },
-  hint: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, textAlign: 'center', marginTop: 12 },
+  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
+  hint: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, textAlign: 'center', marginTop: 12 },
 });

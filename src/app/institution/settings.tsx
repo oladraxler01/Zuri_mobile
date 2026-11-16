@@ -3,8 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useInstitution } from '@/context/institution-context';
 import { useSession } from '@/context/session-context';
 import { ScreenShell, Panel, ListRow, Divider } from '@/components/dashboard';
@@ -57,5 +57,5 @@ const styles = StyleSheet.create({
     borderColor: UI.errorSoft,
     backgroundColor: '#fff8f7',
   },
-  signOutText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.error },
+  signOutText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.error },
 });

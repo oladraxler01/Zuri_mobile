@@ -14,14 +14,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { NIGERIAN_UNIVERSITIES, University } from '@/constants/nigerian-universities';
 import { useAcademic } from '@/context/academic-context';
 
 export default function InstitutionSelectScreen() {
   const router = useRouter();
-  const [fontsLoaded] = useLexiFonts();
+  const [fontsLoaded] = useZuriFonts();
   const { setAcademicInfo } = useAcademic();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -78,7 +78,7 @@ export default function InstitutionSelectScreen() {
     } else {
       Alert.alert(
         'Request Institution',
-        'Please send your institution name to support@lexiapp.com and our team will add it.'
+        'Please send your institution name to support@zurilearn.com and our team will add it.'
       );
     }
   };
@@ -100,7 +100,7 @@ export default function InstitutionSelectScreen() {
       >
         {/* Placeholder Crest */}
         <View style={styles.crestBox}>
-          <Ionicons name="business-outline" size={22} color={LexiColors.outline} />
+          <Ionicons name="business-outline" size={22} color={ZuriColors.outline} />
         </View>
 
         {/* University Info */}
@@ -138,7 +138,7 @@ export default function InstitutionSelectScreen() {
           accessibilityLabel="Go back"
           hitSlop={12}
         >
-          <Ionicons name="arrow-back" size={24} color={LexiColors.primary} />
+          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
         </Pressable>
         <Text style={styles.headerTitle}>Zuri</Text>
         <View style={styles.headerSpacer} />
@@ -154,13 +154,13 @@ export default function InstitutionSelectScreen() {
             <Ionicons
               name="search"
               size={20}
-              color={LexiColors.outline}
+              color={ZuriColors.outline}
               style={styles.searchIcon}
             />
             <TextInput
               style={styles.searchInput}
               placeholder="Search for your university..."
-              placeholderTextColor={LexiColors.outline}
+              placeholderTextColor={ZuriColors.outline}
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCapitalize="words"
@@ -172,7 +172,7 @@ export default function InstitutionSelectScreen() {
                 hitSlop={8}
                 style={styles.clearButton}
               >
-                <Ionicons name="close-circle" size={18} color={LexiColors.outline} />
+                <Ionicons name="close-circle" size={18} color={ZuriColors.outline} />
               </Pressable>
             )}
           </View>
@@ -191,7 +191,7 @@ export default function InstitutionSelectScreen() {
           windowSize={10}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="school-outline" size={40} color={LexiColors.outline} />
+              <Ionicons name="school-outline" size={40} color={ZuriColors.outline} />
               <Text style={styles.emptyTitle}>No institution found</Text>
               <Text style={styles.emptySubtitle}>
                 No universities found matching "{searchQuery}".
@@ -234,14 +234,14 @@ export default function InstitutionSelectScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: LexiColors.background,
+    backgroundColor: ZuriColors.background,
   },
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
   },
   backButton: {
     padding: 6,
@@ -253,9 +253,9 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.95 }],
   },
   headerTitle: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 24,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     fontWeight: '700',
   },
   headerSpacer: {
@@ -266,17 +266,17 @@ const styles = StyleSheet.create({
     maxWidth: 420,
     width: '100%',
     alignSelf: 'center',
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
   },
   titleSection: {
     paddingTop: 12,
     paddingBottom: 16,
   },
   headline: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 28,
     lineHeight: 34,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     marginBottom: 20,
   },
   searchContainer: {
@@ -295,13 +295,13 @@ const styles = StyleSheet.create({
     height: 48,
     backgroundColor: '#F5F3EF',
     borderWidth: 1,
-    borderColor: LexiColors.outlineVariant,
+    borderColor: ZuriColors.outlineVariant,
     borderRadius: 10,
     paddingLeft: 44,
     paddingRight: 40,
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 15,
-    color: LexiColors.onSurface,
+    color: ZuriColors.onSurface,
   },
   clearButton: {
     position: 'absolute',
@@ -325,9 +325,9 @@ const styles = StyleSheet.create({
   },
   cardSelected: {
     borderWidth: 1.5,
-    borderColor: LexiColors.primary,
+    borderColor: ZuriColors.primary,
     backgroundColor: '#ffffff',
-    shadowColor: LexiColors.primary,
+    shadowColor: ZuriColors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: LexiColors.surfaceContainerHigh,
+    backgroundColor: ZuriColors.surfaceContainerHigh,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -348,22 +348,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   uniName: {
-    fontFamily: LexiFonts.bodyLg,
+    fontFamily: ZuriFonts.bodyLg,
     fontSize: 15,
     fontWeight: '600',
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     marginBottom: 2,
   },
   uniLocation: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 13,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   checkBadge: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: LexiColors.primary,
+    backgroundColor: ZuriColors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -381,15 +381,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emptyTitle: {
-    fontFamily: LexiFonts.bodyLg,
+    fontFamily: ZuriFonts.bodyLg,
     fontSize: 16,
     fontWeight: '600',
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
   },
   emptySubtitle: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 13,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
     textAlign: 'center',
   },
   requestButton: {
@@ -397,27 +397,27 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: LexiColors.surfaceContainerHigh,
+    backgroundColor: ZuriColors.surfaceContainerHigh,
   },
   requestButtonText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
   },
   footer: {
     paddingTop: 12,
     paddingBottom: 20,
     gap: 12,
-    backgroundColor: LexiColors.background,
+    backgroundColor: ZuriColors.background,
   },
   continueButton: {
     width: '100%',
     height: 56,
-    backgroundColor: LexiColors.primary,
+    backgroundColor: ZuriColors.primary,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: LexiColors.primary,
+    shadowColor: ZuriColors.primary,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
@@ -428,9 +428,9 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.985 }],
   },
   continueButtonText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,
-    color: LexiColors.onPrimary,
+    color: ZuriColors.onPrimary,
     letterSpacing: 1.2,
     fontWeight: '700',
   },
@@ -439,12 +439,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   requestFooterText: {
-    fontFamily: LexiFonts.labelSm,
+    fontFamily: ZuriFonts.labelSm,
     fontSize: 13,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   requestFooterLink: {
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     textDecorationLine: 'underline',
     fontWeight: '600',
   },

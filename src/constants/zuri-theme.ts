@@ -5,7 +5,7 @@
  */
 
 // ─── Color Palette ───────────────────────────────────────────────
-export const LexiColors = {
+export const ZuriColors = {
   // Core surfaces
   surface: '#fbf9f8',
   background: '#fbf9f8',
@@ -71,7 +71,7 @@ export const LexiColors = {
 } as const;
 
 // ─── Typography ──────────────────────────────────────────────────
-export const LexiFonts = {
+export const ZuriFonts = {
   headlineLg: 'SourceSerif4_600SemiBold',
   headlineLgMobile: 'SourceSerif4_600SemiBold',
   headlineMd: 'SourceSerif4_600SemiBold',
@@ -86,7 +86,7 @@ export const LexiFonts = {
   labelSmBold: 'Inter_600SemiBold',
 } as const;
 
-export const LexiFontSizes = {
+export const ZuriFontSizes = {
   headlineLg: { fontSize: 32, lineHeight: 38.4, fontWeight: '600' as const, letterSpacing: -0.64 },
   headlineLgMobile: { fontSize: 28, lineHeight: 33.6, fontWeight: '600' as const },
   headlineMd: { fontSize: 24, lineHeight: 31.2, fontWeight: '600' as const },
@@ -96,7 +96,7 @@ export const LexiFontSizes = {
 } as const;
 
 // ─── Spacing ─────────────────────────────────────────────────────
-export const LexiSpacing = {
+export const ZuriSpacing = {
   base: 4,
   xs: 8,
   sm: 16,
@@ -108,7 +108,7 @@ export const LexiSpacing = {
 } as const;
 
 // ─── Border Radius ───────────────────────────────────────────────
-export const LexiRadius = {
+export const ZuriRadius = {
   default: 4,
   lg: 8,
   xl: 12,

@@ -19,12 +19,12 @@ import Animated, {
   withDelay,
   Easing,
 } from 'react-native-reanimated';
-import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const [fontsLoaded] = useLexiFonts();
+  const [fontsLoaded] = useZuriFonts();
 
   // Entrance animations
   const contentOpacity = useSharedValue(0);
@@ -143,7 +143,7 @@ export default function WelcomeScreen() {
               <Text style={styles.secondaryButtonText}>Sign In</Text>
             </Pressable>
             <Pressable onPress={() => router.push('/onboarding/admin-sign-in' as Href)} hitSlop={8} style={{ alignSelf: 'center', paddingVertical: 10 }}>
-              <Text style={{ fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: LexiColors.onSurfaceVariant }}>Institution admin? Sign in here</Text>
+              <Text style={{ fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: ZuriColors.onSurfaceVariant }}>Institution admin? Sign in here</Text>
             </Pressable>
           </View>
 
@@ -169,12 +169,12 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: LexiColors.background,
+    backgroundColor: ZuriColors.background,
   },
   innerWrapper: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
     maxWidth: 420,
     width: '100%',
     alignSelf: 'center',
@@ -217,17 +217,17 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   headline: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 32,
     lineHeight: 38,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     letterSpacing: -0.5,
   },
   bodyText: {
-    fontFamily: LexiFonts.bodyLg,
+    fontFamily: ZuriFonts.bodyLg,
     fontSize: 16,
     lineHeight: 25,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
     maxWidth: 290,
   },
 
@@ -244,10 +244,10 @@ const styles = StyleSheet.create({
   primaryButton: {
     minHeight: 56,
     borderRadius: 14,
-    backgroundColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: LexiColors.primaryContainer,
+    shadowColor: ZuriColors.primaryContainer,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.14,
     shadowRadius: 8,
@@ -258,9 +258,9 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.985 }],
   },
   primaryButtonText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
-    color: LexiColors.onPrimary,
+    color: ZuriColors.onPrimary,
     letterSpacing: 0.2,
   },
   secondaryButton: {
@@ -268,18 +268,18 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: LexiColors.primaryContainer,
+    borderColor: ZuriColors.primaryContainer,
     alignItems: 'center',
     justifyContent: 'center',
   },
   secondaryButtonPressed: {
-    backgroundColor: LexiColors.surfaceContainerLow,
+    backgroundColor: ZuriColors.surfaceContainerLow,
     transform: [{ scale: 0.985 }],
   },
   secondaryButtonText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
-    color: LexiColors.primaryContainer,
+    color: ZuriColors.primaryContainer,
     letterSpacing: 0.2,
   },
 
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   legalText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 12,
     lineHeight: 18,
     color: 'rgba(67, 72, 68, 0.75)',
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   },
   legalLink: {
     textDecorationLine: 'underline',
-    color: LexiColors.primary,
-    fontFamily: LexiFonts.bodyMdMedium,
+    color: ZuriColors.primary,
+    fontFamily: ZuriFonts.bodyMdMedium,
   },
 });

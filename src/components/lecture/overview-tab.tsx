@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView, Modal, TextInput, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import type { Lecture, LectureConcept, TranscriptSegment } from '@/types/lecture';
 import { formatClock } from '@/utils/time';
 import { searchTranscript } from '@/utils/transcript-search';
@@ -17,7 +17,7 @@ interface Props {
   onCard?: (card: { question: string; answer: string }, knew: boolean) => void;
 }
 
-type ChatMsg = { role: 'user' | 'lexi'; text: string; refs?: TranscriptSegment[] };
+type ChatMsg = { role: 'user' | 'zuri'; text: string; refs?: TranscriptSegment[] };
 
 /** Summary, "what you need to know", knowledge gap and study actions. */
 export function OverviewTab({ lecture, canSeek, onSeek, onOpenQuiz, onCard }: Props) {
@@ -357,7 +357,7 @@ function AskSheet({
   const [input, setInput] = useState('');
   const [msgs, setMsgs] = useState<ChatMsg[]>([
     {
-      role: 'lexi',
+      role: 'zuri',
       text: `Ask me anything about this ${lecture.courseCode} lecture. I'll point you to the exact moments in the recording.`,
     },
   ]);
@@ -367,9 +367,9 @@ function AskSheet({
     if (!q) return;
     const refs = searchTranscript(transcript, q, 2);
     const reply: ChatMsg = refs.length
-      ? { role: 'lexi', text: 'Here is what was said about that:', refs }
+      ? { role: 'zuri', text: 'Here is what was said about that:', refs }
       : {
-          role: 'lexi',
+          role: 'zuri',
           text: "I couldn't find that in this lecture's transcript. Try different words, or check the Transcript tab.",
         };
     setMsgs((m) => [...m, { role: 'user', text: q }, reply]);
@@ -392,7 +392,7 @@ function AskSheet({
 
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 10, paddingVertical: 8 }}>
             {msgs.map((m, i) => (
-              <View key={i} style={[styles.bubble, m.role === 'user' ? styles.bubbleUser : styles.bubbleLexi]}>
+              <View key={i} style={[styles.bubble, m.role === 'user' ? styles.bubbleUser : styles.bubbleZuri]}>
                 <Text style={[styles.bubbleText, m.role === 'user' && { color: '#fff' }]}>{m.text}</Text>
                 {m.refs?.map((r) => (
                   <View key={r.start} style={{ marginTop: 8 }}>
@@ -457,12 +457,12 @@ const styles = StyleSheet.create({
   },
   conceptTitle: {
     flex: 1,
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,
     color: UI.ink,
   },
   conceptSummary: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     lineHeight: 19,
     color: UI.inkSoft,
@@ -486,20 +486,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   gapLabel: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 10,
     letterSpacing: 1.2,
     color: UI.error,
   },
   gapTitle: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 18,
     color: UI.ink,
     marginTop: 2,
     marginBottom: 4,
   },
   gapReason: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 14,
     lineHeight: 20,
     color: UI.inkSoft,
@@ -511,13 +511,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   gapLinkText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,
     color: UI.ink,
     textDecorationLine: 'underline',
   },
   subLabel: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
     letterSpacing: 1.2,
     color: UI.muted,
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
   },
   refText: {
     flex: 1,
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     lineHeight: 19,
     color: UI.inkSoft,
@@ -570,14 +570,14 @@ const styles = StyleSheet.create({
     borderColor: UI.ink,
   },
   flashTag: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
     letterSpacing: 1.2,
     color: UI.muted,
     marginBottom: 12,
   },
   flashText: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 19,
     lineHeight: 27,
     color: UI.ink,
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   askNote: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 12,
     color: UI.muted,
     marginTop: -8,
@@ -603,12 +603,12 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     backgroundColor: UI.ink,
   },
-  bubbleLexi: {
+  bubbleZuri: {
     alignSelf: 'flex-start',
     backgroundColor: UI.cardMuted,
   },
   bubbleText: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 14,
     lineHeight: 20,
     color: UI.ink,
@@ -626,7 +626,7 @@ const styles = StyleSheet.create({
     backgroundColor: UI.card,
   },
   chipText: {
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 13,
     color: UI.ink,
   },
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
     borderColor: UI.border,
     backgroundColor: UI.card,
     paddingHorizontal: 16,
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     color: UI.ink,
   },

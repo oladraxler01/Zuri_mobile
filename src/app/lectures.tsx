@@ -4,9 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useLectures } from '@/context/lectures-context';
 import { useAcademic } from '@/context/academic-context';
 import { LectureCard } from '@/components/lecture/lecture-card';
@@ -33,7 +33,7 @@ function matches(lecture: Lecture, q: string) {
 export default function LectureArchiveScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ courseId?: string }>();
-  const [fontsLoaded] = useLexiFonts();
+  const [fontsLoaded] = useZuriFonts();
   const { lectures, loaded } = useLectures();
   const { state } = useAcademic();
   const [query, setQuery] = useState('');
@@ -158,9 +158,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: UI.borderSoft,
   },
-  topTitle: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: UI.ink },
+  topTitle: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.ink },
   scroll: { padding: 20, paddingBottom: 48, maxWidth: 640, width: '100%', alignSelf: 'center' },
-  count: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, letterSpacing: 1, color: UI.muted, marginBottom: 12 },
+  count: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, letterSpacing: 1, color: UI.muted, marginBottom: 12 },
   search: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 12,
   },
-  searchInput: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.ink },
+  searchInput: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.ink },
   chips: { gap: 8, paddingBottom: 14 },
   chip: {
     borderWidth: 1,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: UI.card,
   },
   chipOn: { backgroundColor: UI.ink, borderColor: UI.ink },
-  chipText: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.ink },
+  chipText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.ink },
   empty: { alignItems: 'center', paddingVertical: 40, paddingHorizontal: 16 },
   emptyIcon: {
     width: 64,
@@ -195,9 +195,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 16,
   },
-  emptyTitle: { fontFamily: LexiFonts.headlineMd, fontSize: 22, color: UI.ink, marginBottom: 6 },
+  emptyTitle: { fontFamily: ZuriFonts.headlineMd, fontSize: 22, color: UI.ink, marginBottom: 6 },
   emptyText: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     lineHeight: 22,
     color: UI.inkSoft,
@@ -213,6 +213,6 @@ const styles = StyleSheet.create({
     backgroundColor: UI.ink,
     paddingHorizontal: 24,
   },
-  emptyBtnText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#fff' },
-  noMatch: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.muted, textAlign: 'center', marginTop: 24 },
+  emptyBtnText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
+  noMatch: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.muted, textAlign: 'center', marginTop: 24 },
 });

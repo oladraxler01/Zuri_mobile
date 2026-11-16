@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { catalogueFor, type CatalogueCourse } from '@/constants/course-catalogue';
 
 /** Pick courses from the department catalogue for the student's level. */
@@ -108,14 +108,14 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: UI.bg, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 22, paddingBottom: 32 },
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 12 },
-  title: { fontFamily: LexiFonts.headlineMd, fontSize: 21, color: UI.ink },
-  sub: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: UI.muted, marginTop: 2 },
-  empty: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft, marginVertical: 12 },
+  title: { fontFamily: ZuriFonts.headlineMd, fontSize: 21, color: UI.ink },
+  sub: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted, marginTop: 2 },
+  empty: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft, marginVertical: 12 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: UI.borderSoft },
-  code: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: UI.amber },
-  courseTitle: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink, marginTop: 2 },
-  added: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted },
+  code: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: UI.amber },
+  courseTitle: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink, marginTop: 2 },
+  added: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted },
   primary: { height: 52, borderRadius: 26, backgroundColor: UI.ink, alignItems: 'center', justifyContent: 'center', marginTop: 16 },
-  primaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#fff' },
-  note: { fontFamily: LexiFonts.bodyRegular, fontSize: 11, color: UI.muted, textAlign: 'center', marginTop: 8 },
+  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
+  note: { fontFamily: ZuriFonts.bodyRegular, fontSize: 11, color: UI.muted, textAlign: 'center', marginTop: 8 },
 });

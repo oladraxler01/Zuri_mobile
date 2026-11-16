@@ -1,8 +1,8 @@
 import React from 'react';
 import { Pressable, Text, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import type { IoniconName } from '@/types/lecture';
 
 /** Selectable pill used for filters and pickers. */
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     backgroundColor: UI.card,
   },
   on: { backgroundColor: UI.ink, borderColor: UI.ink },
-  text: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.ink },
+  text: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.ink },
   segment: {
     flexDirection: 'row',
     backgroundColor: UI.cardMuted,
@@ -91,5 +91,5 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     elevation: 1,
   },
-  segText: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.muted },
+  segText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.muted },
 });

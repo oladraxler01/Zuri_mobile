@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent, GestureResponderEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { AudioPlayer, AudioStatus } from 'expo-audio';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { formatClock } from '@/utils/time';
 
 const RATES = [1, 1.25, 1.5, 2, 0.75];
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   time: {
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 12,
     color: UI.muted,
     minWidth: 44,
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   rateText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
     color: UI.ink,
   },

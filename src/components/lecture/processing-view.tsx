@@ -10,8 +10,8 @@ import Animated, {
   withDelay,
   Easing,
 } from 'react-native-reanimated';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import type { Lecture } from '@/types/lecture';
 import { formatDuration } from '@/utils/time';
 import { isBackendConfigured } from '@/services/lecture-api';
@@ -217,21 +217,21 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   eyebrow: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
     letterSpacing: 1.4,
     color: UI.amber,
     marginBottom: 8,
   },
   heading: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 26,
     lineHeight: 32,
     color: UI.ink,
     marginBottom: 8,
   },
   sub: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     lineHeight: 22,
     color: UI.inkSoft,
@@ -291,13 +291,13 @@ const styles = StyleSheet.create({
     paddingBottom: 18,
   },
   stepTitle: {
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 15,
     color: UI.ink,
     marginTop: 3,
   },
   stepDesc: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     lineHeight: 18,
     color: UI.muted,
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
     backgroundColor: UI.amber,
   },
   note: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     lineHeight: 19,
     color: UI.muted,
@@ -351,13 +351,13 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   statValue: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 24,
     color: UI.ink,
     marginTop: 4,
   },
   statLabel: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     color: UI.muted,
   },
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   primaryText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
     color: '#fff',
   },
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   secondaryText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
     color: UI.error,
   },

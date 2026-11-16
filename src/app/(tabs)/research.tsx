@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
+import { ZuriFonts } from '@/constants/zuri-theme';
 import { useResearch } from '@/context/research-context';
 import { useAcademic } from '@/context/academic-context';
 import { useNetwork } from '@/context/network-context';
@@ -90,6 +90,6 @@ const styles = StyleSheet.create({
   project: { paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: ED.rule, gap: 4 },
   projectTitle: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 21, lineHeight: 27, color: ED.ink },
   projectQ: { fontFamily: 'SourceSerif4_400Regular', fontSize: 15, lineHeight: 22, color: ED.inkSoft, fontStyle: 'italic' },
-  projectMeta: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 0.6, color: ED.muted },
-  credit: { fontFamily: LexiFonts.bodyRegular, fontSize: 11, color: ED.muted, textAlign: 'center', marginTop: 16 },
+  projectMeta: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 0.6, color: ED.muted },
+  credit: { fontFamily: ZuriFonts.bodyRegular, fontSize: 11, color: ED.muted, textAlign: 'center', marginTop: 16 },
 });

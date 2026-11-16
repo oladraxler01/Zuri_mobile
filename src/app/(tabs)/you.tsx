@@ -3,8 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { useSession } from '@/context/session-context';
 import { useLectures } from '@/context/lectures-context';
@@ -135,14 +135,14 @@ function Stat({ value, label }: { value: string; label: string }) {
 const styles = StyleSheet.create({
   idCard: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: UI.card, borderRadius: 18, borderWidth: 1, borderColor: UI.border, padding: 16 },
   avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: UI.amberSoft, alignItems: 'center', justifyContent: 'center' },
-  initials: { fontFamily: LexiFonts.headlineMd, fontSize: 22, color: UI.ink },
-  name: { fontFamily: LexiFonts.headlineMd, fontSize: 21, color: UI.ink },
-  uni: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: UI.muted, marginTop: 2 },
+  initials: { fontFamily: ZuriFonts.headlineMd, fontSize: 22, color: UI.ink },
+  name: { fontFamily: ZuriFonts.headlineMd, fontSize: 21, color: UI.ink },
+  uni: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted, marginTop: 2 },
   stats: { flexDirection: 'row', alignItems: 'center', backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border, paddingVertical: 14 },
   divider: { width: 1, height: 28, backgroundColor: UI.border },
-  statValue: { fontFamily: LexiFonts.headlineMd, fontSize: 20, color: UI.ink },
-  statLabel: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
-  sectionLabel: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginBottom: 8, marginTop: 4 },
+  statValue: { fontFamily: ZuriFonts.headlineMd, fontSize: 20, color: UI.ink },
+  statLabel: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
+  sectionLabel: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginBottom: 8, marginTop: 4 },
   signOut: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, borderRadius: 25, borderWidth: 1, borderColor: UI.errorSoft, backgroundColor: '#fff8f7' },
-  signOutText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.error },
+  signOutText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.error },
 });

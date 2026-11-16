@@ -3,8 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { Segmented } from '@/components/ui/chip';
 import { StatusBadge, type Status } from '@/components/dashboard';
 import { EmptyState } from '@/components/states/state-view';
@@ -176,33 +176,33 @@ export { activityFor };
 const styles = StyleSheet.create({
   summary: { flexDirection: 'row', backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border, paddingVertical: 12 },
   summaryCell: { flex: 1, alignItems: 'center' },
-  summaryN: { fontFamily: LexiFonts.headlineMd, fontSize: 20, color: UI.ink },
-  summaryL: { fontFamily: LexiFonts.bodyRegular, fontSize: 11, color: UI.muted, textAlign: 'center' },
+  summaryN: { fontFamily: ZuriFonts.headlineMd, fontSize: 20, color: UI.ink },
+  summaryL: { fontFamily: ZuriFonts.bodyRegular, fontSize: 11, color: UI.muted, textAlign: 'center' },
   practise: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48, borderRadius: 24, backgroundColor: UI.ink },
-  practiseText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: '#fff' },
+  practiseText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: '#fff' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   tile: { flexBasis: '47%', flexGrow: 1, backgroundColor: UI.card, borderRadius: 14, borderWidth: 1, borderColor: UI.border, padding: 12, gap: 8 },
   tileTop: { flexDirection: 'row', gap: 6, alignItems: 'flex-start' },
-  tileTitle: { flex: 1, fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.ink },
+  tileTitle: { flex: 1, fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.ink },
   track: { height: 5, borderRadius: 3, backgroundColor: UI.cardMuted, overflow: 'hidden' },
   fill: { height: '100%', backgroundColor: '#c5832b' },
-  tileMeta: { fontFamily: LexiFonts.bodyRegular, fontSize: 11, color: UI.muted },
+  tileMeta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 11, color: UI.muted },
   newBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', backgroundColor: UI.cardMuted, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
-  newBadgeText: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, color: UI.muted },
-  note: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, lineHeight: 18, color: UI.muted },
+  newBadgeText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, color: UI.muted },
+  note: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, lineHeight: 18, color: UI.muted },
   card: { backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border, paddingHorizontal: 14 },
   topic: { paddingVertical: 12, gap: 6 },
   topicBorder: { borderTopWidth: 1, borderTopColor: UI.borderSoft },
   topicHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  topicTitle: { flex: 1, fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink },
-  topicSummary: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.inkSoft },
+  topicTitle: { flex: 1, fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink },
+  topicSummary: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.inkSoft },
   sources: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   source: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: UI.cardMuted, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, maxWidth: '100%' },
-  sourceText: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, color: UI.ink, flexShrink: 1 },
-  day: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1, color: UI.muted, marginTop: 14, marginBottom: 2 },
+  sourceText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, color: UI.ink, flexShrink: 1 },
+  day: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1, color: UI.muted, marginTop: 14, marginBottom: 2 },
   act: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
   actIcon: { width: 32, height: 32, borderRadius: 9, backgroundColor: UI.cardMuted, alignItems: 'center', justifyContent: 'center' },
-  actTitle: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.ink },
-  actDetail: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 1 },
-  actTime: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, color: UI.muted },
+  actTitle: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink },
+  actDetail: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 1 },
+  actTime: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, color: UI.muted },
 });

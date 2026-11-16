@@ -3,8 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useLecturer } from '@/context/lecturer-context';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
@@ -85,13 +85,13 @@ function Stat({ value, label }: { value: string; label: string }) {
 
 const styles = StyleSheet.create({
   manage: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: UI.ink, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
-  manageText: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: '#fff' },
+  manageText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: '#fff' },
   card: { backgroundColor: UI.card, borderRadius: 18, borderWidth: 1, borderColor: UI.border, padding: 16 },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  code: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, letterSpacing: 1, color: UI.amber },
-  title: { fontFamily: LexiFonts.headlineMd, fontSize: 19, lineHeight: 25, color: UI.ink, marginTop: 4 },
-  meta: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 4 },
+  code: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, letterSpacing: 1, color: UI.amber },
+  title: { fontFamily: ZuriFonts.headlineMd, fontSize: 19, lineHeight: 25, color: UI.ink, marginTop: 4 },
+  meta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 4 },
   stats: { flexDirection: 'row', marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: UI.borderSoft },
-  statValue: { fontFamily: LexiFonts.headlineMd, fontSize: 18, color: UI.ink },
-  statLabel: { fontFamily: LexiFonts.bodyRegular, fontSize: 11, color: UI.muted },
+  statValue: { fontFamily: ZuriFonts.headlineMd, fontSize: 18, color: UI.ink },
+  statLabel: { fontFamily: ZuriFonts.bodyRegular, fontSize: 11, color: UI.muted },
 });

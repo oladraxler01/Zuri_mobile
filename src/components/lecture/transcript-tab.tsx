@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput, StyleSheet, type ScrollViewInstance } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import type { TranscriptSegment } from '@/types/lecture';
 import { formatClock } from '@/utils/time';
 import { tabStyles as t } from './tab-styles';
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 14,
     color: UI.ink,
   },
@@ -160,12 +160,12 @@ const styles = StyleSheet.create({
     borderColor: UI.ink,
   },
   followText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 12,
     color: UI.ink,
   },
   resultCount: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 12,
     color: UI.muted,
     marginBottom: 8,
@@ -181,13 +181,13 @@ const styles = StyleSheet.create({
     backgroundColor: UI.amberSoft,
   },
   lineText: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 16,
     lineHeight: 25,
     color: UI.inkSoft,
   },
   lineTextActive: {
     color: UI.ink,
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
   },
 });

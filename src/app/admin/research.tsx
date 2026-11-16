@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
+import { ZuriFonts } from '@/constants/zuri-theme';
 import { useInstitution } from '@/context/institution-context';
 import { ED, EdPage, Masthead, Rule, PaperRow, edStyles } from '@/components/research/editorial';
 import { ErrorState } from '@/components/states/state-view';
@@ -108,5 +108,5 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
   go: { width: 46, height: 46, backgroundColor: ED.ink, alignItems: 'center', justifyContent: 'center', borderRadius: 2 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  credit: { fontFamily: LexiFonts.bodyRegular, fontSize: 11, color: ED.muted, textAlign: 'center', marginTop: 12 },
+  credit: { fontFamily: ZuriFonts.bodyRegular, fontSize: 11, color: ED.muted, textAlign: 'center', marginTop: 12 },
 });

@@ -1,7 +1,8 @@
 import { Platform } from 'react-native';
 import { File } from 'expo-file-system';
 import type { MaterialAnalysis, MaterialCategory, MaterialPassage } from '@/types/material';
-import { API_BASE, ApiError, errorForStatus, isBackendConfigured } from '@/services/lecture-api';
+import { ApiError, errorForStatus } from '@/services/lecture-api';
+import { API_BASE, isBackendConfigured } from '@/services/api-config';
 import { buildSampleAnalysis } from '@/data/sample-lecture-analysis';
 
 /**

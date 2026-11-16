@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, TextInput, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 
 /**
  * Date + time picker that works everywhere:
@@ -113,9 +113,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   input: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     color: UI.ink,
   },
-  value: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.ink },
+  value: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink },
 });

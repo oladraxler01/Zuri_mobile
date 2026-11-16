@@ -3,8 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useLecturer } from '@/context/lecturer-context';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
@@ -146,9 +146,9 @@ export default function TeachCourseScreen() {
 }
 
 const styles = StyleSheet.create({
-  big: { fontFamily: LexiFonts.headlineMd, fontSize: 22, color: UI.ink },
-  muted: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: UI.muted, marginTop: 2 },
-  body: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
+  big: { fontFamily: ZuriFonts.headlineMd, fontSize: 22, color: UI.ink },
+  muted: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted, marginTop: 2 },
+  body: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
   recordBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginTop: 14,
   },
-  recordText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: '#fff' },
+  recordText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: '#fff' },
   inline: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -172,5 +172,5 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     borderColor: UI.border,
   },
-  inlineText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.ink },
+  inlineText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.ink },
 });

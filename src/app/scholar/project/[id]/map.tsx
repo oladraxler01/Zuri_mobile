@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
+import { ZuriFonts } from '@/constants/zuri-theme';
 import { useResearch } from '@/context/research-context';
 import { ED, EdPage, Masthead, Rule, SectionHead, edStyles } from '@/components/research/editorial';
 import { EmptyState } from '@/components/states/state-view';
@@ -113,16 +113,16 @@ const styles = StyleSheet.create({
   theme: { paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: ED.rule, gap: 6 },
   themeHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   themeName: { flex: 1, fontFamily: 'SourceSerif4_600SemiBold', fontSize: 18, color: ED.ink },
-  custom: { fontFamily: LexiFonts.labelSmBold, fontSize: 9, letterSpacing: 1.2, color: ED.accent },
+  custom: { fontFamily: ZuriFonts.labelSmBold, fontSize: 9, letterSpacing: 1.2, color: ED.accent },
   count: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 16, color: ED.inkSoft },
   track: { height: 3, backgroundColor: ED.rule },
   fill: { height: 3, backgroundColor: ED.accent },
-  member: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: ED.inkSoft },
+  member: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: ED.inkSoft },
   addRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
   addBtn: { width: 44, height: 44, backgroundColor: ED.ink, alignItems: 'center', justifyContent: 'center', borderRadius: 2 },
   hub: { flexDirection: 'row', gap: 14, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: ED.rule },
   hubN: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 26, color: ED.accent, width: 22 },
   hubTitle: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 16, lineHeight: 22, color: ED.ink },
   link: { paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: ED.rule, gap: 2 },
-  linkPair: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: ED.ink },
+  linkPair: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: ED.ink },
 });

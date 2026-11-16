@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { ScreenShell, Panel, Grid, StatTile, BarChart, HBarList, SampleBanner, ListRow, Divider, StatusBadge } from '@/components/dashboard';
 import { Chip } from '@/components/ui/chip';
 import { AI_USAGE, INTERVENTIONS, SYSTEM_HEALTH, WEEKLY_ACTIVE, allCourses, allDepartments } from '@/data/sample-institution';
@@ -148,5 +148,5 @@ export default function InstitutionAnalyticsScreen() {
 }
 
 const styles = StyleSheet.create({
-  note: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 10 },
+  note: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 10 },
 });

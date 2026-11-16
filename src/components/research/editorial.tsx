@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
-import { LexiFonts } from '@/constants/lexi-theme';
+import { ZuriFonts } from '@/constants/zuri-theme';
 import type { Paper } from '@/types/research';
 
 /**
@@ -123,9 +123,9 @@ export function PaperRow({
 }
 
 export const edStyles = StyleSheet.create({
-  body: { fontFamily: LexiFonts.bodyRegular, fontSize: 15, lineHeight: 24, color: ED.inkSoft },
+  body: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, lineHeight: 24, color: ED.inkSoft },
   serifBody: { fontFamily: 'SourceSerif4_400Regular', fontSize: 17, lineHeight: 27, color: ED.ink },
-  muted: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: ED.muted },
+  muted: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: ED.muted },
   input: {
     height: 48,
     borderBottomWidth: 1.5,
@@ -136,32 +136,32 @@ export const edStyles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   btn: { height: 48, borderRadius: 2, backgroundColor: ED.ink, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, paddingHorizontal: 18 },
-  btnText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, letterSpacing: 0.4, color: ED.paper },
+  btnText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, letterSpacing: 0.4, color: ED.paper },
   btnGhost: { height: 48, borderRadius: 2, borderWidth: 1, borderColor: ED.ink, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, paddingHorizontal: 18 },
-  btnGhostText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, letterSpacing: 0.4, color: ED.ink },
+  btnGhostText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, letterSpacing: 0.4, color: ED.ink },
   tag: { borderWidth: 1, borderColor: ED.rule, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 2 },
   tagOn: { backgroundColor: ED.ink, borderColor: ED.ink },
-  tagText: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: ED.ink },
+  tagText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: ED.ink },
 });
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: ED.paper },
   bar: { height: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 },
   scroll: { paddingHorizontal: 22, paddingBottom: 120, maxWidth: 760, width: '100%', alignSelf: 'center', gap: 14 },
-  kicker: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 2, color: ED.accent, marginBottom: 6 },
+  kicker: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 2, color: ED.accent, marginBottom: 6 },
   title: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 32, lineHeight: 38, color: ED.ink, letterSpacing: -0.5 },
   dek: { fontFamily: 'SourceSerif4_400Regular', fontSize: 17, lineHeight: 25, color: ED.inkSoft, marginTop: 8 },
   rule: { height: StyleSheet.hairlineWidth, backgroundColor: ED.rule },
   ruleHeavy: { height: 2, backgroundColor: ED.ink },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 10 },
-  section: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.8, color: ED.ink },
-  sectionAction: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: ED.accent },
+  section: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.8, color: ED.ink },
+  sectionAction: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: ED.accent },
   paperRow: { flexDirection: 'row', gap: 12, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: ED.rule },
   paperTitle: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 18, lineHeight: 24, color: ED.ink },
-  paperBy: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: ED.inkSoft, marginTop: 4 },
+  paperBy: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: ED.inkSoft, marginTop: 4 },
   paperAbs: { fontFamily: 'SourceSerif4_400Regular', fontSize: 14, lineHeight: 21, color: ED.inkSoft, marginTop: 6 },
   paperMeta: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6 },
-  metaText: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, color: ED.muted },
+  metaText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, color: ED.muted },
   oa: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  oaText: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, color: ED.accent },
+  oaText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, color: ED.accent },
 });

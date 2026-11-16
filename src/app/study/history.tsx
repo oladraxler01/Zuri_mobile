@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Text, StyleSheet } from 'react-native';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
 import { usePlanner } from '@/context/planner-context';
@@ -71,6 +71,6 @@ export default function StudyHistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  note: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 8 },
-  section: { fontFamily: LexiFonts.headlineMd, fontSize: 19, color: UI.ink },
+  note: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 8 },
+  section: { fontFamily: ZuriFonts.headlineMd, fontSize: 19, color: UI.ink },
 });

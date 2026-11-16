@@ -4,8 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
@@ -172,20 +172,20 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: UI.bg },
   bar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 10 },
   inputWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, borderRadius: 23, borderWidth: 1, borderColor: UI.border, backgroundColor: UI.card, paddingHorizontal: 16 },
-  input: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 15, color: UI.ink },
+  input: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 15, color: UI.ink },
   chips: { gap: 8, paddingHorizontal: 20, paddingBottom: 10 },
   scroll: { padding: 20, paddingTop: 6, paddingBottom: 48, maxWidth: 680, width: '100%', alignSelf: 'center' },
-  group: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginBottom: 8 },
+  group: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginBottom: 8 },
   card: { backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border, paddingHorizontal: 14 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
   rowBorder: { borderTopWidth: 1, borderTopColor: UI.borderSoft },
   icon: { width: 34, height: 34, borderRadius: 10, backgroundColor: UI.cardMuted, alignItems: 'center', justifyContent: 'center' },
-  title: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink },
-  quote: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, fontStyle: 'italic', color: UI.inkSoft },
-  subtitle: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
+  title: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink },
+  quote: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, fontStyle: 'italic', color: UI.inkSoft },
+  subtitle: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
   recentHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  clear: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.amber },
+  clear: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.amber },
   recent: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
-  recentText: { fontFamily: LexiFonts.bodyRegular, fontSize: 15, color: UI.ink },
-  hint: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.muted, textAlign: 'center', marginTop: 24 },
+  recentText: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, color: UI.ink },
+  hint: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.muted, textAlign: 'center', marginTop: 24 },
 });

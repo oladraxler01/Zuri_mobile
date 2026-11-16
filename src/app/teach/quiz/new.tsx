@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useLecturer } from '@/context/lecturer-context';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
@@ -82,5 +82,5 @@ export default function NewQuizScreen() {
 }
 
 const styles = StyleSheet.create({
-  note: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, textAlign: 'center' },
+  note: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, textAlign: 'center' },
 });

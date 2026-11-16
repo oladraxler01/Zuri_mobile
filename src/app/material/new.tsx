@@ -4,8 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { useMaterials } from '@/context/materials-context';
 import { Chip } from '@/components/ui/chip';
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: UI.borderSoft,
   },
-  topTitle: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: UI.ink },
+  topTitle: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.ink },
   scroll: { padding: 20, paddingBottom: 48, maxWidth: 640, width: '100%', alignSelf: 'center' },
   file: {
     flexDirection: 'row',
@@ -189,9 +189,9 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   fileIcon: { width: 52, height: 60, borderRadius: 12, backgroundColor: UI.amberSoft, alignItems: 'center', justifyContent: 'center' },
-  fileName: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink },
-  fileMeta: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: UI.muted, marginTop: 2 },
-  label: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginTop: 22, marginBottom: 8 },
+  fileName: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink },
+  fileMeta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted, marginTop: 2 },
+  label: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginTop: 22, marginBottom: 8 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   option: {
     flexDirection: 'row',
@@ -204,10 +204,10 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   optionOn: { borderColor: UI.ink },
-  optionTitle: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink },
-  optionDesc: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
+  optionTitle: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink },
+  optionDesc: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
   note: { flexDirection: 'row', gap: 10, backgroundColor: UI.amberSoft, borderRadius: 12, padding: 12, marginTop: 20 },
-  noteText: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: '#6b4511' },
+  noteText: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: '#6b4511' },
   primary: {
     height: 54,
     borderRadius: 27,
@@ -218,5 +218,5 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 24,
   },
-  primaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#fff' },
+  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
 });

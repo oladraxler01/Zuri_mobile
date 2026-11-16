@@ -3,7 +3,7 @@ import { Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
-import { LexiFonts } from '@/constants/lexi-theme';
+import { ZuriFonts } from '@/constants/zuri-theme';
 import { useNetwork } from '@/context/network-context';
 
 /**
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2f6b3a',
   },
   text: {
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 13,
     color: '#fff',
     flexShrink: 1,

@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { LexiColors } from '@/constants/lexi-theme';
+import { ZuriColors } from '@/constants/zuri-theme';
 
 export default function OnboardingLayout() {
   return (
@@ -7,7 +7,7 @@ export default function OnboardingLayout() {
       screenOptions={{
         headerShown: false,
         animation: 'slide_from_right',
-        contentStyle: { backgroundColor: LexiColors.background },
+        contentStyle: { backgroundColor: ZuriColors.background },
       }}
     >
       <Stack.Screen name="index" options={{ animation: 'fade' }} />

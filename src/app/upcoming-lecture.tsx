@@ -4,9 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic } from '@/context/academic-context';
 import { useLectures } from '@/context/lectures-context';
 import { describeStart, nextOccurrence, upcomingClasses } from '@/utils/time';
@@ -16,7 +16,7 @@ import { lectureTitle } from '@/components/lecture/lecture-card';
 export default function UpcomingLectureScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ slotId?: string }>();
-  const [fontsLoaded] = useLexiFonts();
+  const [fontsLoaded] = useZuriFonts();
   const { state } = useAcademic();
   const { lectures } = useLectures();
 
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: UI.borderSoft,
   },
-  topTitle: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: UI.ink },
+  topTitle: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.ink },
   scroll: { padding: 20, paddingBottom: 32, maxWidth: 640, width: '100%', alignSelf: 'center' },
   hero: {
     backgroundColor: UI.ink,
@@ -206,9 +206,9 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: UI.error },
-  whenText: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1, color: '#7a4f12' },
-  code: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, letterSpacing: 1.4, color: '#e9c349' },
-  title: { fontFamily: LexiFonts.headlineLg, fontSize: 26, lineHeight: 32, color: '#fff', marginTop: 4 },
+  whenText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1, color: '#7a4f12' },
+  code: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, letterSpacing: 1.4, color: '#e9c349' },
+  title: { fontFamily: ZuriFonts.headlineLg, fontSize: 26, lineHeight: 32, color: '#fff', marginTop: 4 },
   facts: { marginTop: 16, gap: 8 },
   fact: {
     flexDirection: 'row',
@@ -220,9 +220,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
-  factText: { fontFamily: LexiFonts.bodyMedium, fontSize: 13, color: UI.ink },
+  factText: { fontFamily: ZuriFonts.bodyMedium, fontSize: 13, color: UI.ink },
   sectionLabel: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
     letterSpacing: 1.2,
     color: UI.muted,
@@ -232,11 +232,11 @@ const styles = StyleSheet.create({
   card: { backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border, padding: 16, marginBottom: 10 },
   gapCard: { backgroundColor: '#fff8f6', borderColor: UI.errorSoft },
   pressed: { opacity: 0.9, transform: [{ scale: 0.99 }] },
-  cardEyebrow: { fontFamily: LexiFonts.labelSmBold, fontSize: 10, letterSpacing: 1.2, color: UI.amber, marginBottom: 4 },
-  cardTitle: { fontFamily: LexiFonts.headlineMd, fontSize: 18, color: UI.ink, marginBottom: 4 },
-  cardBody: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 20, color: UI.inkSoft },
+  cardEyebrow: { fontFamily: ZuriFonts.labelSmBold, fontSize: 10, letterSpacing: 1.2, color: UI.amber, marginBottom: 4 },
+  cardTitle: { fontFamily: ZuriFonts.headlineMd, fontSize: 18, color: UI.ink, marginBottom: 4 },
+  cardBody: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 20, color: UI.inkSoft },
   linkRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 },
-  linkText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.ink, textDecorationLine: 'underline' },
+  linkText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.ink, textDecorationLine: 'underline' },
   quickRow: { flexDirection: 'row', gap: 10 },
   quick: {
     flex: 1,
@@ -247,12 +247,12 @@ const styles = StyleSheet.create({
     padding: 14,
     gap: 8,
   },
-  quickText: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.ink },
+  quickText: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink },
   tip: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 5 },
-  tipText: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.inkSoft },
-  body: { fontFamily: LexiFonts.bodyRegular, fontSize: 15, color: UI.inkSoft, textAlign: 'center' },
+  tipText: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.inkSoft },
+  body: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, color: UI.inkSoft, textAlign: 'center' },
   outlineBtn: { borderWidth: 1, borderColor: UI.border, borderRadius: 22, paddingHorizontal: 18, paddingVertical: 10 },
-  outlineBtnText: { fontFamily: LexiFonts.labelSmBold, color: UI.ink },
+  outlineBtnText: { fontFamily: ZuriFonts.labelSmBold, color: UI.ink },
   footer: { padding: 16, paddingHorizontal: 20, borderTopWidth: 1, borderTopColor: UI.borderSoft, backgroundColor: UI.bg },
   recordBtn: {
     height: 54,
@@ -266,5 +266,5 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
   },
-  recordBtnText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#fff' },
+  recordBtnText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
 });

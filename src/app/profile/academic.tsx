@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { ScreenShell, Panel, StatusBadge } from '@/components/dashboard';
 import { Chip } from '@/components/ui/chip';
@@ -97,12 +97,12 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
 }
 
 const styles = StyleSheet.create({
-  label: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginTop: 14, marginBottom: 8 },
-  input: { height: 48, borderRadius: 12, borderWidth: 1, borderColor: UI.border, backgroundColor: UI.bg, paddingHorizontal: 14, fontFamily: LexiFonts.bodyRegular, fontSize: 15, color: UI.ink },
-  value: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink },
-  hint: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 8 },
+  label: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginTop: 14, marginBottom: 8 },
+  input: { height: 48, borderRadius: 12, borderWidth: 1, borderColor: UI.border, backgroundColor: UI.bg, paddingHorizontal: 14, fontFamily: ZuriFonts.bodyRegular, fontSize: 15, color: UI.ink },
+  value: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink },
+  hint: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 8 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  error: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.error },
+  error: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.error },
   primary: { height: 52, borderRadius: 26, backgroundColor: UI.ink, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  primaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#fff' },
+  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
 });

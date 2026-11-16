@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, Share, StyleSheet } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
+import { ZuriFonts } from '@/constants/zuri-theme';
 import { useResearch } from '@/context/research-context';
 import { ED, EdPage, Masthead, Rule, SectionHead, edStyles } from '@/components/research/editorial';
 import { EmptyState } from '@/components/states/state-view';
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   summary: { borderLeftWidth: 3, borderLeftColor: ED.accent, paddingLeft: 12 },
   section: { paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: ED.rule },
   theme: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 22, color: ED.ink },
-  groupLabel: { fontFamily: LexiFonts.labelSmBold, fontSize: 10, letterSpacing: 1.4, color: ED.accent },
-  cite: { fontFamily: LexiFonts.bodyMedium, fontSize: 13, fontStyle: 'normal', color: ED.inkSoft },
+  groupLabel: { fontFamily: ZuriFonts.labelSmBold, fontSize: 10, letterSpacing: 1.4, color: ED.accent },
+  cite: { fontFamily: ZuriFonts.bodyMedium, fontSize: 13, fontStyle: 'normal', color: ED.inkSoft },
   ref: { fontFamily: 'SourceSerif4_400Regular', fontSize: 14, lineHeight: 21, color: ED.ink, paddingLeft: 18, textIndent: -18 } as any,
 });

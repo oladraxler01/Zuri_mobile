@@ -2,8 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useInstitution } from '@/context/institution-context';
 import { ScreenShell, Panel, Grid, StatTile, BarChart, SampleBanner, ListRow, Divider, StatusBadge } from '@/components/dashboard';
 import { FACULTIES, WEEKLY_ACTIVE, WEEKLY_LECTURES, SYSTEM_HEALTH, INTERVENTIONS, allCourses } from '@/data/sample-institution';
@@ -98,5 +98,5 @@ export default function InstitutionOverviewScreen() {
 }
 
 const styles = StyleSheet.create({
-  body: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
+  body: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
 });

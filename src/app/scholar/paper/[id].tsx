@@ -3,7 +3,7 @@ import { View, Text, Pressable, Modal, ActivityIndicator, Linking, Share, StyleS
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
+import { ZuriFonts } from '@/constants/zuri-theme';
 import { useResearch } from '@/context/research-context';
 import { ED, EdPage, Masthead, Rule, SectionHead, PaperRow, edStyles } from '@/components/research/editorial';
 import { ErrorState } from '@/components/states/state-view';
@@ -249,10 +249,10 @@ function Meta({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  authors: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, lineHeight: 20, color: ED.inkSoft },
+  authors: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, lineHeight: 20, color: ED.inkSoft },
   metaGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   meta: { width: '50%', paddingVertical: 8 },
-  metaLabel: { fontFamily: LexiFonts.labelSmBold, fontSize: 10, letterSpacing: 1.4, color: ED.muted },
+  metaLabel: { fontFamily: ZuriFonts.labelSmBold, fontSize: 10, letterSpacing: 1.4, color: ED.muted },
   metaValue: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 16, color: ED.ink, marginTop: 2 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   picked: { backgroundColor: ED.accentSoft },
@@ -262,10 +262,10 @@ const styles = StyleSheet.create({
   citeBox: { borderLeftWidth: 3, borderLeftColor: ED.ink, paddingLeft: 12, paddingVertical: 4 },
   cite: { fontFamily: 'SourceSerif4_400Regular', fontSize: 14, lineHeight: 21, color: ED.ink },
   toast: { backgroundColor: ED.ink, padding: 12 },
-  toastText: { fontFamily: LexiFonts.bodyMedium, fontSize: 13, color: ED.paper },
+  toastText: { fontFamily: ZuriFonts.bodyMedium, fontSize: 13, color: ED.paper },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: ED.paper, padding: 22, paddingBottom: 32, gap: 12 },
-  sheetKicker: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.8, color: ED.accent },
+  sheetKicker: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.8, color: ED.accent },
   sheetQuote: { fontFamily: 'SourceSerif4_400Regular', fontSize: 16, lineHeight: 24, color: ED.ink, fontStyle: 'italic' },
   sheetProject: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 16, color: ED.ink },
   stanceRow: { flexDirection: 'row', gap: 8 },

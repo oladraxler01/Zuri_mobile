@@ -3,8 +3,8 @@ import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useLecturer } from '@/context/lecturer-context';
 import { useSession } from '@/context/session-context';
 import { ScreenShell, Panel, ListRow, Divider, StatusBadge } from '@/components/dashboard';
@@ -92,9 +92,9 @@ export default function LecturerProfileScreen() {
 const styles = StyleSheet.create({
   idRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: UI.amberSoft, alignItems: 'center', justifyContent: 'center' },
-  initials: { fontFamily: LexiFonts.headlineMd, fontSize: 22, color: UI.ink },
-  name: { fontFamily: LexiFonts.headlineMd, fontSize: 20, color: UI.ink },
-  dept: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.muted, marginTop: 2 },
+  initials: { fontFamily: ZuriFonts.headlineMd, fontSize: 22, color: UI.ink },
+  name: { fontFamily: ZuriFonts.headlineMd, fontSize: 20, color: UI.ink },
+  dept: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.muted, marginTop: 2 },
   idInputRow: { flexDirection: 'row', gap: 10 },
   input: {
     flex: 1,
@@ -104,13 +104,13 @@ const styles = StyleSheet.create({
     borderColor: UI.border,
     backgroundColor: UI.bg,
     paddingHorizontal: 14,
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     color: UI.ink,
   },
   save: { height: 48, borderRadius: 12, backgroundColor: UI.ink, paddingHorizontal: 16, justifyContent: 'center' },
-  saveText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: '#fff' },
-  hint: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 8 },
+  saveText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: '#fff' },
+  hint: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 8 },
   signOut: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -122,5 +122,5 @@ const styles = StyleSheet.create({
     borderColor: UI.errorSoft,
     backgroundColor: '#fff8f7',
   },
-  signOutText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.error },
+  signOutText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.error },
 });

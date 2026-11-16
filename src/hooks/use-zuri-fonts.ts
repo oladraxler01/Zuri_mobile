@@ -13,7 +13,7 @@ import {
  * Loads all Zuri brand fonts.
  * Returns [fontsLoaded, fontError] — same API as useFonts.
  */
-export function useLexiFonts() {
+export function useZuriFonts() {
   return useFonts({
     Inter_400Regular,
     Inter_500Medium,

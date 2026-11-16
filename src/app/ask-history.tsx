@@ -4,8 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useConversations } from '@/context/conversations-context';
 import { useAcademic } from '@/context/academic-context';
 import { Segmented } from '@/components/ui/chip';
@@ -98,13 +98,13 @@ export default function AskHistoryScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: UI.bg },
   topBar: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: UI.borderSoft },
-  topTitle: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: UI.ink },
+  topTitle: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.ink },
   scroll: { padding: 20, paddingBottom: 48, maxWidth: 640, width: '100%', alignSelf: 'center', gap: 12 },
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, borderRadius: 22, borderWidth: 1, borderColor: UI.border, backgroundColor: UI.card, paddingHorizontal: 16 },
-  searchInput: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.ink },
+  searchInput: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.ink },
   card: { backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border, paddingHorizontal: 14 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14 },
   rowBorder: { borderTopWidth: 1, borderTopColor: UI.borderSoft },
-  title: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, lineHeight: 21, color: UI.ink },
-  meta: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
+  title: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, lineHeight: 21, color: UI.ink },
+  meta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
 });

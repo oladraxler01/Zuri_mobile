@@ -172,3 +172,9 @@ Part 2 — institution:
 - Academics: add courses per department, links to student/lecturer directories, editable timetable with clashes flagged, material management with moderation and institutional upload.
 - Institutional research search `admin/research.tsx`: finds the university in OpenAlex (Veritas University: 1,324 papers) and lists/searches its publications; verified against the live service.
 - Remaining partial items need the backend, AI or university integrations (see checklist).
+
+### Zuri rename & API gateway (2026-11-16)
+- Internal names now say Zuri too: `zuri-theme`, `zuri-ui`, `use-zuri-fonts`, `zuri-bottom-tab-bar`, `ZuriFonts`/`ZuriColors`/…, chat role `'zuri'`, package name `zuri-mobile`, support email `support@zurilearn.com`, README.
+- Still unchanged on purpose: `lexi.*` storage keys (renaming wipes saved data), EAS `slug`, `scheme` and `bundleIdentifier` (tied to the EAS project and store listing).
+- New `src/services/api-config.ts`: reads `EXPO_PUBLIC_API_GATEWAY_URL` (replaces `EXPO_PUBLIC_API_BASE_URL`), REST base `{gateway}/api/v1`, `checkGatewayHealth()`. Live uploads only when `EXPO_PUBLIC_USE_LIVE_API=true`, because every route except sign-in/register needs an `Authorization` header and server sign-in isn't wired up yet.
+- Checked against https://api.zurilearn.com: `/health` → healthy (gateway, academic, ai, analytics, content, notification, sync, user); `POST /api/v1/auth/login`, `/auth/register`, `/auth/refresh` exist and validate input.

@@ -1,13 +1,13 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { LexiBottomTabBar } from '@/components/lexi-bottom-tab-bar';
+import { ZuriBottomTabBar } from '@/components/zuri-bottom-tab-bar';
 import { RoleGate } from '@/components/role-gate';
 
 export default function TabsLayout() {
   return (
     <RoleGate role="student">
     <Tabs
-      tabBar={(props) => <LexiBottomTabBar {...props} />}
+      tabBar={(props) => <ZuriBottomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
       }}

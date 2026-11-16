@@ -14,11 +14,11 @@ import { ConversationsProvider } from '@/context/conversations-context';
 import { ResearchProvider } from '@/context/research-context';
 import { LecturerProvider } from '@/context/lecturer-context';
 import { InstitutionProvider } from '@/context/institution-context';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { OfflineBanner } from '@/components/states/offline-banner';
 import { ReminderSync } from '@/components/reminder-sync';
 import { StateView } from '@/components/states/state-view';
-import { UI } from '@/constants/lexi-ui';
+import { UI } from '@/constants/zuri-ui';
 
 // Keep the native launch screen up until fonts and saved data are ready,
 // so the app never flashes a blank screen.
@@ -55,7 +55,7 @@ export default function RootLayout() {
 }
 
 function AppShell() {
-  const [fontsLoaded, fontError] = useLexiFonts();
+  const [fontsLoaded, fontError] = useZuriFonts();
   const session = useSession();
   const academic = useAcademic();
   const ready = (fontsLoaded || !!fontError) && session.hydrated && academic.hydrated;

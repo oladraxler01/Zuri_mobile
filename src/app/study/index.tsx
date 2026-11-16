@@ -3,8 +3,8 @@ import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
@@ -93,12 +93,12 @@ export default function StudyHubScreen() {
 
 const styles = StyleSheet.create({
   hero: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: UI.ink, borderRadius: 22, padding: 20 },
-  heroTag: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1, color: '#e9c349' },
-  heroTitle: { fontFamily: LexiFonts.headlineLg, fontSize: 26, color: '#fff', marginTop: 4 },
-  heroSub: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: 'rgba(255,255,255,0.75)', marginTop: 4 },
+  heroTag: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1, color: '#e9c349' },
+  heroTitle: { fontFamily: ZuriFonts.headlineLg, fontSize: 26, color: '#fff', marginTop: 4 },
+  heroSub: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: 'rgba(255,255,255,0.75)', marginTop: 4 },
   heroBtn: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
   weak: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff8f6', borderRadius: 16, borderWidth: 1, borderColor: UI.errorSoft, padding: 14 },
-  weakTitle: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: UI.ink },
-  weakSub: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
-  label: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginBottom: 8 },
+  weakTitle: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.ink },
+  weakSub: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
+  label: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginBottom: 8 },
 });

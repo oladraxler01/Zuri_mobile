@@ -15,13 +15,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic } from '@/context/academic-context';
 
 export default function SignUpScreen() {
   const router = useRouter();
-  const [fontsLoaded] = useLexiFonts();
+  const [fontsLoaded] = useZuriFonts();
 
   const [fullName, setFullName] = useState('');
   const { setAcademicInfo } = useAcademic();
@@ -79,7 +79,7 @@ export default function SignUpScreen() {
           accessibilityLabel="Go back"
           hitSlop={12}
         >
-          <Ionicons name="arrow-back" size={24} color={LexiColors.primary} />
+          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
         </Pressable>
         <Text style={styles.headerTitle}>Zuri</Text>
         <View style={styles.headerSpacer} />
@@ -104,7 +104,7 @@ export default function SignUpScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="Full Name"
-                placeholderTextColor={LexiColors.onSurfaceVariant}
+                placeholderTextColor={ZuriColors.onSurfaceVariant}
                 value={fullName}
                 onChangeText={setFullName}
                 autoCapitalize="words"
@@ -117,7 +117,7 @@ export default function SignUpScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="Email Address"
-                placeholderTextColor={LexiColors.onSurfaceVariant}
+                placeholderTextColor={ZuriColors.onSurfaceVariant}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -132,7 +132,7 @@ export default function SignUpScreen() {
               <TextInput
                 style={[styles.input, styles.inputWithIcon]}
                 placeholder="Password"
-                placeholderTextColor={LexiColors.onSurfaceVariant}
+                placeholderTextColor={ZuriColors.onSurfaceVariant}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -149,7 +149,7 @@ export default function SignUpScreen() {
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color={LexiColors.onSurfaceVariant}
+                  color={ZuriColors.onSurfaceVariant}
                 />
               </Pressable>
             </View>
@@ -159,7 +159,7 @@ export default function SignUpScreen() {
               <TextInput
                 style={[styles.input, styles.inputWithIcon]}
                 placeholder="Confirm Password"
-                placeholderTextColor={LexiColors.onSurfaceVariant}
+                placeholderTextColor={ZuriColors.onSurfaceVariant}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showConfirmPassword}
@@ -177,7 +177,7 @@ export default function SignUpScreen() {
                 <Ionicons
                   name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color={LexiColors.onSurfaceVariant}
+                  color={ZuriColors.onSurfaceVariant}
                 />
               </Pressable>
             </View>
@@ -237,7 +237,7 @@ export default function SignUpScreen() {
               accessibilityRole="button"
               accessibilityLabel="Continue with Apple"
             >
-              <Ionicons name="logo-apple" size={22} color={LexiColors.primary} />
+              <Ionicons name="logo-apple" size={22} color={ZuriColors.primary} />
               <Text style={styles.socialButtonText}>Continue with Apple</Text>
             </Pressable>
           </View>
@@ -250,14 +250,14 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: LexiColors.background,
+    backgroundColor: ZuriColors.background,
   },
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
   },
   backButton: {
     padding: 6,
@@ -269,9 +269,9 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.95 }],
   },
   headerTitle: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 22,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     fontWeight: '600',
   },
   headerSpacer: {
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
     paddingTop: 16,
     paddingBottom: 32,
     maxWidth: 420,
@@ -289,10 +289,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   headline: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 28,
     lineHeight: 34,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     marginBottom: 28,
     marginTop: 8,
   },
@@ -312,9 +312,9 @@ const styles = StyleSheet.create({
     borderColor: '#E0DDD8',
     borderRadius: 12,
     paddingHorizontal: 16,
-    fontFamily: LexiFonts.bodyLg,
+    fontFamily: ZuriFonts.bodyLg,
     fontSize: 15,
-    color: LexiColors.onSurface,
+    color: ZuriColors.onSurface,
   },
   inputWithIcon: {
     paddingRight: 48,
@@ -327,11 +327,11 @@ const styles = StyleSheet.create({
   continueButton: {
     height: 56,
     marginTop: 8,
-    backgroundColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: LexiColors.primaryContainer,
+    shadowColor: ZuriColors.primaryContainer,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
@@ -342,9 +342,9 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.985 }],
   },
   continueButtonText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,
-    color: LexiColors.onPrimary,
+    color: ZuriColors.onPrimary,
     letterSpacing: 1,
     fontWeight: '600',
   },
@@ -354,13 +354,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   signInPromptText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 14,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   signInLink: {
-    color: LexiColors.primaryContainer,
-    fontFamily: LexiFonts.bodyMdMedium,
+    color: ZuriColors.primaryContainer,
+    fontFamily: ZuriFonts.bodyMdMedium,
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
@@ -377,9 +377,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(195, 200, 194, 0.6)',
   },
   dividerText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 12,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
     textTransform: 'uppercase',
     letterSpacing: 1.2,
   },
@@ -395,17 +395,17 @@ const styles = StyleSheet.create({
     gap: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: LexiColors.outlineVariant,
-    backgroundColor: LexiColors.surfaceContainerLowest,
+    borderColor: ZuriColors.outlineVariant,
+    backgroundColor: ZuriColors.surfaceContainerLowest,
   },
   socialButtonPressed: {
-    backgroundColor: LexiColors.surfaceContainerLow,
+    backgroundColor: ZuriColors.surfaceContainerLow,
     transform: [{ scale: 0.99 }],
   },
   socialButtonText: {
-    fontFamily: LexiFonts.bodyLg,
+    fontFamily: ZuriFonts.bodyLg,
     fontSize: 15,
-    color: LexiColors.onSurface,
+    color: ZuriColors.onSurface,
     fontWeight: '500',
   },
 });

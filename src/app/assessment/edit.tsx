@@ -4,8 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { usePlanner, defaultSteps } from '@/context/planner-context';
 import { Chip } from '@/components/ui/chip';
@@ -169,10 +169,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: UI.borderSoft,
   },
-  topTitle: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: UI.ink },
-  save: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: UI.amber },
+  topTitle: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.ink },
+  save: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.amber },
   scroll: { padding: 20, paddingBottom: 48, maxWidth: 640, width: '100%', alignSelf: 'center' },
-  label: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginTop: 20, marginBottom: 8 },
+  label: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginTop: 20, marginBottom: 8 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   input: {
     height: 50,
@@ -181,12 +181,12 @@ const styles = StyleSheet.create({
     borderColor: UI.border,
     backgroundColor: UI.card,
     paddingHorizontal: 14,
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     color: UI.ink,
   },
   notes: { height: 110, paddingTop: 12 },
-  error: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.error, marginTop: 14 },
+  error: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.error, marginTop: 14 },
   primary: {
     height: 54,
     borderRadius: 27,
@@ -195,6 +195,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 28,
   },
-  primaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#fff' },
-  hint: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, textAlign: 'center', marginTop: 10 },
+  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
+  hint: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, textAlign: 'center', marginTop: 10 },
 });

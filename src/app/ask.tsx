@@ -15,8 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
@@ -77,9 +77,9 @@ export default function AskScreen() {
     if (!q) return;
     const hits = searchSources(q, { lectures, materials }, { courseId: courseId ?? undefined, materialId: material?.id }, state.preferences.aiAnswerStyle === 'concise' ? 2 : 4);
     const reply: Msg = hits.length
-      ? { role: 'lexi', text: `Here’s what your ${hits.length === 1 ? 'source says' : 'sources say'} about that:`, sources: hits }
+      ? { role: 'zuri', text: `Here’s what your ${hits.length === 1 ? 'source says' : 'sources say'} about that:`, sources: hits }
       : {
-          role: 'lexi',
+          role: 'zuri',
           text:
             sourceCount === 0
               ? 'There’s nothing to search yet. Record a lecture or upload notes, and I’ll answer from them.'
@@ -159,7 +159,7 @@ export default function AskScreen() {
           )}
 
           {msgs.map((m, i) => (
-            <View key={i} style={[styles.bubble, m.role === 'user' ? styles.user : styles.lexi]}>
+            <View key={i} style={[styles.bubble, m.role === 'user' ? styles.user : styles.zuri]}>
               <Text style={[styles.bubbleText, m.role === 'user' && { color: '#fff' }]}>{m.text}</Text>
               {m.sources && (
                 <View style={{ gap: 8, marginTop: 10 }}>
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: UI.borderSoft,
   },
-  topTitle: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: UI.ink },
+  topTitle: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.ink },
   scope: { gap: 8, paddingHorizontal: 20, paddingVertical: 10 },
   thread: { padding: 20, gap: 12, maxWidth: 680, width: '100%', alignSelf: 'center', flexGrow: 1 },
   intro: { alignItems: 'center', paddingVertical: 32, paddingHorizontal: 12 },
@@ -226,12 +226,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 14,
   },
-  introTitle: { fontFamily: LexiFonts.headlineMd, fontSize: 21, color: UI.ink, textAlign: 'center', marginBottom: 6 },
-  introText: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft, textAlign: 'center' },
+  introTitle: { fontFamily: ZuriFonts.headlineMd, fontSize: 21, color: UI.ink, textAlign: 'center', marginBottom: 6 },
+  introText: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft, textAlign: 'center' },
   bubble: { maxWidth: '92%', borderRadius: 16, padding: 12 },
   user: { alignSelf: 'flex-end', backgroundColor: UI.ink },
-  lexi: { alignSelf: 'flex-start', backgroundColor: UI.cardMuted },
-  bubbleText: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 20, color: UI.ink },
+  zuri: { alignSelf: 'flex-start', backgroundColor: UI.cardMuted },
+  bubbleText: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 20, color: UI.ink },
   suggest: { gap: 8, paddingHorizontal: 20, paddingVertical: 8 },
   suggestChip: {
     borderWidth: 1,
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     backgroundColor: UI.card,
   },
-  suggestText: { fontFamily: LexiFonts.bodyMedium, fontSize: 13, color: UI.ink },
+  suggestText: { fontFamily: ZuriFonts.bodyMedium, fontSize: 13, color: UI.ink },
   inputRow: { flexDirection: 'row', gap: 8, alignItems: 'center', paddingHorizontal: 20, paddingTop: 4 },
   input: {
     flex: 1,
@@ -251,10 +251,10 @@ const styles = StyleSheet.create({
     borderColor: UI.border,
     backgroundColor: UI.card,
     paddingHorizontal: 16,
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     color: UI.ink,
   },
   send: { width: 48, height: 48, borderRadius: 24, backgroundColor: UI.ink, alignItems: 'center', justifyContent: 'center' },
-  footnote: { fontFamily: LexiFonts.bodyRegular, fontSize: 11, color: UI.muted, textAlign: 'center', paddingVertical: 8 },
+  footnote: { fontFamily: ZuriFonts.bodyRegular, fontSize: 11, color: UI.muted, textAlign: 'center', paddingVertical: 8 },
 });

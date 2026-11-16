@@ -15,13 +15,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ email?: string }>();
-  const [fontsLoaded] = useLexiFonts();
+  const [fontsLoaded] = useZuriFonts();
 
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
   const [focusedIndex, setFocusedIndex] = useState<number>(0);
@@ -145,7 +145,7 @@ export default function VerifyEmailScreen() {
           accessibilityLabel="Go back"
           hitSlop={12}
         >
-          <Ionicons name="arrow-back" size={24} color={LexiColors.primary} />
+          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
         </Pressable>
         <Text style={styles.headerTitle}>Zuri</Text>
         <View style={styles.headerSpacer} />
@@ -233,14 +233,14 @@ export default function VerifyEmailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: LexiColors.background,
+    backgroundColor: ZuriColors.background,
   },
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(228, 226, 225, 0.4)',
   },
@@ -257,9 +257,9 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.95 }],
   },
   headerTitle: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 22,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     fontWeight: '700',
   },
   headerSpacer: {
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: LexiSpacing.containerPaddingH,
+    paddingHorizontal: ZuriSpacing.containerPaddingH,
     paddingTop: 32,
     paddingBottom: 32,
     justifyContent: 'space-between',
@@ -283,20 +283,20 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   headline: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 28,
     lineHeight: 34,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
   },
   subtitle: {
-    fontFamily: LexiFonts.bodyLg,
+    fontFamily: ZuriFonts.bodyLg,
     fontSize: 16,
     lineHeight: 24,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   emailHighlight: {
-    color: LexiColors.primary,
-    fontFamily: LexiFonts.bodyMdMedium,
+    color: ZuriColors.primary,
+    fontFamily: ZuriFonts.bodyMdMedium,
   },
   otpContainer: {
     flexDirection: 'row',
@@ -313,23 +313,23 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#F5F3EF',
     borderWidth: 1.5,
-    borderColor: LexiColors.outlineVariant,
-    fontFamily: LexiFonts.headlineMd,
+    borderColor: ZuriColors.outlineVariant,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 22,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
     fontWeight: '600',
   },
   otpBoxFocused: {
-    borderColor: LexiColors.primary,
-    backgroundColor: LexiColors.surfaceContainerLowest,
-    shadowColor: LexiColors.primary,
+    borderColor: ZuriColors.primary,
+    backgroundColor: ZuriColors.surfaceContainerLowest,
+    shadowColor: ZuriColors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
   otpBoxFilled: {
-    borderColor: LexiColors.primaryContainer,
+    borderColor: ZuriColors.primaryContainer,
   },
   bottomActions: {
     gap: 20,
@@ -339,11 +339,11 @@ const styles = StyleSheet.create({
   verifyButton: {
     width: '100%',
     height: 56,
-    backgroundColor: LexiColors.primaryContainer,
+    backgroundColor: ZuriColors.primaryContainer,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: LexiColors.primaryContainer,
+    shadowColor: ZuriColors.primaryContainer,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
@@ -354,9 +354,9 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.985 }],
   },
   verifyButtonText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 15,
-    color: LexiColors.onPrimary,
+    color: ZuriColors.onPrimary,
     letterSpacing: 0.5,
   },
   resendContainer: {
@@ -366,20 +366,20 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   resendQuestion: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 14,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   resendDisabled: {
-    fontFamily: LexiFonts.bodyMdMedium,
+    fontFamily: ZuriFonts.bodyMdMedium,
     fontSize: 14,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
     opacity: 0.6,
   },
   resendActive: {
-    fontFamily: LexiFonts.bodyMdMedium,
+    fontFamily: ZuriFonts.bodyMdMedium,
     fontSize: 14,
-    color: LexiColors.primaryContainer,
+    color: ZuriColors.primaryContainer,
     textDecorationLine: 'underline',
   },
 });

@@ -3,8 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { MATERIAL_CATEGORIES, type Material } from '@/types/material';
 import type { IoniconName } from '@/types/lecture';
 
@@ -97,9 +97,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignSelf: 'flex-start',
   },
-  eyebrow: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: UI.amber, marginBottom: 2 },
-  title: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, lineHeight: 21, color: UI.ink },
-  meta: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
+  eyebrow: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: UI.amber, marginBottom: 2 },
+  title: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, lineHeight: 21, color: UI.ink },
+  meta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
   status: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 },
-  statusText: { fontFamily: LexiFonts.labelSmBold, fontSize: 11 },
+  statusText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11 },
 });

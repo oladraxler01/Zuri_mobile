@@ -4,8 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useFeed } from '@/context/feed-context';
 import { StateView } from '@/components/states/state-view';
 
@@ -114,20 +114,20 @@ const styles = StyleSheet.create({
   topBar: { height: 52, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20 },
   scroll: { padding: 20, paddingTop: 4, paddingBottom: 48, maxWidth: 600, width: '100%', alignSelf: 'center' },
   icon: { width: 56, height: 56, borderRadius: 16, backgroundColor: UI.amberSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
-  eyebrow: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.4, color: UI.amber },
-  title: { fontFamily: LexiFonts.headlineLg, fontSize: 26, lineHeight: 32, color: UI.ink, marginTop: 4, marginBottom: 8 },
-  body: { fontFamily: LexiFonts.bodyRegular, fontSize: 15, lineHeight: 22, color: UI.inkSoft },
-  section: { fontFamily: LexiFonts.headlineMd, fontSize: 18, color: UI.ink, marginTop: 24, marginBottom: 8 },
+  eyebrow: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.4, color: UI.amber },
+  title: { fontFamily: ZuriFonts.headlineLg, fontSize: 26, lineHeight: 32, color: UI.ink, marginTop: 4, marginBottom: 8 },
+  body: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, lineHeight: 22, color: UI.inkSoft },
+  section: { fontFamily: ZuriFonts.headlineMd, fontSize: 18, color: UI.ink, marginTop: 24, marginBottom: 8 },
   card: { backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border, paddingHorizontal: 14 },
   step: { flexDirection: 'row', gap: 12, paddingVertical: 12 },
   stepBorder: { borderTopWidth: 1, borderTopColor: UI.borderSoft },
-  stepNum: { fontFamily: LexiFonts.headlineMd, fontSize: 16, color: UI.amber, width: 18 },
-  stepText: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 15, lineHeight: 21, color: UI.ink },
+  stepNum: { fontFamily: ZuriFonts.headlineMd, fontSize: 16, color: UI.amber, width: 18 },
+  stepText: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 15, lineHeight: 21, color: UI.ink },
   primary: { height: 52, borderRadius: 26, backgroundColor: UI.ink, alignItems: 'center', justifyContent: 'center' },
-  primaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#fff' },
+  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
   secondary: { height: 52, borderRadius: 26, borderWidth: 1, borderColor: UI.border, alignItems: 'center', justifyContent: 'center', backgroundColor: UI.card },
-  secondaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: UI.ink },
+  secondaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.ink },
   later: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 20 },
-  laterText: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.muted },
+  laterText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.muted },
   sep: { color: UI.muted },
 });

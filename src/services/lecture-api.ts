@@ -1,18 +1,17 @@
 import { Platform } from 'react-native';
 import type { IoniconName, LectureAnalysis, TranscriptSegment } from '@/types/lecture';
 import { buildSampleAnalysis } from '@/data/sample-lecture-analysis';
+import { API_BASE, isBackendConfigured } from '@/services/api-config';
+
+export { API_BASE, isBackendConfigured };
 
 /**
  * Lecture upload + processing.
  *
- * When EXPO_PUBLIC_API_BASE_URL points at the real backend, recordings are
- * uploaded to POST {base}/lectures/transcribe (see AUDIO_PROCESSING_SPEC.md).
+ * When the backend is connected (see api-config.ts), recordings are uploaded
+ * to POST {API_BASE}/lectures/transcribe (see AUDIO_PROCESSING_SPEC.md).
  * Until then, a local stand-in simulates the upload and returns sample results.
  */
-
-export const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, '');
-
-export const isBackendConfigured = !!API_BASE && !API_BASE.includes('yourdomain');
 
 export type ProcessingStage = 'uploading' | 'processing';
 

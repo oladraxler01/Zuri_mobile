@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import type { NoteSection } from '@/types/lecture';
 import { tabStyles as t } from './tab-styles';
 
@@ -48,14 +48,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   number: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 12,
     color: UI.amber,
     fontVariant: ['tabular-nums'],
   },
   heading: {
     flex: 1,
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 19,
     color: UI.ink,
   },
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   },
   pointText: {
     flex: 1,
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     lineHeight: 23,
     color: UI.inkSoft,

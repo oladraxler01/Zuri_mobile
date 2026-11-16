@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useLecturer } from '@/context/lecturer-context';
 import { useLectures } from '@/context/lectures-context';
 import { ScreenShell, Panel, Grid, StatTile, BarChart, HBarList, SampleBanner, StatusBadge, Divider } from '@/components/dashboard';
@@ -156,27 +156,27 @@ export default function LecturerInsightsScreen() {
 }
 
 const styles = StyleSheet.create({
-  overviewTitle: { fontFamily: LexiFonts.headlineMd, fontSize: 18, color: UI.ink },
-  trend: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft, marginTop: 6 },
+  overviewTitle: { fontFamily: ZuriFonts.headlineMd, fontSize: 18, color: UI.ink },
+  trend: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft, marginTop: 6 },
   weakRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
-  weakRank: { fontFamily: LexiFonts.headlineMd, fontSize: 18, color: UI.amber, width: 18 },
-  weakTopic: { flex: 1, fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink },
-  weakValue: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.ink },
+  weakRank: { fontFamily: ZuriFonts.headlineMd, fontSize: 18, color: UI.amber, width: 18 },
+  weakTopic: { flex: 1, fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink },
+  weakValue: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.ink },
   link: { marginTop: 10 },
-  linkText: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.amber },
+  linkText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.amber },
   misc: { paddingVertical: 10 },
   miscBorder: { borderTopWidth: 1, borderTopColor: UI.borderSoft },
   miscHead: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  miscTopic: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.ink },
-  miscShare: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.inkSoft },
-  miscText: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.inkSoft },
+  miscTopic: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.ink },
+  miscShare: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.inkSoft },
+  miscText: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.inkSoft },
   faqRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
-  faqQ: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 20, color: UI.ink, fontStyle: 'italic' },
-  faqCount: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.inkSoft },
+  faqQ: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 20, color: UI.ink, fontStyle: 'italic' },
+  faqCount: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.inkSoft },
   cohortRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   cohortTrack: { flex: 1, height: 8, borderRadius: 4, backgroundColor: UI.cardMuted, overflow: 'hidden' },
   cohortFill: { height: '100%', borderRadius: 4, backgroundColor: '#c5832b' },
-  cohortCount: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.ink, minWidth: 70, textAlign: 'right' },
-  cohortPct: { fontFamily: LexiFonts.bodyRegular, color: UI.muted },
-  trendBody: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
+  cohortCount: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.ink, minWidth: 70, textAlign: 'right' },
+  cohortPct: { fontFamily: ZuriFonts.bodyRegular, color: UI.muted },
+  trendBody: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
 });

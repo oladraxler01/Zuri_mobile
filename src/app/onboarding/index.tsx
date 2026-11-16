@@ -16,8 +16,8 @@ import Animated, {
   interpolate,
   Easing,
 } from 'react-native-reanimated';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 
 /**
  * Launch splash: kinetic typography on deep forest green.
@@ -54,7 +54,7 @@ const T = {
 export default function OnboardingSplashScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [fontsLoaded] = useLexiFonts();
+  const [fontsLoaded] = useZuriFonts();
   const reduceMotion = useReducedMotion();
 
   // Shared timeline values
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   edition: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 10,
     letterSpacing: 2.4,
     color: 'rgba(251, 249, 248, 0.38)',
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   letter: {
-    fontFamily: LexiFonts.displayBold,
+    fontFamily: ZuriFonts.displayBold,
     fontSize: 88,
     lineHeight: 112,
     color: CREAM,
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 3,
   },
   word: {
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 17,
     lineHeight: 26,
     color: MUTED,
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tickerText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 12,
     letterSpacing: 3,
     color: 'rgba(251, 249, 248, 0.5)',
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(233, 195, 73, 0.28)',
   },
   buttonText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 16,
     color: INK,
     letterSpacing: 0.2,

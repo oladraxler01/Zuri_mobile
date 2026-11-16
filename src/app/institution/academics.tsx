@@ -3,8 +3,8 @@ import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from 'react-
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useInstitution, type InstCalendarEvent } from '@/context/institution-context';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
@@ -346,14 +346,14 @@ const styles = StyleSheet.create({
     backgroundColor: UI.bg,
     paddingHorizontal: 16,
   },
-  searchInput: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.ink },
-  dept: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.amber, marginTop: 6 },
+  searchInput: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.ink },
+  dept: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.amber, marginTop: 6 },
   deptRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 },
-  addLink: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.amber },
+  addLink: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.amber },
   inputs: { flexDirection: 'row', gap: 8 },
   ttRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
-  ttCourse: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.ink },
-  ttSlot: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
+  ttCourse: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink },
+  ttSlot: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
   modRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 10 },
   modActions: { flexDirection: 'row', gap: 6, paddingVertical: 8 },
   form: { gap: 10, marginBottom: 14, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: UI.borderSoft },
@@ -364,12 +364,12 @@ const styles = StyleSheet.create({
     borderColor: UI.border,
     backgroundColor: UI.bg,
     paddingHorizontal: 14,
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     color: UI.ink,
   },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   primary: { height: 46, borderRadius: 23, backgroundColor: UI.ink, alignItems: 'center', justifyContent: 'center' },
-  primaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: '#fff' },
-  muted: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: UI.muted },
+  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: '#fff' },
+  muted: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted },
 });

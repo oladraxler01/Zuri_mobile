@@ -11,8 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiColors, LexiFonts, LexiSpacing } from '@/constants/lexi-theme';
-import { useLexiFonts } from '@/hooks/use-lexi-fonts';
+import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
+import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic } from '@/context/academic-context';
 import { useLectures } from '@/context/lectures-context';
 import { describeStart, upcomingClasses, formatDuration } from '@/utils/time';
@@ -25,7 +25,7 @@ import { kindMeta } from '@/components/planner/assessment-card';
 
 export default function AcademicHomeScreen() {
   const router = useRouter();
-  const [fontsLoaded] = useLexiFonts();
+  const [fontsLoaded] = useZuriFonts();
   const { state } = useAcademic();
   const { lectures } = useLectures();
   const { materials } = useMaterials();
@@ -323,7 +323,7 @@ export default function AcademicHomeScreen() {
               </Text>
 
               <View style={styles.venueRow}>
-                <Ionicons name="location-outline" size={16} color={LexiColors.onSurfaceVariant} />
+                <Ionicons name="location-outline" size={16} color={ZuriColors.onSurfaceVariant} />
                 <Text style={styles.venueText}>{nextClass.venue}</Text>
               </View>
 
@@ -406,7 +406,7 @@ export default function AcademicHomeScreen() {
                         </Text>
                         <Text style={styles.laterVenue}>{occ.slot.venue}</Text>
                       </View>
-                      <Ionicons name="chevron-forward" size={16} color={LexiColors.outline} />
+                      <Ionicons name="chevron-forward" size={16} color={ZuriColors.outline} />
                     </Pressable>
                   </View>
                 );
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 3,
   },
-  bellBadgeText: { fontFamily: LexiFonts.labelSmBold, fontSize: 10, color: '#ffffff' },
+  bellBadgeText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 10, color: '#ffffff' },
   startCard: {
     backgroundColor: '#ffffff',
     borderRadius: 18,
@@ -478,10 +478,10 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   startHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  startTitle: { fontFamily: LexiFonts.headlineMd, fontSize: 18, color: '#272e0a', flex: 1 },
-  startSub: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: '#c5832b', marginTop: 2, marginBottom: 6 },
+  startTitle: { fontFamily: ZuriFonts.headlineMd, fontSize: 18, color: '#272e0a', flex: 1 },
+  startSub: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: '#c5832b', marginTop: 2, marginBottom: 6 },
   startRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9 },
-  startText: { flex: 1, fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: '#272e0a' },
+  startText: { flex: 1, fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: '#272e0a' },
   startTextDone: { color: '#77786c', textDecorationLine: 'line-through' },
   dueCard: {
     flexDirection: 'row',
@@ -503,9 +503,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dueTag: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: '#9a5b0b' },
-  dueTitle: { fontFamily: LexiFonts.headlineMd, fontSize: 17, lineHeight: 22, color: '#272e0a', marginTop: 2 },
-  dueMeta: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: '#6b5a3a', marginTop: 3 },
+  dueTag: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: '#9a5b0b' },
+  dueTitle: { fontFamily: ZuriFonts.headlineMd, fontSize: 17, lineHeight: 22, color: '#272e0a', marginTop: 2 },
+  dueMeta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: '#6b5a3a', marginTop: 3 },
   examCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -525,11 +525,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  examDays: { fontFamily: LexiFonts.headlineMd, fontSize: 22, color: '#e9c349', lineHeight: 26 },
-  examDaysLabel: { fontFamily: LexiFonts.labelSmBold, fontSize: 10, color: 'rgba(255,255,255,0.75)' },
-  examTag: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: '#c5832b' },
-  examTitle: { fontFamily: LexiFonts.headlineMd, fontSize: 17, lineHeight: 22, color: '#272e0a', marginTop: 2 },
-  examMeta: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: '#77786c', marginTop: 3 },
+  examDays: { fontFamily: ZuriFonts.headlineMd, fontSize: 22, color: '#e9c349', lineHeight: 26 },
+  examDaysLabel: { fontFamily: ZuriFonts.labelSmBold, fontSize: 10, color: 'rgba(255,255,255,0.75)' },
+  examTag: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: '#c5832b' },
+  examTitle: { fontFamily: ZuriFonts.headlineMd, fontSize: 17, lineHeight: 22, color: '#272e0a', marginTop: 2 },
+  examMeta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: '#77786c', marginTop: 3 },
   postLectureCard: {
     backgroundColor: '#272e0a',
     borderRadius: 20,
@@ -537,20 +537,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   postLectureTag: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
     letterSpacing: 1.2,
     color: '#e9c349',
   },
   postLectureTitle: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 20,
     lineHeight: 26,
     color: '#ffffff',
     marginTop: 10,
   },
   postLectureMeta: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     color: 'rgba(255,255,255,0.7)',
     marginTop: 6,
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
   },
   postLectureBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
     color: '#272e0a',
   },
@@ -579,7 +579,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
   },
   postLectureBtnGhostText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
     color: '#ffffff',
   },
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   headerLogo: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 22,
     letterSpacing: -0.5,
     color: '#272e0a',
@@ -655,23 +655,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#ba1a1a',
   },
   alertBadgeText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
     color: '#c5832b',
     letterSpacing: 0.5,
   },
   alertTitle: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 17,
     color: '#272e0a',
     fontWeight: '600',
     marginBottom: 4,
   },
   alertSubtitle: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 13,
     lineHeight: 18,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
     marginBottom: 14,
   },
   alertRecordBtn: {
@@ -684,7 +684,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   alertRecordBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
     color: '#ffffff',
   },
@@ -697,7 +697,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   greetingTitle: {
-    fontFamily: LexiFonts.headlineLgMobile,
+    fontFamily: ZuriFonts.headlineLgMobile,
     fontSize: 32,
     lineHeight: 38,
     color: '#272e0a',
@@ -705,10 +705,10 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   greetingSubtitle: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 15,
     lineHeight: 22,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   // Timeline
   timelineContainer: {
@@ -758,7 +758,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: LexiColors.outlineVariant,
+    backgroundColor: ZuriColors.outlineVariant,
     zIndex: 2,
   },
   sectionHeaderRow: {
@@ -768,24 +768,24 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tagGold: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
     letterSpacing: 1,
     color: '#c5832b',
     fontWeight: '700',
   },
   tagMuted: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
     letterSpacing: 1,
-    color: LexiColors.outline,
+    color: ZuriColors.outline,
     fontWeight: '700',
     marginBottom: 8,
   },
   timeTagText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 13,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   // Next Card
   nextCard: {
@@ -812,7 +812,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 80,
   },
   nextCourseTitle: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 19,
     color: '#272e0a',
     fontWeight: '600',
@@ -825,9 +825,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   venueText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 13,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   actionButtonsRow: {
     flexDirection: 'row',
@@ -841,7 +841,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   primaryActionBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
     color: '#ffffff',
   },
@@ -854,7 +854,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   secondaryActionBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
     color: '#272e0a',
   },
@@ -886,7 +886,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   reviewTopicTitle: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 17,
     color: '#272e0a',
     fontWeight: '600',
@@ -898,15 +898,15 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   durationChipText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 10,
-    color: LexiColors.primary,
+    color: ZuriColors.primary,
   },
   reviewDesc: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 13,
     lineHeight: 18,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
     marginBottom: 12,
   },
   reviewLinkRow: {
@@ -915,7 +915,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   reviewLinkText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
     color: '#c5832b',
   },
@@ -934,23 +934,23 @@ const styles = StyleSheet.create({
   },
   laterTime: {
     width: 68,
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   laterDetails: {
     flex: 1,
   },
   laterTitle: {
-    fontFamily: LexiFonts.bodyLg,
+    fontFamily: ZuriFonts.bodyLg,
     fontSize: 14,
     fontWeight: '600',
     color: '#272e0a',
   },
   laterVenue: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 12,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
     marginTop: 2,
   },
   laterDivider: {
@@ -978,7 +978,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   quickActionTitle: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 13,
     color: '#272e0a',
   },
@@ -1002,16 +1002,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   modalTitle: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 18,
     color: '#272e0a',
     fontWeight: '700',
   },
   modalBodyText: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 14,
     lineHeight: 22,
-    color: LexiColors.onSurface,
+    color: ZuriColors.onSurface,
   },
   flashcardBox: {
     backgroundColor: '#f5f3ee',
@@ -1020,17 +1020,17 @@ const styles = StyleSheet.create({
     marginVertical: 14,
   },
   flashcardQ: {
-    fontFamily: LexiFonts.headlineMd,
+    fontFamily: ZuriFonts.headlineMd,
     fontSize: 16,
     color: '#272e0a',
     fontWeight: '600',
     marginBottom: 8,
   },
   flashcardA: {
-    fontFamily: LexiFonts.bodyMd,
+    fontFamily: ZuriFonts.bodyMd,
     fontSize: 14,
     lineHeight: 20,
-    color: LexiColors.onSurfaceVariant,
+    color: ZuriColors.onSurfaceVariant,
   },
   doneBtn: {
     backgroundColor: '#272e0a',
@@ -1040,7 +1040,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   doneBtnText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,
     color: '#ffffff',
   },

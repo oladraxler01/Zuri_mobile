@@ -3,8 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import type { Lecture } from '@/types/lecture';
 import { formatDuration, formatLectureDate } from '@/utils/time';
 
@@ -106,20 +106,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   course: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
     letterSpacing: 1,
     color: UI.amber,
     marginBottom: 2,
   },
   title: {
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 15,
     lineHeight: 21,
     color: UI.ink,
   },
   meta: {
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 13,
     color: UI.muted,
     marginTop: 2,
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   pillText: {
-    fontFamily: LexiFonts.labelSmBold,
+    fontFamily: ZuriFonts.labelSmBold,
     fontSize: 11,
   },
 });

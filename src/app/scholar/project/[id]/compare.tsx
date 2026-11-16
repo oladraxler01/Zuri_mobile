@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
+import { ZuriFonts } from '@/constants/zuri-theme';
 import { useResearch } from '@/context/research-context';
 import { ED, EdPage, Masthead, Rule, SectionHead, edStyles } from '@/components/research/editorial';
 import { EmptyState } from '@/components/states/state-view';
@@ -97,13 +97,13 @@ export default function CompareSourcesScreen() {
 
 const styles = StyleSheet.create({
   pickRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 },
-  pickTitle: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: ED.ink },
+  pickTitle: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: ED.ink },
   tr: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: ED.rule },
   th: { paddingVertical: 10, paddingRight: 12 },
   td: { paddingVertical: 10, paddingRight: 12 },
   labelCol: { width: 100 },
   col: { width: 220 },
   colTitle: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 15, lineHeight: 20, color: ED.ink },
-  rowLabel: { fontFamily: LexiFonts.labelSmBold, fontSize: 10, letterSpacing: 1.2, color: ED.muted },
-  cell: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: ED.ink },
+  rowLabel: { fontFamily: ZuriFonts.labelSmBold, fontSize: 10, letterSpacing: 1.2, color: ED.muted },
+  cell: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: ED.ink },
 });

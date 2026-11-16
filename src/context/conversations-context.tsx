@@ -6,7 +6,7 @@ import { onReset } from '@/utils/reset';
 const KEY = 'lexi.conversations.v1';
 
 export interface ChatMessage {
-  role: 'user' | 'lexi';
+  role: 'user' | 'zuri';
   text: string;
   sources?: SourceHit[];
 }

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
+import { ZuriFonts } from '@/constants/zuri-theme';
 import { useResearch } from '@/context/research-context';
 import { ED, EdPage, Masthead, Rule, edStyles } from '@/components/research/editorial';
 import { EmptyState } from '@/components/states/state-view';
@@ -77,5 +77,5 @@ const styles = StyleSheet.create({
   q: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 19, color: ED.ink },
   hit: { flexDirection: 'row', gap: 12 },
   hitNum: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 16, color: ED.accent, width: 14 },
-  hitCite: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, color: ED.muted },
+  hitCite: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, color: ED.muted },
 });

@@ -3,8 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useLecturer } from '@/context/lecturer-context';
 import { ScreenShell, Grid, Panel, ListRow, Divider, StatusBadge } from '@/components/dashboard';
 import type { IoniconName } from '@/types/lecture';
@@ -125,6 +125,6 @@ function Tool({ icon, title, desc, onPress }: { icon: IoniconName; title: string
 const styles = StyleSheet.create({
   tool: { backgroundColor: UI.card, borderRadius: 18, borderWidth: 1, borderColor: UI.border, padding: 16, minHeight: 150 },
   toolIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: UI.amberSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
-  toolTitle: { fontFamily: LexiFonts.headlineMd, fontSize: 17, color: UI.ink },
-  toolDesc: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.inkSoft, marginTop: 4 },
+  toolTitle: { fontFamily: ZuriFonts.headlineMd, fontSize: 17, color: UI.ink },
+  toolDesc: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.inkSoft, marginTop: 4 },
 });

@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, TextInput, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { ScreenShell, Panel, Grid, StatTile, StatusBadge, Divider, SampleBanner } from '@/components/dashboard';
 import { Chip } from '@/components/ui/chip';
 import { sampleStudents } from '@/data/sample-institution';
@@ -71,8 +71,8 @@ export default function StudentOverviewScreen() {
 
 const styles = StyleSheet.create({
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, borderRadius: 22, borderWidth: 1, borderColor: UI.border, backgroundColor: UI.card, paddingHorizontal: 16 },
-  searchInput: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.ink },
+  searchInput: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.ink },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
-  name: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink },
-  meta: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
+  name: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink },
+  meta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
 });

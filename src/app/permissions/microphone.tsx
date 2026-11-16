@@ -6,7 +6,7 @@ import type { Href } from 'expo-router';
 import { getRecordingPermissionsAsync, requestRecordingPermissionsAsync } from 'expo-audio';
 import { PermissionState } from '@/components/states/state-view';
 import { LoadingState } from '@/components/states/loading';
-import { UI } from '@/constants/lexi-ui';
+import { UI } from '@/constants/zuri-ui';
 
 /** Microphone permission step at the end of student onboarding (?next= overrides where it goes). */
 export default function MicrophonePermissionScreen() {

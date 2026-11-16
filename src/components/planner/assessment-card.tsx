@@ -3,8 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { ASSESSMENT_KINDS, type Assessment } from '@/types/planner';
 import { daysUntil, describeDue } from '@/utils/planner';
 
@@ -82,12 +82,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignSelf: 'flex-start',
   },
-  eyebrow: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: UI.amber, marginBottom: 2 },
-  title: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, lineHeight: 21, color: UI.ink },
+  eyebrow: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: UI.amber, marginBottom: 2 },
+  title: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, lineHeight: 21, color: UI.ink },
   titleDone: { color: UI.muted, textDecorationLine: 'line-through' },
-  due: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, marginTop: 3 },
+  due: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, marginTop: 3 },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
   track: { flex: 1, height: 4, borderRadius: 2, backgroundColor: UI.cardMuted, overflow: 'hidden' },
   fill: { height: '100%', backgroundColor: UI.amber },
-  progressText: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, color: UI.muted },
+  progressText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, color: UI.muted },
 });

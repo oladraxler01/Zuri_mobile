@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useInstitution, type InstSlot } from '@/context/institution-context';
 import { ScreenShell, Panel, Grid, StatTile, BarChart, HBarList, SampleBanner, StatusBadge, Divider } from '@/components/dashboard';
 import { Chip } from '@/components/ui/chip';
@@ -160,21 +160,21 @@ function Stepper({ label, value, onChange, step }: { label: string; value: numbe
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  lecturer: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.inkSoft },
+  lecturer: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.inkSoft },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
-  stepLabel: { flex: 1, fontFamily: LexiFonts.bodyMedium, fontSize: 15, color: UI.ink },
+  stepLabel: { flex: 1, fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink },
   stepBtn: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: UI.border, alignItems: 'center', justifyContent: 'center' },
-  stepValue: { fontFamily: LexiFonts.headlineMd, fontSize: 20, color: UI.ink, minWidth: 48, textAlign: 'center' },
+  stepValue: { fontFamily: ZuriFonts.headlineMd, fontSize: 20, color: UI.ink, minWidth: 48, textAlign: 'center' },
   slot: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
-  slotText: { flex: 1, fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.ink },
-  muted: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: UI.muted },
+  slotText: { flex: 1, fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink },
+  muted: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted },
   addSlot: { gap: 10, marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: UI.borderSoft },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   inputs: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  input: { height: 44, borderRadius: 10, borderWidth: 1, borderColor: UI.border, backgroundColor: UI.bg, paddingHorizontal: 10, fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.ink },
-  error: { fontFamily: LexiFonts.bodyMedium, fontSize: 13, color: UI.error },
+  input: { height: 44, borderRadius: 10, borderWidth: 1, borderColor: UI.border, backgroundColor: UI.bg, paddingHorizontal: 10, fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.ink },
+  error: { fontFamily: ZuriFonts.bodyMedium, fontSize: 13, color: UI.error },
   btn: { height: 44, borderRadius: 22, backgroundColor: UI.ink, alignItems: 'center', justifyContent: 'center' },
-  btnText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: '#fff' },
+  btnText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: '#fff' },
   archive: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48, borderRadius: 24, borderWidth: 1, borderColor: UI.border },
-  archiveText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.ink },
+  archiveText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.ink },
 });

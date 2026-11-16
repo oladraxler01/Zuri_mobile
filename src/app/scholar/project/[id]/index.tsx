@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
+import { ZuriFonts } from '@/constants/zuri-theme';
 import { useResearch } from '@/context/research-context';
 import { useAcademic } from '@/context/academic-context';
 import { ED, EdPage, Masthead, Rule, SectionHead, PaperRow, edStyles } from '@/components/research/editorial';
@@ -194,23 +194,23 @@ function Stat({ n, label }: { n: number; label: string }) {
 const styles = StyleSheet.create({
   stats: { flexDirection: 'row', marginTop: 4 },
   statN: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 24, color: ED.ink },
-  statL: { fontFamily: LexiFonts.labelSmBold, fontSize: 10, letterSpacing: 1.2, color: ED.muted },
+  statL: { fontFamily: ZuriFonts.labelSmBold, fontSize: 10, letterSpacing: 1.2, color: ED.muted },
   tools: { flexDirection: 'row', flexWrap: 'wrap', borderTopWidth: StyleSheet.hairlineWidth, borderLeftWidth: StyleSheet.hairlineWidth, borderColor: ED.rule },
   tool: { width: '50%', padding: 14, gap: 4, borderRightWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: ED.rule },
   toolLabel: { fontFamily: 'SourceSerif4_600SemiBold', fontSize: 15, color: ED.ink },
-  toolMeta: { fontFamily: LexiFonts.labelSmBold, fontSize: 10, letterSpacing: 1, color: ED.muted },
+  toolMeta: { fontFamily: ZuriFonts.labelSmBold, fontSize: 10, letterSpacing: 1, color: ED.muted },
   tabs: { flexDirection: 'row', gap: 22, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: ED.rule, marginTop: 8 },
   tab: { paddingVertical: 10, borderBottomWidth: 2, borderBottomColor: 'transparent' },
   tabOn: { borderBottomColor: ED.ink },
-  tabText: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: ED.muted },
+  tabText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: ED.muted },
   evidence: { paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: ED.rule, gap: 6 },
   evHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  evStance: { fontFamily: LexiFonts.labelSmBold, fontSize: 10, letterSpacing: 1.4, color: ED.accent },
-  evTheme: { fontFamily: LexiFonts.labelSmBold, fontSize: 10, color: ED.muted },
+  evStance: { fontFamily: ZuriFonts.labelSmBold, fontSize: 10, letterSpacing: 1.4, color: ED.accent },
+  evTheme: { fontFamily: ZuriFonts.labelSmBold, fontSize: 10, color: ED.muted },
   evQuote: { fontFamily: 'SourceSerif4_400Regular', fontSize: 16, lineHeight: 24, color: ED.ink, fontStyle: 'italic' },
-  evCite: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: ED.inkSoft },
+  evCite: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: ED.inkSoft },
   themeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   note: { paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: ED.rule, gap: 8 },
   noteActions: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  noteAction: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: ED.accent },
+  noteAction: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: ED.accent },
 });

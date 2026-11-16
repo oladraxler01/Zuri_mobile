@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { PermissionState } from '@/components/states/state-view';
 import { LoadingState } from '@/components/states/loading';
-import { UI } from '@/constants/lexi-ui';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import {
   getNotificationPermission,

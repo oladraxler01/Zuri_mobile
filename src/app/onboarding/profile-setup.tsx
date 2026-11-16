@@ -4,8 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { FACULTY_OPTIONS } from '@/constants/course-catalogue';
 import { looksLikeMatric } from '@/utils/validation';
@@ -125,7 +125,7 @@ export default function ProfileSetupScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: UI.bg },
   topBar: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 },
-  step: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.muted },
+  step: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.muted },
   scroll: { padding: 20, paddingBottom: 48, maxWidth: 520, width: '100%', alignSelf: 'center' },
   avatar: {
     width: 72,
@@ -137,10 +137,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 14,
   },
-  initials: { fontFamily: LexiFonts.headlineMd, fontSize: 26, color: UI.ink },
-  h1: { fontFamily: LexiFonts.headlineLg, fontSize: 28, color: UI.ink, textAlign: 'center' },
-  lead: { fontFamily: LexiFonts.bodyRegular, fontSize: 15, color: UI.muted, textAlign: 'center', marginTop: 4 },
-  label: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginTop: 22, marginBottom: 8 },
+  initials: { fontFamily: ZuriFonts.headlineMd, fontSize: 26, color: UI.ink },
+  h1: { fontFamily: ZuriFonts.headlineLg, fontSize: 28, color: UI.ink, textAlign: 'center' },
+  lead: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, color: UI.muted, textAlign: 'center', marginTop: 4 },
+  label: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginTop: 22, marginBottom: 8 },
   input: {
     height: 50,
     borderRadius: 12,
@@ -148,12 +148,12 @@ const styles = StyleSheet.create({
     borderColor: UI.border,
     backgroundColor: UI.card,
     paddingHorizontal: 14,
-    fontFamily: LexiFonts.bodyRegular,
+    fontFamily: ZuriFonts.bodyRegular,
     fontSize: 15,
     color: UI.ink,
   },
   inputIcon: { position: 'absolute', right: 14, top: 15 },
-  hint: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 6 },
+  hint: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 6 },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -167,8 +167,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   optionOn: { borderColor: UI.ink },
-  optionText: { flex: 1, fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.ink },
-  error: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.error, marginTop: 14 },
+  optionText: { flex: 1, fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink },
+  error: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.error, marginTop: 14 },
   primary: {
     height: 54,
     borderRadius: 27,
@@ -179,5 +179,5 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 28,
   },
-  primaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#fff' },
+  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
 });

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useLecturer } from '@/context/lecturer-context';
 import { ScreenShell, Panel, StatusBadge } from '@/components/dashboard';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
@@ -84,7 +84,7 @@ export default function QuizReviewScreen() {
                       size={16}
                       color={oi === q.correctIndex ? UI.success : UI.muted}
                     />
-                    <Text style={[styles.optText, oi === q.correctIndex && { color: UI.ink, fontFamily: LexiFonts.labelSmBold }]}>{o}</Text>
+                    <Text style={[styles.optText, oi === q.correctIndex && { color: UI.ink, fontFamily: ZuriFonts.labelSmBold }]}>{o}</Text>
                   </View>
                 ))}
                 {!!q.explanation && <Text style={styles.explain}>{q.explanation}</Text>}
@@ -126,7 +126,7 @@ export default function QuizReviewScreen() {
 }
 
 const styles = StyleSheet.create({
-  label: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginBottom: 8 },
+  label: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginBottom: 8 },
   input: {
     height: 48,
     borderRadius: 12,
@@ -134,26 +134,26 @@ const styles = StyleSheet.create({
     borderColor: UI.border,
     backgroundColor: UI.bg,
     paddingHorizontal: 14,
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 15,
     color: UI.ink,
   },
   metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 },
-  meta: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted },
-  count: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, color: UI.muted },
+  meta: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted },
+  count: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.muted },
   q: { backgroundColor: UI.card, borderRadius: 14, borderWidth: 1, borderColor: UI.border, padding: 14 },
   qOff: { opacity: 0.55 },
   qHead: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
-  qText: { fontFamily: LexiFonts.bodyMedium, fontSize: 15, lineHeight: 21, color: UI.ink },
+  qText: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, lineHeight: 21, color: UI.ink },
   answers: { marginTop: 10, marginLeft: 34, gap: 6 },
   opt: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  optText: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.inkSoft },
-  explain: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.muted, marginTop: 4 },
+  optText: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.inkSoft },
+  explain: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.muted, marginTop: 4 },
   actions: { gap: 10, marginTop: 8 },
   primary: { height: 52, borderRadius: 26, backgroundColor: UI.ink, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  primaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#fff' },
+  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
   secondary: { height: 52, borderRadius: 26, borderWidth: 1, borderColor: UI.border, alignItems: 'center', justifyContent: 'center' },
-  secondaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: UI.ink },
-  delete: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.error },
-  note: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, textAlign: 'center' },
+  secondaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.ink },
+  delete: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.error },
+  note: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, textAlign: 'center' },
 });

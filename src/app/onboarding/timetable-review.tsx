@@ -4,8 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useAcademic, type TimetableSlot } from '@/context/academic-context';
 import { findClashes } from '@/utils/timetable-import';
 import { parseTimeOfDay } from '@/utils/time';
@@ -118,27 +118,27 @@ export default function TimetableReviewScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: UI.bg },
   topBar: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 },
-  step: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.muted },
+  step: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.muted },
   scroll: { padding: 20, paddingBottom: 32, maxWidth: 560, width: '100%', alignSelf: 'center' },
-  h1: { fontFamily: LexiFonts.headlineLg, fontSize: 28, color: UI.ink },
-  lead: { fontFamily: LexiFonts.bodyRegular, fontSize: 15, lineHeight: 22, color: UI.inkSoft, marginTop: 6 },
+  h1: { fontFamily: ZuriFonts.headlineLg, fontSize: 28, color: UI.ink },
+  lead: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, lineHeight: 22, color: UI.inkSoft, marginTop: 6 },
   alert: { flexDirection: 'row', gap: 10, backgroundColor: UI.amberSoft, borderRadius: 12, padding: 12, marginTop: 14 },
   alertError: { backgroundColor: '#fff1ef' },
-  alertText: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.inkSoft },
-  day: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, letterSpacing: 1, color: UI.muted, marginBottom: 8 },
+  alertText: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.inkSoft },
+  day: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, letterSpacing: 1, color: UI.muted, marginBottom: 8 },
   card: { backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border, paddingHorizontal: 14 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
   rowBorder: { borderTopWidth: 1, borderTopColor: UI.borderSoft },
   rowClash: { backgroundColor: '#fff6f5', marginHorizontal: -14, paddingHorizontal: 14 },
-  time: { fontFamily: LexiFonts.labelSmBold, fontSize: 13, color: UI.ink },
-  timeEnd: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted },
-  code: { fontFamily: LexiFonts.labelSmBold, fontSize: 12, letterSpacing: 0.6, color: UI.amber },
-  title: { fontFamily: LexiFonts.bodyMedium, fontSize: 14, color: UI.ink, marginTop: 1 },
-  venue: { fontFamily: LexiFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 1 },
-  empty: { fontFamily: LexiFonts.bodyRegular, fontSize: 14, color: UI.muted, marginTop: 24, textAlign: 'center' },
+  time: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.ink },
+  timeEnd: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted },
+  code: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, letterSpacing: 0.6, color: UI.amber },
+  title: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink, marginTop: 1 },
+  venue: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 1 },
+  empty: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, color: UI.muted, marginTop: 24, textAlign: 'center' },
   footer: { flexDirection: 'row', gap: 10, padding: 16, paddingHorizontal: 20, borderTopWidth: 1, borderTopColor: UI.borderSoft },
   secondary: { flex: 0.4, height: 52, borderRadius: 26, borderWidth: 1, borderColor: UI.border, alignItems: 'center', justifyContent: 'center' },
-  secondaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: UI.ink },
+  secondaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.ink },
   primary: { flex: 1, height: 52, borderRadius: 26, backgroundColor: UI.ink, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  primaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#fff' },
+  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
 });

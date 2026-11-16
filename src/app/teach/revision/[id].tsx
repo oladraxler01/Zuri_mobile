@@ -2,8 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LexiFonts } from '@/constants/lexi-theme';
-import { UI } from '@/constants/lexi-ui';
+import { ZuriFonts } from '@/constants/zuri-theme';
+import { UI } from '@/constants/zuri-ui';
 import { useLecturer } from '@/context/lecturer-context';
 import { useLectures } from '@/context/lectures-context';
 import { ScreenShell, Panel, StatusBadge } from '@/components/dashboard';
@@ -167,7 +167,7 @@ export default function RevisionPackScreen() {
 }
 
 const styles = StyleSheet.create({
-  label: { fontFamily: LexiFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginBottom: 8 },
+  label: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginBottom: 8 },
   input: {
     height: 48,
     borderRadius: 12,
@@ -175,19 +175,19 @@ const styles = StyleSheet.create({
     borderColor: UI.border,
     backgroundColor: UI.bg,
     paddingHorizontal: 14,
-    fontFamily: LexiFonts.bodyMedium,
+    fontFamily: ZuriFonts.bodyMedium,
     fontSize: 15,
     color: UI.ink,
   },
-  hint: { fontFamily: LexiFonts.bodyRegular, fontSize: 13, color: UI.muted },
+  hint: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted },
   secHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
-  secTitle: { flex: 1, fontFamily: LexiFonts.headlineMd, fontSize: 17, color: UI.ink },
+  secTitle: { flex: 1, fontFamily: ZuriFonts.headlineMd, fontSize: 17, color: UI.ink },
   point: { flexDirection: 'row', gap: 10, marginBottom: 8 },
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: UI.amber, marginTop: 8 },
-  pointText: { flex: 1, fontFamily: LexiFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
+  pointText: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
   primary: { height: 52, borderRadius: 26, backgroundColor: UI.ink, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  primaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: '#fff' },
+  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
   secondary: { height: 52, borderRadius: 26, borderWidth: 1, borderColor: UI.border, alignItems: 'center', justifyContent: 'center' },
-  secondaryText: { fontFamily: LexiFonts.labelSmBold, fontSize: 15, color: UI.ink },
-  delete: { fontFamily: LexiFonts.labelSmBold, fontSize: 14, color: UI.error },
+  secondaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.ink },
+  delete: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.error },
 });
