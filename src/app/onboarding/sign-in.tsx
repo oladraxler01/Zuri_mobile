@@ -18,7 +18,6 @@ import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
-import { API_BASE } from '@/services/api-config';
 import { login, resendVerification, setPendingSignIn } from '@/services/auth-api';
 import { useSession, ROLE_HOME } from '@/context/session-context';
 import { isValidEmail } from '@/utils/validation';
@@ -52,12 +51,6 @@ export default function SignInScreen() {
     if (!isValidEmail(cleanEmail)) return setFormError('Enter a valid email address.');
     if (!password) return setFormError('Enter your password.');
     setFormError('');
-
-    if (!API_BASE) {
-      // No server configured (offline demo build).
-      router.replace((role ? ROLE_HOME[role] : '/onboarding/institution') as Href);
-      return;
-    }
 
     setBusy(true);
     try {
