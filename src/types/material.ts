@@ -30,6 +30,10 @@ export interface MaterialAnalysis {
   concepts: LectureConcept[];
   questions: LectureQuestion[];
   passages: MaterialPassage[];
+  /** Made on request by Zuri's AI (study.flashcards.generate). */
+  flashcards?: { front: string; back: string; topic?: string }[];
+  /** Exam-style theory and applied questions with model answers (study.quiz.generate). */
+  examQuestions?: { question: string; modelAnswer: string; markingGuide: string[]; marks: number; topic?: string }[];
 }
 
 export interface Material {

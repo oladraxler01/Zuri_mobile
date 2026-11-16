@@ -11,7 +11,7 @@ import { UI } from '@/constants/zuri-ui';
 import { useMaterials } from '@/context/materials-context';
 import { useAcademic } from '@/context/academic-context';
 import { categoryLabel, fileIcon, formatSize } from '@/components/materials/material-card';
-import { QuizTab } from '@/components/lecture/quiz-tab';
+import { PracticeTab } from '@/components/materials/practice-tab';
 import { Chip, Segmented } from '@/components/ui/chip';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
 import { StateView } from '@/components/states/state-view';
@@ -19,7 +19,6 @@ import { useProgress } from '@/context/progress-context';
 import { conceptForQuestion } from '@/utils/mastery';
 import { MATERIAL_CATEGORIES, type Material } from '@/types/material';
 import { formatLectureDate } from '@/utils/time';
-import { generateMaterialQuiz } from '@/services/ai-api';
 
 type Tab = 'summary' | 'concepts' | 'questions' | 'passages';
 
@@ -33,8 +32,6 @@ export default function MaterialScreen() {
   );
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [openError, setOpenError] = useState('');
-  const [quizBusy, setQuizBusy] = useState(false);
-  const [quizError, setQuizError] = useState('');
   const progress = useProgress();
 
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/materials' as Href));
@@ -158,7 +155,7 @@ export default function MaterialScreen() {
               options={[
                 { key: 'summary', label: 'Summary' },
                 { key: 'concepts', label: `Concepts${a.concepts.length ? ` ${a.concepts.length}` : ''}` },
-                { key: 'questions', label: 'Quiz' },
+                { key: 'questions', label: 'Practice' },
                 { key: 'passages', label: 'Passages' },
               ]}
               value={tab}
@@ -191,52 +188,36 @@ export default function MaterialScreen() {
 
               {tab === 'questions' && (
                 <View style={{ marginHorizontal: -20 }}>
-                  {a.questions.length ? (
-                    <QuizTab
-                      questions={a.questions}
-                      onFinish={() => {}}
-                      onAnswer={(q, correct) =>
-                        progress.log({
-                          type: 'quiz-answer',
-                          courseId: m.courseId,
-                          courseCode: m.courseCode,
-                          concept: conceptForQuestion(q, a.concepts),
-                          correct,
-                          sourceId: m.id,
-                          sourceKind: 'material',
-                        })
-                      }
-                    />
-                  ) : quizBusy ? (
-                    <View style={{ alignItems: 'center', paddingVertical: 32, gap: 10 }}>
-                      <ActivityIndicator color={UI.ink} />
-                      <Text style={styles.cardBody}>Zuri is writing questions from this document…</Text>
-                    </View>
-                  ) : m.serverId && a.source === 'server' ? (
-                    <StateView
-                      compact
-                      icon="help-circle-outline"
-                      title="No quiz yet"
-                      message={quizError || 'Zuri can write 5 practice questions from this document.'}
-                      primary={{
-                        label: quizError ? 'Try again' : 'Create practice quiz',
-                        onPress: async () => {
-                          setQuizBusy(true);
-                          setQuizError('');
-                          try {
-                            const questions = await generateMaterialQuiz(m.serverId!);
-                            updateMaterial(m.id, { analysis: { ...a, questions } });
-                          } catch (e) {
-                            setQuizError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
-                          } finally {
-                            setQuizBusy(false);
-                          }
-                        },
-                      }}
-                    />
-                  ) : (
-                    <StateView compact icon="help-circle-outline" title="No quiz yet" message="Upload this file again to have Zuri write practice questions." />
-                  )}
+                  <PracticeTab
+                    analysis={a}
+                    serverId={m.serverId}
+                    onSave={(patch) => updateMaterial(m.id, { analysis: { ...a, ...patch } })}
+                    onAnswer={(q, correct) =>
+                      progress.log({
+                        type: 'quiz-answer',
+                        courseId: m.courseId,
+                        courseCode: m.courseCode,
+                        concept: conceptForQuestion(q, a.concepts),
+                        correct,
+                        sourceId: m.id,
+                        sourceKind: 'material',
+                      })
+                    }
+                    onCard={(card, knew) =>
+                      progress.log({
+                        type: 'flashcard',
+                        courseId: m.courseId,
+                        courseCode: m.courseCode,
+                        concept: conceptForQuestion(
+                          { id: '', question: card.front, options: [card.back], correctIndex: 0, explanation: '' },
+                          a.concepts
+                        ),
+                        correct: knew,
+                        sourceId: m.id,
+                        sourceKind: 'material',
+                      })
+                    }
+                  />
                 </View>
               )}
 

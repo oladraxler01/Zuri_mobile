@@ -222,3 +222,11 @@ Part 2 — institution:
 ### Practice quiz for materials from Zuri's AI (2026-11-16)
 - Material page → Quiz tab → "Create practice quiz": `POST /ai/execute` `study.quiz.generate` with the material's server id (`count: 5`, `multiple_choice`). Options `{A..D}` + `correct_answer` are mapped to the app's question format; malformed questions are skipped. Questions are kept with the material, so it costs one AI request per material. Answers still feed mastery.
 - Fixed: upload progress from expo-file-system arrives as BigInt and crashed the progress label.
+
+### Practice tab: quiz, flashcards or exam-style questions (2026-11-16)
+- Material page "Quiz" tab is now "Practice" with three choices, each generated on request by Zuri's AI and kept with the material (one AI request each):
+  - **Quiz**: 5 multiple-choice questions (`study.quiz.generate`, `multiple_choice`).
+  - **Flashcards**: 10 cards (`study.flashcards.generate`), tap to flip, "Still learning" / "Got it" feeds mastery.
+  - **Exam-style**: theory + applied real-world-scenario questions like a lecturer would set, with marks, model answer and marking guide (`study.quiz.generate` with a descriptive `quiz_type`; the server puts it into its prompt).
+- New `components/materials/practice-tab.tsx`.
+- Recording: if iOS refuses the 16 kHz voice format ("Failed to prepare recorder"), retry once with `RecordingPresets.HIGH_QUALITY` (b1cb4a8). Not tested on an iPhone yet.

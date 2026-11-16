@@ -84,3 +84,63 @@ export async function generateMaterialQuiz(materialId: string, count = 5): Promi
   if (!out.length) throw new Error('Zuri couldn’t make questions from this document. Please try again.');
   return out;
 }
+
+export interface StudyFlashcard {
+  front: string;
+  back: string;
+  topic?: string;
+}
+
+/**
+ * Flashcards from a processed material.
+ *   study.flashcards.generate  input { material_id }, parameters { count }
+ *   → { flashcards: [{ front, back, topic }] }
+ */
+export async function generateMaterialFlashcards(materialId: string, count = 10): Promise<StudyFlashcard[]> {
+  const res = await executeAI<{ flashcards?: any[] }>('study.flashcards.generate', { material_id: materialId }, { count });
+  const cards = (res.flashcards ?? [])
+    .filter((c) => c?.front && c?.back)
+    .map((c) => ({ front: String(c.front), back: String(c.back), topic: c.topic ? String(c.topic) : undefined }));
+  if (!cards.length) throw new Error('Zuri couldn’t make flashcards from this document. Please try again.');
+  return cards;
+}
+
+export interface ExamQuestion {
+  question: string;
+  modelAnswer: string;
+  markingGuide: string[];
+  marks: number;
+  topic?: string;
+}
+
+/**
+ * Exam-style questions, the way a lecturer would set them: theory questions and
+ * applied questions built on real-world scenarios, each with a model answer and
+ * a marking guide.
+ *   study.quiz.generate  input { material_id }, parameters { count, quiz_type: <anything but "multiple_choice"> }
+ *   → { questions: [{ question, model_answer, marking_guide[], marks, topic }] }
+ * The server puts quiz_type into its prompt ("Generate {count} {quiz_type} questions"),
+ * so it describes the style we want.
+ */
+export async function generateMaterialExamQuestions(materialId: string, count = 5): Promise<ExamQuestion[]> {
+  const res = await executeAI<{ questions?: any[] }>(
+    'study.quiz.generate',
+    { material_id: materialId },
+    {
+      count,
+      quiz_type:
+        'university exam-style (a mix of theory questions and applied questions built on realistic real-world scenarios, as a lecturer would set in a test or exam, with marks)',
+    }
+  );
+  const out = (res.questions ?? [])
+    .filter((q) => q?.question)
+    .map((q) => ({
+      question: String(q.question),
+      modelAnswer: String(q.model_answer ?? q.answer ?? ''),
+      markingGuide: Array.isArray(q.marking_guide) ? q.marking_guide.map(String) : [],
+      marks: Number(q.marks) || 0,
+      topic: q.topic ? String(q.topic) : undefined,
+    }));
+  if (!out.length) throw new Error('Zuri couldn’t make exam questions from this document. Please try again.');
+  return out;
+}
