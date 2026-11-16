@@ -1,48 +1,33 @@
-import { Platform } from 'react-native';
 import type { IoniconName, LectureAnalysis, TranscriptSegment } from '@/types/lecture';
 import { buildSampleAnalysis } from '@/data/sample-lecture-analysis';
 import { API_BASE, isBackendConfigured } from '@/services/api-config';
+import { ApiError, errorForStatus, type ApiErrorKind } from '@/services/api-client';
+import { uploadToZuri } from '@/services/upload-api';
 
-export { API_BASE, isBackendConfigured };
+export { API_BASE, isBackendConfigured, ApiError, errorForStatus };
+export type { ApiErrorKind };
 
 /**
  * Lecture upload + processing.
  *
- * When the backend is connected (see api-config.ts), recordings are uploaded
- * to POST {API_BASE}/lectures/transcribe (see AUDIO_PROCESSING_SPEC.md).
- * Until then, a local stand-in simulates the upload and returns sample results.
+ * With the live API on (see api-config.ts) the recording is sent to Zuri as an
+ * audio material (see upload-api.ts) and the finished record is mapped onto
+ * the Lecture Intelligence screen. Otherwise a local stand-in simulates the
+ * upload and returns clearly labelled sample results.
  */
 
 export type ProcessingStage = 'uploading' | 'processing';
-
-/**
- * Errors the app reacts to differently:
- * - network: no connection → wait and retry when back online
- * - session-expired (401), update-required (426), maintenance (503) → full-screen status
- * - server: anything else → "try again"
- */
-export type ApiErrorKind = 'network' | 'server' | 'session-expired' | 'update-required' | 'maintenance';
-
-export class ApiError extends Error {
-  kind: ApiErrorKind;
-  constructor(kind: ApiErrorKind, message: string) {
-    super(message);
-    this.kind = kind;
-  }
-}
-
-export function errorForStatus(status: number): ApiError {
-  if (status === 401) return new ApiError('session-expired', 'Your session has expired. Please sign in again.');
-  if (status === 426) return new ApiError('update-required', 'A newer version of the app is required.');
-  if (status === 503) return new ApiError('maintenance', 'The service is down for maintenance.');
-  return new ApiError('server', `The server had a problem (${status}). Please try again.`);
-}
 
 export interface ProcessLectureInput {
   audioUri: string;
   courseCode: string;
   courseTitle: string;
   durationSeconds: number;
+  /** From an earlier attempt, so retries don't upload twice. */
+  serverId?: string;
+  uploaded?: boolean;
+  onServerId?: (id: string) => void;
+  onUploaded?: () => void;
 }
 
 export type ProgressCallback = (stage: ProcessingStage, progress?: number) => void;
@@ -59,49 +44,25 @@ export async function processLecture(
 
 // ─── Real backend ─────────────────────────────────────────────────
 
-async function uploadToBackend(
-  input: ProcessLectureInput,
-  onProgress: ProgressCallback
-): Promise<LectureAnalysis> {
-  const form = new FormData();
-  const name = `lecture-${Date.now()}${Platform.OS === 'web' ? '.webm' : '.m4a'}`;
-
-  if (Platform.OS === 'web') {
-    const blob = await (await fetch(input.audioUri)).blob();
-    form.append('file', blob, name);
-  } else {
-    // React Native's FormData accepts { uri, name, type } file descriptors.
-    form.append('file', { uri: input.audioUri, name, type: 'audio/m4a' } as unknown as Blob);
-  }
-  form.append('course_code', input.courseCode);
-  form.append('course_title', input.courseTitle);
-
-  // XMLHttpRequest (not fetch) so we get upload progress events.
-  const json = await new Promise<any>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${API_BASE}/lectures/transcribe`);
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) onProgress('uploading', e.loaded / e.total);
-    };
-    xhr.upload.onload = () => onProgress('processing');
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          resolve(JSON.parse(xhr.responseText));
-        } catch {
-          reject(new ApiError('server', 'The server sent a response we could not read.'));
-        }
-      } else {
-        reject(errorForStatus(xhr.status));
-      }
-    };
-    xhr.onerror = () => reject(new ApiError('network', 'No connection. We’ll upload when you’re back online.'));
-    xhr.ontimeout = () => reject(new ApiError('network', 'The upload timed out. We’ll try again shortly.'));
-    onProgress('uploading', 0);
-    xhr.send(form);
+async function uploadToBackend(input: ProcessLectureInput, onProgress: ProgressCallback): Promise<LectureAnalysis> {
+  const isWebm = input.audioUri.startsWith('blob:') || input.audioUri.endsWith('.webm');
+  const record = await uploadToZuri({
+    uri: input.audioUri,
+    name: `lecture-${Date.now()}${isWebm ? '.webm' : '.m4a'}`,
+    mimeType: isWebm ? 'audio/webm' : 'audio/m4a',
+    title: `${input.courseCode} lecture, ${new Date().toLocaleDateString()}`,
+    courseCode: input.courseCode,
+    courseTitle: input.courseTitle,
+    category: 'lecture',
+    serverId: input.serverId,
+    uploaded: input.uploaded,
+    onServerId: input.onServerId,
+    onUploaded: input.onUploaded,
+    onProgress,
+    // Transcribing an hour of audio takes a while; keep checking for 3 minutes.
+    waitMs: 180_000,
   });
-
-  return mapServerResponse(json, input);
+  return mapServerResponse(record, input);
 }
 
 const ICON_MAP: Record<string, IoniconName> = {

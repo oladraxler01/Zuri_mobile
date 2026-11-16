@@ -1,17 +1,18 @@
 import { Platform } from 'react-native';
 import { File } from 'expo-file-system';
 import type { MaterialAnalysis, MaterialCategory, MaterialPassage } from '@/types/material';
-import { ApiError, errorForStatus } from '@/services/lecture-api';
-import { API_BASE, isBackendConfigured } from '@/services/api-config';
+import { isBackendConfigured } from '@/services/api-config';
+import { uploadToZuri } from '@/services/upload-api';
 import { buildSampleAnalysis } from '@/data/sample-lecture-analysis';
 
 /**
  * Material upload + processing.
  *
- * Backend: POST {base}/materials/process (multipart: file, course_code, category)
- * → { title, summary, concepts[], questions[], passages[{ location, text }] }.
+ * Backend: the file is sent with uploadToZuri (create → signed upload → wait),
+ * and the finished record's { title, summary, concepts[], questions[],
+ * passages[{ location, text }] } is mapped onto the material screen.
  *
- * Until the backend is connected:
+ * With the live API off:
  * - plain text / Markdown files get a basic analysis done on the phone
  *   (summary + passages taken from the real text);
  * - other files (PDF, Word, images) get clearly labelled sample results.
@@ -24,6 +25,11 @@ export interface ProcessMaterialInput {
   courseCode?: string;
   courseTitle?: string;
   category: MaterialCategory;
+  /** From an earlier attempt, so retries don't upload twice. */
+  serverId?: string;
+  uploaded?: boolean;
+  onServerId?: (id: string) => void;
+  onUploaded?: () => void;
 }
 
 type Progress = (stage: 'uploading' | 'processing', progress?: number) => void;
@@ -40,33 +46,19 @@ export async function processMaterial(input: ProcessMaterialInput, onProgress: P
 // ─── Real backend ─────────────────────────────────────────────────
 
 async function uploadToBackend(input: ProcessMaterialInput, onProgress: Progress): Promise<MaterialAnalysis> {
-  const form = new FormData();
-  if (Platform.OS === 'web') {
-    const blob = await (await fetch(input.uri)).blob();
-    form.append('file', blob, input.name);
-  } else {
-    form.append('file', { uri: input.uri, name: input.name, type: input.mimeType ?? 'application/octet-stream' } as unknown as Blob);
-  }
-  if (input.courseCode) form.append('course_code', input.courseCode);
-  form.append('category', input.category);
-
-  const json = await new Promise<any>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${API_BASE}/materials/process`);
-    xhr.upload.onprogress = (e) => e.lengthComputable && onProgress('uploading', e.loaded / e.total);
-    xhr.upload.onload = () => onProgress('processing');
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          resolve(JSON.parse(xhr.responseText));
-        } catch {
-          reject(new ApiError('server', 'The server sent a response we could not read.'));
-        }
-      } else reject(errorForStatus(xhr.status));
-    };
-    xhr.onerror = () => reject(new ApiError('network', 'No connection. We’ll upload when you’re back online.'));
-    onProgress('uploading', 0);
-    xhr.send(form);
+  const json = await uploadToZuri({
+    uri: input.uri,
+    name: input.name,
+    mimeType: input.mimeType ?? 'application/octet-stream',
+    title: titleFromName(input.name) || input.name,
+    courseCode: input.courseCode,
+    courseTitle: input.courseTitle,
+    category: input.category,
+    serverId: input.serverId,
+    uploaded: input.uploaded,
+    onServerId: input.onServerId,
+    onUploaded: input.onUploaded,
+    onProgress,
   });
 
   const data = json?.data ?? json;

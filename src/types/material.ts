@@ -46,6 +46,10 @@ export interface Material {
   status: MaterialStatus;
   progress?: number;
   error?: string;
+  /** Id of this upload on the Zuri server, once created */
+  serverId?: string;
+  /** true once the file itself is on Zuri's storage */
+  uploaded?: boolean;
   analysis?: MaterialAnalysis;
   pinned?: boolean;
 }

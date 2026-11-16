@@ -11,14 +11,14 @@ export const GATEWAY_URL = process.env.EXPO_PUBLIC_API_GATEWAY_URL?.trim().repla
 export const API_BASE = GATEWAY_URL ? `${GATEWAY_URL}/api/v1` : undefined;
 
 /**
- * Whether features send work to the real server.
+ * Whether uploads (lectures, materials) go to the real server.
  *
- * Every /api/v1 route except sign-in/register needs an `Authorization` header.
- * The app has no server sign-in yet, so live uploads stay off until it does
- * (EXPO_PUBLIC_USE_LIVE_API=true turns them on); until then features use
- * their clearly labelled stand-ins.
+ * Sign-up / sign-in always use the server when GATEWAY_URL is set. Uploads
+ * need a signed-in user (every /api/v1 route except auth needs an
+ * `Authorization` header). EXPO_PUBLIC_USE_LIVE_API=false switches uploads
+ * back to the on-phone stand-ins, e.g. for demos without a connection.
  */
-export const isBackendConfigured = !!API_BASE && process.env.EXPO_PUBLIC_USE_LIVE_API === 'true';
+export const isBackendConfigured = !!API_BASE && process.env.EXPO_PUBLIC_USE_LIVE_API !== 'false';
 
 export interface GatewayHealth {
   status: string;

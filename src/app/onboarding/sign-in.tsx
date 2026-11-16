@@ -10,6 +10,7 @@ import {
   Platform,
   StatusBar,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -17,6 +18,10 @@ import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
+import { API_BASE } from '@/services/api-config';
+import { login, resendVerification, setPendingSignIn } from '@/services/auth-api';
+import { useSession, ROLE_HOME } from '@/context/session-context';
+import { isValidEmail } from '@/utils/validation';
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -25,6 +30,9 @@ export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState('');
+  const { role } = useSession();
 
   if (!fontsLoaded) {
     return <View style={styles.container} />;
@@ -38,11 +46,36 @@ export default function SignInScreen() {
     }
   };
 
-  const handleSignIn = () => {
-    router.push({
-      pathname: '/onboarding/verify',
-      params: { email: email.trim() || 'j***@university.edu' },
-    } as any);
+  const handleSignIn = async () => {
+    if (busy) return;
+    const cleanEmail = email.trim().toLowerCase();
+    if (!isValidEmail(cleanEmail)) return setFormError('Enter a valid email address.');
+    if (!password) return setFormError('Enter your password.');
+    setFormError('');
+
+    if (!API_BASE) {
+      // No server configured (offline demo build).
+      router.replace((role ? ROLE_HOME[role] : '/onboarding/institution') as Href);
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const result = await login(cleanEmail, password);
+      if (result.status === 'needs-verification') {
+        // Account exists but the email was never confirmed: send a fresh code.
+        setPendingSignIn({ email: cleanEmail, password, userId: result.userId });
+        await resendVerification(cleanEmail).catch(() => {});
+        router.push({ pathname: '/onboarding/verify', params: { email: cleanEmail, userId: result.userId } } as any);
+        return;
+      }
+      // Profile is kept on the phone: returning users go home, new phones finish setup.
+      router.replace((role ? ROLE_HOME[role] : '/onboarding/institution') as Href);
+    } catch (e) {
+      setFormError(e instanceof Error ? e.message : 'We couldn’t sign you in. Please try again.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const handleGoToSignUp = () => {
@@ -52,15 +85,12 @@ export default function SignInScreen() {
   const handleForgotPassword = () => {
     Alert.alert(
       'Reset Password',
-      'Password reset instructions will be sent to your registered email address.'
+      'Password reset isn’t available in the app yet. Contact support@zurilearn.com and we’ll help you get back in.'
     );
   };
 
   const handleSocialSignIn = (provider: 'Google' | 'Apple') => {
-    router.push({
-      pathname: '/onboarding/verify',
-      params: { email: `${provider.toLowerCase()}user@university.edu` },
-    } as any);
+    Alert.alert(`${provider} sign-in is coming soon`, 'For now, sign in with your email and password.');
   };
 
   return (
@@ -155,17 +185,30 @@ export default function SignInScreen() {
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </Pressable>
 
+            {!!formError && (
+              <Text style={styles.formError} accessibilityLiveRegion="polite">
+                {formError}
+              </Text>
+            )}
+
             {/* Sign In Button */}
             <Pressable
               style={({ pressed }) => [
                 styles.signInButton,
                 pressed && styles.signInButtonPressed,
+                busy && styles.signInButtonBusy,
               ]}
               onPress={handleSignIn}
+              disabled={busy}
               accessibilityRole="button"
               accessibilityLabel="Sign In"
+              accessibilityState={{ busy, disabled: busy }}
             >
-              <Text style={styles.signInButtonText}>Sign In</Text>
+              {busy ? (
+                <ActivityIndicator color={ZuriColors.onPrimary} />
+              ) : (
+                <Text style={styles.signInButtonText}>Sign In</Text>
+              )}
             </Pressable>
           </View>
 
@@ -342,6 +385,14 @@ const styles = StyleSheet.create({
   signInButtonPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.985 }],
+  },
+  signInButtonBusy: {
+    opacity: 0.7,
+  },
+  formError: {
+    fontFamily: ZuriFonts.bodyMd,
+    fontSize: 13,
+    color: '#ba1a1a',
   },
   signInButtonText: {
     fontFamily: ZuriFonts.labelSmBold,

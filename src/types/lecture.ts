@@ -71,6 +71,10 @@ export interface Lecture {
   /** 0–1 progress of the current stage, when known */
   progress?: number;
   error?: string;
+  /** Id of this upload on the Zuri server, once created */
+  serverId?: string;
+  /** true once the file itself is on Zuri's storage */
+  uploaded?: boolean;
   analysis?: LectureAnalysis;
   /** set once the user has seen the "processing complete" screen */
   seenAt?: string;

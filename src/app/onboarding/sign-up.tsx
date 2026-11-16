@@ -10,6 +10,7 @@ import {
   Platform,
   StatusBar,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -18,6 +19,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic } from '@/context/academic-context';
+import { API_BASE } from '@/services/api-config';
+import { register, setPendingSignIn, MIN_PASSWORD_LENGTH } from '@/services/auth-api';
+import { isValidEmail } from '@/utils/validation';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -30,6 +34,8 @@ export default function SignUpScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState('');
 
   if (!fontsLoaded) {
     return <View style={styles.container} />;
@@ -43,16 +49,36 @@ export default function SignUpScreen() {
     }
   };
 
-  const handleContinue = () => {
-    if (password && confirmPassword && password !== confirmPassword) {
+  const handleContinue = async () => {
+    if (busy) return;
+    const cleanEmail = email.trim().toLowerCase();
+    if (!fullName.trim()) return setFormError('Enter your full name.');
+    if (!isValidEmail(cleanEmail)) return setFormError('Enter a valid email address.');
+    if (password.length < MIN_PASSWORD_LENGTH)
+      return setFormError(`Your password needs at least ${MIN_PASSWORD_LENGTH} characters.`);
+    if (password !== confirmPassword) {
       Alert.alert('Passwords Mismatch', 'Your passwords do not match. Please re-enter.');
       return;
     }
-    setAcademicInfo({ ...(fullName.trim() ? { studentName: fullName.trim() } : {}), ...(email.trim() ? { email: email.trim() } : {}) });
-    router.push({
-      pathname: '/onboarding/verify',
-      params: { email: email.trim() || 'student@university.edu' },
-    } as any);
+    setFormError('');
+    setAcademicInfo({ studentName: fullName.trim(), email: cleanEmail });
+
+    if (!API_BASE) {
+      // No server configured (offline demo build): continue without an account.
+      router.push({ pathname: '/onboarding/verify', params: { email: cleanEmail } } as any);
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const user = await register(cleanEmail, password);
+      setPendingSignIn({ email: cleanEmail, password, userId: user.id });
+      router.push({ pathname: '/onboarding/verify', params: { email: cleanEmail, userId: user.id } } as any);
+    } catch (e) {
+      setFormError(e instanceof Error ? e.message : 'We couldn’t create your account. Please try again.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const handleGoToSignIn = () => {
@@ -60,10 +86,7 @@ export default function SignUpScreen() {
   };
 
   const handleSocialSignUp = (provider: 'Google' | 'Apple') => {
-    router.push({
-      pathname: '/onboarding/verify',
-      params: { email: `${provider.toLowerCase()}user@university.edu` },
-    } as any);
+    Alert.alert(`${provider} sign-up is coming soon`, 'For now, create your account with your email address.');
   };
 
   return (
@@ -182,17 +205,30 @@ export default function SignUpScreen() {
               </Pressable>
             </View>
 
+            {!!formError && (
+              <Text style={styles.formError} accessibilityLiveRegion="polite">
+                {formError}
+              </Text>
+            )}
+
             {/* Continue Button */}
             <Pressable
               style={({ pressed }) => [
                 styles.continueButton,
                 pressed && styles.continueButtonPressed,
+                busy && styles.continueButtonBusy,
               ]}
               onPress={handleContinue}
+              disabled={busy}
               accessibilityRole="button"
               accessibilityLabel="Continue"
+              accessibilityState={{ busy, disabled: busy }}
             >
-              <Text style={styles.continueButtonText}>CONTINUE</Text>
+              {busy ? (
+                <ActivityIndicator color={ZuriColors.onPrimary} />
+              ) : (
+                <Text style={styles.continueButtonText}>CONTINUE</Text>
+              )}
             </Pressable>
           </View>
 
@@ -340,6 +376,15 @@ const styles = StyleSheet.create({
   continueButtonPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.985 }],
+  },
+  continueButtonBusy: {
+    opacity: 0.7,
+  },
+  formError: {
+    fontFamily: ZuriFonts.bodyMd,
+    fontSize: 13,
+    color: '#ba1a1a',
+    marginTop: -4,
   },
   continueButtonText: {
     fontFamily: ZuriFonts.labelSmBold,

@@ -101,7 +101,7 @@ export function MaterialsProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       running.current.add(m.id);
-      updateMaterial(m.id, { status: 'uploading', progress: 0, error: undefined });
+      updateMaterial(m.id, { status: m.uploaded ? 'processing' : 'uploading', progress: 0, error: undefined });
       try {
         const analysis = await processMaterial(
           {
@@ -111,6 +111,10 @@ export function MaterialsProvider({ children }: { children: React.ReactNode }) {
             courseCode: m.courseCode,
             courseTitle: titles.current.get(m.id),
             category: m.category,
+            serverId: m.serverId,
+            uploaded: m.uploaded,
+            onServerId: (serverId) => updateMaterial(m.id, { serverId }),
+            onUploaded: () => updateMaterial(m.id, { uploaded: true }),
           },
           (stage, progress) => updateMaterial(m.id, { status: stage, progress })
         );
@@ -118,6 +122,14 @@ export function MaterialsProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         if (e instanceof ApiError && e.kind === 'network') {
           updateMaterial(m.id, { status: 'waiting', progress: 0, error: e.message });
+        } else if (e instanceof ApiError && e.kind === 'still-processing') {
+          // Uploaded, but the server isn't done yet: keep showing "processing"
+          // and check again in a minute (also on next launch).
+          updateMaterial(m.id, { status: 'processing', progress: 1, error: undefined });
+          setTimeout(() => {
+            const latest = ref.current.find((x) => x.id === m.id);
+            if (latest?.status === 'processing') run(latest);
+          }, 60_000);
         } else {
           updateMaterial(m.id, {
             status: 'failed',

@@ -88,6 +88,20 @@ EXPO_PUBLIC_API_GATEWAY_URL=https://api.zurilearn.com
 ```
 The app calls the REST API at `{gateway}/api/v1` (so the endpoints below are relative to `https://api.zurilearn.com/api/v1`). The gateway's health check is `GET https://api.zurilearn.com/health` and needs no sign-in. Every other route except sign-in, register and token refresh needs an `Authorization` header.
 
+**How the app talks to the server** (`src/services/`):
+
+| Step | Route | Code |
+|---|---|---|
+| Sign up | `POST /auth/register` `{ email, password }` (password ≥ 8 chars) → emails a 6-digit code | `auth-api.ts` |
+| Verify email | `POST /auth/verify-email?user_id=<id>` `{ code }` | `auth-api.ts` |
+| Resend code | `POST /auth/resend-verification` `{ email }` | `auth-api.ts` |
+| Sign in | `POST /auth/login` → access token (~15 min) + refresh token; `403 EMAIL_NOT_VERIFIED` sends the user to the code screen | `auth-api.ts` |
+| Stay signed in | `POST /auth/refresh` `{ refresh_token }`, automatic before expiry or on a 401; the refresh token rotates each time | `api-client.ts` |
+| Profile | `GET /users/me` | `auth-api.ts` |
+| Upload a file | `POST /materials` `{ title, … }` → `POST /materials/{id}/presign` → `PUT` file to the signed `storage.zurilearn.com` URL → poll `GET /materials/{id}` until `processing_status` is done | `upload-api.ts` |
+
+Tokens are stored in the phone's secure storage (`expo-secure-store`; AsyncStorage on web). Lectures are uploaded as audio materials.
+
 ---
 
 ### 1. Authentication & Onboarding
@@ -420,7 +434,7 @@ npm run web
 | Variable | Description | Default / Example |
 | :--- | :--- | :--- |
 | `EXPO_PUBLIC_API_GATEWAY_URL` | Zuri API gateway; REST API is under `/api/v1` | `https://api.zurilearn.com` |
-| `EXPO_PUBLIC_USE_LIVE_API` | Send lectures and materials to the live server (needs server sign-in) | `false` |
+| `EXPO_PUBLIC_USE_LIVE_API` | Send lectures and materials to the live server (needs a signed-in user). `false` uses the on-phone stand-ins | `true` |
 | `EXPO_PUBLIC_APP_ENV` | Environment identifier | `development` / `production` |
 
 ---

@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { StateView } from '@/components/states/state-view';
 import { UI } from '@/constants/zuri-ui';
-import { useSession } from '@/context/session-context';
+import { logout } from '@/services/auth-api';
 
 /**
  * Full-screen system states triggered by the backend:
@@ -15,7 +15,6 @@ import { useSession } from '@/context/session-context';
  */
 export default function StatusScreen() {
   const { kind } = useLocalSearchParams<{ kind: string }>();
-  const { signOut } = useSession();
   const [checking, setChecking] = useState(false);
 
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/' as Href));
@@ -32,7 +31,8 @@ export default function StatusScreen() {
           label: 'Sign in again',
           icon: 'log-in-outline',
           onPress: () => {
-            signOut();
+            // Clear the dead tokens but keep the profile, so signing in returns home.
+            logout();
             router.replace('/onboarding/sign-in' as Href);
           },
         }}

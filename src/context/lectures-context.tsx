@@ -124,7 +124,7 @@ export function LecturesProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       running.current.add(lecture.id);
-      updateLecture(lecture.id, { status: 'uploading', progress: 0, error: undefined });
+      updateLecture(lecture.id, { status: lecture.uploaded ? 'processing' : 'uploading', progress: 0, error: undefined });
       try {
         const analysis = await processLecture(
           {
@@ -132,6 +132,10 @@ export function LecturesProvider({ children }: { children: React.ReactNode }) {
             courseCode: lecture.courseCode,
             courseTitle: lecture.courseTitle,
             durationSeconds: lecture.durationSeconds,
+            serverId: lecture.serverId,
+            uploaded: lecture.uploaded,
+            onServerId: (serverId) => updateLecture(lecture.id, { serverId }),
+            onUploaded: () => updateLecture(lecture.id, { uploaded: true }),
           },
           (stage, progress) => updateLecture(lecture.id, { status: stage, progress })
         );
@@ -146,6 +150,14 @@ export function LecturesProvider({ children }: { children: React.ReactNode }) {
         if (e instanceof ApiError && e.kind === 'network') {
           // Lost connection: wait and resume automatically when back online.
           updateLecture(lecture.id, { status: 'waiting', progress: 0, error: e.message });
+        } else if (e instanceof ApiError && e.kind === 'still-processing') {
+          // Uploaded, but the server isn't done yet: keep showing "processing"
+          // and check again in a minute (also on next launch).
+          updateLecture(lecture.id, { status: 'processing', progress: 1, error: undefined });
+          setTimeout(() => {
+            const latest = lecturesRef.current.find((l) => l.id === lecture.id);
+            if (latest?.status === 'processing') run(latest);
+          }, 60_000);
         } else {
           updateLecture(lecture.id, {
             status: 'failed',

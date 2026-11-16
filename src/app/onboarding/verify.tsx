@@ -9,6 +9,7 @@ import {
   Platform,
   StatusBar,
   Alert,
+  ActivityIndicator,
   type TextInputInstance,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,11 +18,16 @@ import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
+import { API_BASE } from '@/services/api-config';
+import { verifyEmail, resendVerification, login, getPendingSignIn, setPendingSignIn } from '@/services/auth-api';
+import { useSession, ROLE_HOME } from '@/context/session-context';
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ email?: string }>();
+  const params = useLocalSearchParams<{ email?: string; userId?: string }>();
   const [fontsLoaded] = useZuriFonts();
+  const { role } = useSession();
+  const [busy, setBusy] = useState(false);
 
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
   const [focusedIndex, setFocusedIndex] = useState<number>(0);
@@ -94,24 +100,71 @@ export default function VerifyEmailScreen() {
     }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     if (!canResend) return;
     setResendTimer(45);
     setCanResend(false);
+    if (API_BASE && params.email) {
+      try {
+        await resendVerification(params.email);
+      } catch (e) {
+        setCanResend(true);
+        setResendTimer(0);
+        Alert.alert('Couldn’t send a new code', e instanceof Error ? e.message : 'Please try again.');
+        return;
+      }
+    }
+    setOtp(['', '', '', '', '', '']);
+    setCodeError('');
     Alert.alert('Code Resent', `A fresh 6-digit code was sent to ${displayEmail}`);
   };
 
   const codeComplete = otp.every((d) => /^\d$/.test(d));
   const [codeError, setCodeError] = useState('');
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
+    if (busy) return;
     if (!codeComplete) {
       setCodeError('Enter all 6 digits from the email we sent you.');
       return;
     }
-    // The code is checked by the server once authentication is connected.
     setCodeError('');
-    router.push('/onboarding/institution' as Href);
+
+    if (!API_BASE) {
+      // No server configured (offline demo build).
+      router.push('/onboarding/institution' as Href);
+      return;
+    }
+
+    const pending = getPendingSignIn();
+    const userId = params.userId || pending?.userId;
+    if (!userId) {
+      setCodeError('Something went wrong. Please sign in again to get a new code.');
+      return;
+    }
+
+    setBusy(true);
+    try {
+      await verifyEmail(userId, otp.join(''));
+    } catch (e) {
+      setBusy(false);
+      setCodeError(e instanceof Error ? e.message : 'We couldn’t verify that code. Please try again.');
+      return;
+    }
+
+    // Verified. Sign in with the details from the previous screen (kept in memory only).
+    try {
+      if (!pending) throw new Error('no-credentials');
+      const result = await login(pending.email, pending.password);
+      if (result.status !== 'signed-in') throw new Error('not-signed-in');
+      setPendingSignIn(null);
+      router.replace((role ? ROLE_HOME[role] : '/onboarding/institution') as Href);
+    } catch {
+      Alert.alert('Email verified', 'Your email is confirmed. Please sign in to continue.');
+      router.replace('/onboarding/sign-in' as Href);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const handleBack = () => {
@@ -203,10 +256,16 @@ export default function VerifyEmailScreen() {
                 pressed && styles.verifyButtonPressed,
               ]}
               onPress={handleVerify}
+              disabled={busy}
               accessibilityRole="button"
               accessibilityLabel="Verify"
+              accessibilityState={{ busy, disabled: busy }}
             >
-              <Text style={styles.verifyButtonText}>Verify</Text>
+              {busy ? (
+                <ActivityIndicator color={ZuriColors.onPrimary} />
+              ) : (
+                <Text style={styles.verifyButtonText}>Verify</Text>
+              )}
             </Pressable>
             {!!codeError && <Text style={{ color: '#ba1a1a', fontSize: 13, textAlign: 'center', marginTop: 10 }}>{codeError}</Text>}
 
