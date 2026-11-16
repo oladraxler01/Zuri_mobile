@@ -134,10 +134,19 @@ export default function LectureRecordingScreen() {
     try {
       try {
         await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true, allowsBackgroundRecording: true });
-      } catch {
+      } catch (modeError) {
+        // Background recording isn't allowed in Expo Go or without the background-audio capability.
+        console.warn('[recording] background audio mode refused, recording in the foreground only', modeError);
         await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
       }
-      await recorder.prepareToRecordAsync();
+      try {
+        await recorder.prepareToRecordAsync();
+      } catch (prepareError) {
+        // Some iPhones refuse the 16 kHz / 64 kbps voice format ("Failed to prepare recorder").
+        // Retry once with Expo's standard high-quality preset, which iOS always accepts.
+        console.warn('[recording] voice format refused, retrying with HIGH_QUALITY', prepareError);
+        await recorder.prepareToRecordAsync(RecordingPresets.HIGH_QUALITY);
+      }
       recorder.record();
       setPhase('recording');
     } catch (e) {
