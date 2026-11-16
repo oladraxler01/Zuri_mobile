@@ -92,6 +92,8 @@ export interface PersonalCourseDTO {
   code?: string;
   name: string;
   description?: string;
+  credit_units?: number;
+  color?: string;
   created_at?: string;
 }
 

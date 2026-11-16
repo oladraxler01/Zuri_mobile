@@ -40,6 +40,12 @@ export interface CourseItem {
   serverId?: string;
   /** Added on this phone and not on the server yet. */
   pendingSync?: boolean;
+  /**
+   * true: in the institution's catalogue (academic service), so its classes,
+   * mastery and study partner live on the server too.
+   * false: the student's own course; its classes stay on the phone.
+   */
+  catalogue?: boolean;
   /** From the server's course catalogue, when it has them. */
   syllabus?: CourseSyllabusTopic[];
   lectures?: LectureDTO[];
@@ -311,7 +317,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     let patch: Partial<CourseItem>;
     try {
       const d = await enrollCourse(course.code, semesterCode(stateRef.current.semester));
-      patch = { serverId: d.id, syllabus: d.syllabus, lectures: d.lectures, events: d.events };
+      patch = { serverId: d.id, catalogue: true, syllabus: d.syllabus, lectures: d.lectures, events: d.events };
     } catch (e) {
       if (e instanceof ApiError && e.kind !== 'server') throw e; // offline / signed out: try later
       // Not in the institution's catalogue: save it as the student's own course.
@@ -320,7 +326,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
         code: course.code,
         description: course.lecturer ? `Lecturer: ${course.lecturer}` : undefined,
       });
-      patch = { serverId: created.id };
+      patch = { serverId: created.id, catalogue: false };
     }
     setState((prev) => ({
       ...prev,
@@ -342,6 +348,15 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  /** Stop retrying: the server refused it, so it stays on this phone only. */
+  const keepLocal = useCallback((kind: 'courses' | 'timetable', id: string) => {
+    setState((prev) =>
+      kind === 'courses'
+        ? { ...prev, courses: prev.courses.map((c) => (c.id === id ? { ...c, pendingSync: false } : c)) }
+        : { ...prev, timetable: prev.timetable.map((t) => (t.id === id ? { ...t, pendingSync: false } : t)) }
+    );
+  }, []);
+
   const pushPending = useCallback(async () => {
     for (const course of stateRef.current.courses.filter((c) => c.pendingSync)) {
       try {
@@ -349,20 +364,26 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         if (e instanceof ApiError && e.kind !== 'server') return; // offline: stop, retry on next sync
         console.warn(`Could not save ${course.code} on the server`, e);
+        keepLocal('courses', course.id);
       }
     }
-    // Slots need their course on the server first.
+    // Classes go to the academic service, which only knows catalogue courses.
     for (const slot of stateRef.current.timetable.filter((t) => t.pendingSync)) {
       const course = stateRef.current.courses.find((c) => c.id === slot.courseId);
-      if (!course?.serverId) continue;
+      if (!course?.serverId) continue; // course not saved yet: try again after it is
+      if (!course.catalogue) {
+        keepLocal('timetable', slot.id);
+        continue;
+      }
       try {
         await pushSlot(slot, course.serverId);
       } catch (e) {
         if (e instanceof ApiError && e.kind !== 'server') return;
         console.warn(`Could not save a ${slot.courseCode} class on the server`, e);
+        keepLocal('timetable', slot.id);
       }
     }
-  }, [pushCourse, pushSlot]);
+  }, [pushCourse, pushSlot, keepLocal]);
 
   // One push at a time; changes made during a push run straight after it.
   const pushing = useRef(false);
@@ -430,6 +451,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
             code: c.code,
             title: c.title,
             units: c.credit_units || 3,
+            catalogue: true,
             syllabus: c.syllabus,
             lectures: c.lectures,
             events: c.events,
@@ -445,7 +467,8 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
             serverId: c.id,
             code,
             title: c.name,
-            units: 3,
+            units: c.credit_units || 3,
+            catalogue: false,
             lecturer: c.description?.replace(/^Lecturer:\s*/, '') || undefined,
           });
         }
@@ -484,7 +507,8 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
               endTime: to12h(e.end_time),
               venue: e.venue || '',
             }));
-          timetable = [...fromServer, ...timetable.filter((t) => t.pendingSync)];
+          // Server classes replace the ones it already has; classes only on this phone stay.
+          timetable = [...fromServer, ...timetable.filter((t) => !t.serverId)];
         }
         return { ...prev, courses, timetable };
       });
@@ -493,7 +517,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
       if (today.status === 'fulfilled') setTodayTimeline(today.value);
       if (stats.status === 'fulfilled') setStudyStats(stats.value);
 
-      const first = serverCourses[0];
+      const first = serverCourses.find((c) => c.catalogue);
       if (first) {
         getWeakTopics(first.serverId)
           .then(setWeakTopics)
@@ -552,7 +576,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
   const submitLearningSignal: AcademicContextType['submitLearningSignal'] = useCallback(async (signal) => {
     if (!signedIn()) return;
     const course = stateRef.current.courses.find((c) => c.id === signal.courseId);
-    if (!course?.serverId) return;
+    if (!course?.serverId || !course.catalogue) return; // mastery is tracked for catalogue courses only
     try {
       await recordLearningSignal({
         course_id: course.serverId,
