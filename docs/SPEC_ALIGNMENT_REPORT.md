@@ -12,23 +12,27 @@
 
 Status markers (✅ / 🟡 / ❌) are the spec's own, from §3 and §6. "app-only" means the app has it and the spec doesn't mention it.
 
+Buckets: **Keep**, **Rebuild**, **Build new** and **Scrap** are as defined in the audit brief. **Defer** is added for screens that stay in the app as upcoming features but sit outside the MVP 1 student loop (spec §9): the lecturer app, the school admin dashboard and the research platform. Deferred screens get no MVP work and aren't removed.
+
 ---
 
 ## 1. Summary
 
 | Bucket | Count | What's in it |
 |---|---|---|
-| **Keep** | 41 | Student onboarding, Courses, You, lectures, materials, notifications, study, settings, system screens |
+| **Keep** | 42 | Student onboarding (incl. role select), Courses, You, lectures, materials, notifications, study, settings, system screens |
 | **Rebuild** | 7 | Home (Today), Plan, Ask, assessment detail/edit (→ exams), lecture recording (→ class capture), learning preferences step |
 | **Build new** | 8 | Course materials + past questions (onboarding), diagnostic quiz, recording consent, live class session, debrief, follow-ups, readiness overview, course readiness |
-| **Scrap** | 41 | Lecturer app (13), institution dashboard (13), research platform (12), role select, lecturer setup, admin sign-in |
+| **Defer** | 39 | Lecturer app (13) + lecturer setup, school admin dashboard (13), research platform (12): upcoming features, outside the MVP 1 loop |
+| **Scrap** | 1 | Admin sign-in (`onboarding/admin-sign-in.tsx`) |
 
 **Biggest risks:**
 1. **Almost all the "brain" is on the phone today.** The server is reached only for sign-in, profile, academic sync (courses/timetable/today/stats) and file uploads. Ask, the Today feed, mastery, study sessions, quizzes, the study plan and lecture "analysis" are all computed locally from on-phone data. Moving each of these to the server (spec §6) is most of the mobile work, and most of those endpoints are ❌.
 2. **Lecture capture can't do what the spec needs.** `lecture-recording.tsx` records one file and uploads it after class as a content-service *material* (`POST /materials`). It has no chunks, no class session, no consent, and no live transcript. The server never finishes processing those uploads: `processing_status` stays `pending`, so lectures show "Processing" forever. Stage 3 and 4 depend on ❌ endpoints *and* a new chunked recorder in the app.
 3. **Personal courses are phone-only.** The live catalogue is empty, so every course a student adds is a custom content-service course, and its classes never reach the academic service. Until `POST /academic/courses` (❌, spec step 1) lands, the timetable, next class, reminders, tutor and mastery can't work server-side for real students.
 4. **No streaming client.** The spec's in-class answers stream token by token (first token < 2 s). The app's `api-client.ts` only does request/response JSON; nothing in the app reads SSE or chunked responses yet.
-5. **Two sources of mastery.** The app computes mastery locally (`utils/mastery.ts`, `progress-context`), while the spec makes the academic knowledge state the owner (§6 rules). Course pages, study and readiness must switch to `knowledge-state` / readiness endpoints, or the numbers students see will disagree.
+5. **Deferred apps run on sample data.** The lecturer app, school admin dashboard and most of the research tools use local or sample data (`data/sample-class-insights.ts`, `data/sample-institution.ts`). Users who pick Lecturer or School Board see figures that aren't real. Label them "preview" until their backends exist.
+6. **Two sources of mastery.** The app computes mastery locally (`utils/mastery.ts`, `progress-context`), while the spec makes the academic knowledge state the owner (§6 rules). Course pages, study and readiness must switch to `knowledge-state` / readiness endpoints, or the numbers students see will disagree.
 
 ---
 
@@ -47,21 +51,21 @@ Every other context is local only.
 
 | Screen | Path | Today | Calls | State | Bucket | Spec stage | Notes |
 |---|---|---|---|---|---|---|---|
-| Tab bar | `(tabs)/_layout.tsx` | Home · Courses · Plan · Research · You | — | working | Keep | — | Drop the Research tab (§9) |
+| Tab bar | `(tabs)/_layout.tsx` | Home · Courses · Plan · Research · You | — | working | Keep | — | All tabs stay; Research is a deferred feature |
 | Home | `(tabs)/index.tsx` | Greeting, next class, recommendation, deadline/exam cards, get-started checklist, shortcuts | local (`feed-context` from `utils/recommendations.ts`); next class from synced timetable | working (local) | **Rebuild** | 2, 5, 6 | Must become the server Today feed |
 | Courses | `(tabs)/explore.tsx` | Course list, add/remove course | `academic-context` (enrol ✅ / `POST /courses`) | working | Keep | 1 | Switch custom-course create to `POST /academic/courses` ❌ |
 | Plan | `(tabs)/plan.tsx` | This week / Deadlines / Calendar; local study-plan builder | local (`planner-context`, `utils/planner.ts`) | working (local) | **Rebuild** | 7 | Becomes exams + server study plan |
-| Research | `(tabs)/research.tsx` | Research home (OpenAlex) | OpenAlex (external) | working | Scrap | — | §9 research platform |
+| Research | `(tabs)/research.tsx` | Research home (OpenAlex) | OpenAlex (external) | working | Defer | — | Upcoming research platform (§9) |
 | You | `(tabs)/you.tsx` | Profile hub, stats, settings links | local stats | working | Keep | 6, 7 | Stats later from analytics ✅ |
-| Root stack | `_layout.tsx` | Providers, startup gate, stack | `GET /users/me` via session | working | Keep | — | Remove lecturer/institution stacks |
-| Entry | `index.tsx` | Routes by role / onboarding | — | working | Keep | 1 | Student-only after Scrap |
+| Root stack | `_layout.tsx` | Providers, startup gate, stack | `GET /users/me` via session | working | Keep | — | Role stacks (lecturer, institution) stay |
+| Entry | `index.tsx` | Routes by role / onboarding | — | working | Keep | 1 | Keeps routing by role |
 | Not found | `+not-found.tsx` | Branded 404 | — | working | Keep | — | |
 | Ask Zuri | `ask.tsx` | Keyword search over transcripts/passages, answers are quote cards | local (`utils/source-search.ts`) | working (no AI) | **Rebuild** | 3, 5 | Becomes course tutor on partner chat ✅ / class-session ask ❌ |
 | Ask history | `ask-history.tsx` | Saved conversations, star, delete | local (`conversations-context`) | working | Keep | 6 | Load `partner/history` ✅ per course |
 | Assessment detail | `assessment/[id].tsx` | Countdown, checklist, study sessions, topics, related lectures | local (`planner-context`) | working (local) | **Rebuild** | 7 | Exams → readiness; assignments are app-only |
 | Assessment edit | `assessment/edit.tsx` | Add/edit assignment/test/exam/project | local | working (local) | **Rebuild** | 7 | Exams → `POST /academic/exams` ❌ |
 | Course detail | `course/[id].tsx` | Overview, Schedule, Lectures, Materials, Assessments, Topics, Activity | synced course/timetable; mastery local | working | Keep | 1, 2, 6, 7 | Topics → `knowledge-state` ✅; add readiness card |
-| Lecture detail | `lecture/[id].tsx` | Overview, Transcript (audio-synced), Notes, Questions, Class (lecturer) | upload status; analysis from upload result or sample | partial (server never finishes) | Keep | 4, 6 | Already the spec's lecture detail; feed from filed lecture ❌; drop Class tab |
+| Lecture detail | `lecture/[id].tsx` | Overview, Transcript (audio-synced), Notes, Questions, Class (lecturer) | upload status; analysis from upload result or sample | partial (server never finishes) | Keep | 4, 6 | Already the spec's lecture detail; feed from filed lecture ❌; Class tab (lecturers) is deferred |
 | Lecture archive | `lectures.tsx` | Search + course filter | local | working | Keep | 4, 6 | |
 | Record lecture | `lecture-recording.tsx` | Single-file recorder, pause/resume, course picker, save & upload | `POST /materials` → presign → PUT → poll | partial | **Rebuild** | 3, 4 | Becomes the capture part of the class session |
 | Material detail | `material/[id].tsx` | Open, share, summary/concepts/quiz/passages | upload result or on-phone text analysis | partial | Keep | 1, 4 | |
@@ -90,7 +94,7 @@ Every other context is local only.
 |---|---|---|---|---|---|---|---|
 | Onboarding stack | `onboarding/_layout.tsx` | Stack | — | working | Keep | 1 | |
 | Splash | `onboarding/index.tsx` | Animated ZURI splash | — | working | Keep | 1 | |
-| Welcome | `onboarding/welcome.tsx` | Sign up / sign in / admin link | — | working | Keep | 1 | Remove admin link |
+| Welcome | `onboarding/welcome.tsx` | Sign up / sign in / admin link | — | working | Keep | 1 | Admin link → sign in (admin sign-in is scrapped) |
 | Sign up | `onboarding/sign-up.tsx` | Name, email, password | `POST /auth/register` ✅ | working (live-checked) | Keep | 1 | |
 | Verify | `onboarding/verify.tsx` | 6-digit email code | `POST /auth/verify-email` ✅, resend ✅, login ✅ | working (live-checked) | Keep | 1 | |
 | Sign in | `onboarding/sign-in.tsx` | Email + password | `POST /auth/login` ✅ | working (live-checked) | Keep | 1 | |
@@ -101,61 +105,61 @@ Every other context is local only.
 | Timetable review | `onboarding/timetable-review.tsx` | By day, clash detection | local | working | Keep | 1 | |
 | Preferences | `onboarding/student-preferences.tsx` | Target GPA, weekly hours, reminders | `PUT /notifications/preferences` ✅ | working | **Rebuild** | 1 | Missing learning style, pace, quiz format, windows, language |
 | Complete | `onboarding/complete.tsx` | Summary of what's set up | local | working | Keep | 1 | Read `GET /academic/onboarding/status` ❌ |
-| Role select | `onboarding/role-select.tsx` | Student / Lecturer / School Board | — | working | Scrap | — | Student-only MVP |
-| Lecturer setup | `onboarding/lecturer-setup.tsx` | Lecturer profile + courses | local | working (local) | Scrap | — | §9 |
-| Admin sign-in | `onboarding/admin-sign-in.tsx` | Institution email + code | local | working (local) | Scrap | — | §9 |
+| Role select | `onboarding/role-select.tsx` | Student / Lecturer / School Board | — | working | Keep | 1 | Needed: sends each role to its own app. School Board → normal sign-in instead of admin sign-in |
+| Lecturer setup | `onboarding/lecturer-setup.tsx` | Lecturer profile + courses | local | working (local) | Defer | — | Part of the lecturer app |
+| Admin sign-in | `onboarding/admin-sign-in.tsx` | Institution email + access code, format check only | local | working (local, no real check) | Scrap | — | School admins use the normal sign-in; their server role routes them to `/institution` |
 
-### Lecturer app (all Scrap, §9 "Lecturer-facing app")
-
-| Screen | Path | Today | Calls | State | Bucket |
-|---|---|---|---|---|---|
-| Lecturer tabs | `lecturer/_layout.tsx` | Today · Courses · Insights · Tools · Profile | — | working | Scrap |
-| Today | `lecturer/index.tsx` | Next lecture, alerts, signals | local + sample | working (sample) | Scrap |
-| Courses | `lecturer/courses.tsx` | Courses taught | local | working (local) | Scrap |
-| Insights | `lecturer/insights.tsx` | Engagement, mastery, misconceptions | `data/sample-class-insights.ts` | placeholder data | Scrap |
-| Profile | `lecturer/profile.tsx` | Verification status | local | working (local) | Scrap |
-| Tools | `lecturer/tools.tsx` | Tool list | local | working (local) | Scrap |
-| Teach stack | `teach/_layout.tsx` | Stack | — | working | Scrap |
-| Course | `teach/course/[id].tsx` | Course page | local | working (local) | Scrap |
-| Announcement | `teach/announcement.tsx` | Compose + history | local | working (local) | Scrap |
-| Assessment | `teach/assessment.tsx` | Create assessment | local | working (local) | Scrap |
-| New quiz | `teach/quiz/new.tsx` | Quiz generator | local | working (local) | Scrap |
-| Quiz | `teach/quiz/[id].tsx` | Review / publish | local | working (local) | Scrap |
-| Revision pack | `teach/revision/[id].tsx` | Pack builder | local | working (local) | Scrap |
-
-### Institution dashboard (all Scrap, §9 "Institution admin")
+### Lecturer app (all Defer: upcoming, outside the MVP 1 loop per §9)
 
 | Screen | Path | Today | Calls | State | Bucket |
 |---|---|---|---|---|---|
-| Institution tabs | `institution/_layout.tsx` | Overview · Academics · Analytics · Settings | — | working | Scrap |
-| Overview | `institution/index.tsx` | KPIs | `data/sample-institution.ts` | placeholder data | Scrap |
-| Academics | `institution/academics.tsx` | Structure, timetable, library | sample + local | placeholder data | Scrap |
-| Analytics | `institution/analytics.tsx` | Learning/engagement/cost | sample | placeholder data | Scrap |
-| Settings hub | `institution/settings.tsx` | Settings links | local | working (local) | Scrap |
-| Admin stack | `admin/_layout.tsx` | Stack | — | working | Scrap |
-| Course | `admin/course/[id].tsx` | Enrolment, timetable editor | sample | placeholder data | Scrap |
-| Faculty | `admin/faculty/[id].tsx` | Faculty view | sample | placeholder data | Scrap |
-| Intelligence | `admin/intelligence.tsx` | University-wide trends | sample | placeholder data | Scrap |
-| Lecturers | `admin/lecturers.tsx` | Directory | local | placeholder data | Scrap |
-| Students | `admin/students.tsx` | Directory | sample | placeholder data | Scrap |
-| Research | `admin/research.tsx` | Institution papers | OpenAlex | working | Scrap |
-| Settings | `admin/settings/[section].tsx` | Roles, staff, audit, API keys | sample | placeholder data | Scrap |
+| Lecturer tabs | `lecturer/_layout.tsx` | Today · Courses · Insights · Tools · Profile | — | working | Defer |
+| Today | `lecturer/index.tsx` | Next lecture, alerts, signals | local + sample | working (sample) | Defer |
+| Courses | `lecturer/courses.tsx` | Courses taught | local | working (local) | Defer |
+| Insights | `lecturer/insights.tsx` | Engagement, mastery, misconceptions | `data/sample-class-insights.ts` | placeholder data | Defer |
+| Profile | `lecturer/profile.tsx` | Verification status | local | working (local) | Defer |
+| Tools | `lecturer/tools.tsx` | Tool list | local | working (local) | Defer |
+| Teach stack | `teach/_layout.tsx` | Stack | — | working | Defer |
+| Course | `teach/course/[id].tsx` | Course page | local | working (local) | Defer |
+| Announcement | `teach/announcement.tsx` | Compose + history | local | working (local) | Defer |
+| Assessment | `teach/assessment.tsx` | Create assessment | local | working (local) | Defer |
+| New quiz | `teach/quiz/new.tsx` | Quiz generator | local | working (local) | Defer |
+| Quiz | `teach/quiz/[id].tsx` | Review / publish | local | working (local) | Defer |
+| Revision pack | `teach/revision/[id].tsx` | Pack builder | local | working (local) | Defer |
 
-### Research platform (all Scrap, §9 "Research platform")
+### School admin dashboard (all Defer: upcoming, outside the MVP 1 loop per §9)
+
+| Screen | Path | Today | Calls | State | Bucket |
+|---|---|---|---|---|---|
+| Institution tabs | `institution/_layout.tsx` | Overview · Academics · Analytics · Settings | — | working | Defer |
+| Overview | `institution/index.tsx` | KPIs | `data/sample-institution.ts` | placeholder data | Defer |
+| Academics | `institution/academics.tsx` | Structure, timetable, library | sample + local | placeholder data | Defer |
+| Analytics | `institution/analytics.tsx` | Learning/engagement/cost | sample | placeholder data | Defer |
+| Settings hub | `institution/settings.tsx` | Settings links | local | working (local) | Defer |
+| Admin stack | `admin/_layout.tsx` | Stack | — | working | Defer |
+| Course | `admin/course/[id].tsx` | Enrolment, timetable editor | sample | placeholder data | Defer |
+| Faculty | `admin/faculty/[id].tsx` | Faculty view | sample | placeholder data | Defer |
+| Intelligence | `admin/intelligence.tsx` | University-wide trends | sample | placeholder data | Defer |
+| Lecturers | `admin/lecturers.tsx` | Directory | local | placeholder data | Defer |
+| Students | `admin/students.tsx` | Directory | sample | placeholder data | Defer |
+| Research | `admin/research.tsx` | Institution papers | OpenAlex | working | Defer |
+| Settings | `admin/settings/[section].tsx` | Roles, staff, audit, API keys | sample | placeholder data | Defer |
+
+### Research platform (all Defer: upcoming, outside the MVP 1 loop per §9)
 
 | Screen | Path | Bucket |
 |---|---|---|
-| Library | `scholar/library.tsx` | Scrap |
-| Search | `scholar/search.tsx` | Scrap |
-| Paper | `scholar/paper/[id].tsx` | Scrap |
-| New project | `scholar/project/new.tsx` | Scrap |
-| Project | `scholar/project/[id]/index.tsx` | Scrap |
-| Project chat | `scholar/project/[id]/chat.tsx` | Scrap |
-| Citations | `scholar/project/[id]/citations.tsx` | Scrap |
-| Compare | `scholar/project/[id]/compare.tsx` | Scrap |
-| Map | `scholar/project/[id]/map.tsx` | Scrap |
-| Settings | `scholar/project/[id]/settings.tsx` | Scrap |
-| Synthesis | `scholar/project/[id]/synthesis.tsx` | Scrap |
+| Library | `scholar/library.tsx` | Defer |
+| Search | `scholar/search.tsx` | Defer |
+| Paper | `scholar/paper/[id].tsx` | Defer |
+| New project | `scholar/project/new.tsx` | Defer |
+| Project | `scholar/project/[id]/index.tsx` | Defer |
+| Project chat | `scholar/project/[id]/chat.tsx` | Defer |
+| Citations | `scholar/project/[id]/citations.tsx` | Defer |
+| Compare | `scholar/project/[id]/compare.tsx` | Defer |
+| Map | `scholar/project/[id]/map.tsx` | Defer |
+| Settings | `scholar/project/[id]/settings.tsx` | Defer |
+| Synthesis | `scholar/project/[id]/synthesis.tsx` | Defer |
 
 All research screens work against OpenAlex (`services/scholar-api.ts`) with `research-context`. Together with `(tabs)/research.tsx` that's 12 research screens.
 
@@ -423,18 +427,28 @@ It is submitted as part of `POST /academic/onboarding` and edited later via `PUT
 
 ---
 
-## 5. Scrap list
+## 5. Scrap and deferred lists
 
-| Screen(s) | Why | Replacement | Navigation clean-up |
+### Scrap
+
+| Screen | Why | Replacement | Navigation clean-up |
 |---|---|---|---|
-| `lecturer/*` (6), `teach/*` (7), `onboarding/lecturer-setup.tsx` | §9: lecturer app out of MVP 1 | none | Remove `lecturer`, `teach` from `_layout.tsx`; drop `useLecturer` from `lecture-recording.tsx` and `lecture/[id].tsx` (Class tab, `components/lecture/class-tab.tsx`); remove `LecturerProvider` and `data/sample-class-insights.ts` |
-| `institution/*` (5), `admin/*` (8), `onboarding/admin-sign-in.tsx` | §9: institution admin out of MVP 1 | none | Remove `institution`, `admin` stacks; remove "Institution admin? Sign in here" from `welcome.tsx`; remove `InstitutionProvider`, `data/sample-institution.ts` |
-| `(tabs)/research.tsx`, `scholar/*` (11) | §9: research platform | none | Remove Research tab from `(tabs)/_layout.tsx` and the custom tab bar config; remove `ResearchProvider`, `services/scholar-api.ts`; `profile/knowledge.tsx` and `settings/[section].tsx` reference research data and need the references removed |
-| `onboarding/role-select.tsx` | Student-only MVP | Sign-up goes straight to institution | `sign-up`/`verify` already route to `/onboarding/institution` for students; `session-context` role can default to `student`; `student-courses.tsx` has a back link to role-select to change |
+| `onboarding/admin-sign-in.tsx` | It checks the institution email and access code only for format, on the phone, so anyone can get in. The server has no admin access-code route. | The normal sign-in (`onboarding/sign-in.tsx`). The server's user `role` sends an institution admin to `/institution` through `ROLE_HOME` in `session-context`. | Role select "School Board" and the Welcome link ("Institution admin? Sign in here") go to `/onboarding/sign-in`; remove the `admin-sign-in` route. |
 
-**Risks:**
-- Removing these must not delete stored keys that "Delete all my data" (`utils/reset.ts`) iterates over. Check `utils/storage.ts` `STORAGE_KEYS`.
-- `ROLE_HOME` in `session-context` must keep routing existing installs that saved a non-student role. Send them to onboarding.
+**Depends on the backend:** the server must be able to create institution-admin accounts with a role the app maps to `institution` (see §10).
+
+### Defer (stays in the app, no MVP 1 work)
+
+| Feature | Screens | Today | What it needs later |
+|---|---|---|---|
+| Lecturer app | `lecturer/*` (6), `teach/*` (7), `onboarding/lecturer-setup.tsx`; Class tab in `lecture/[id].tsx` | Local data plus `data/sample-class-insights.ts` | Lecturer accounts and course ownership on the server; the academic service's lecturer signals (`GET /academic/courses/{id}/lecturer-signals`, already routed by the gateway) |
+| School admin dashboard | `institution/*` (5), `admin/*` (8) | `data/sample-institution.ts` and local edits | Institution admin role and APIs: hierarchy, offerings and cohort enrolment exist in the academic service but aren't routed by the gateway; timetable management has no admin routes |
+| Research platform | `(tabs)/research.tsx`, `scholar/*` (11) | Live OpenAlex search, projects saved on the phone | AI synthesis and chat on the server; saved projects synced |
+
+**Guardrails while deferred:**
+- Keep `role-select.tsx` as the entry for all three roles.
+- Label sample-data screens as a preview, so lecturers and admins don't act on made-up numbers.
+- MVP 1 refactors (Home, Ask, recording, mastery) must not break the shared pieces these apps use: `lectures-context`, `materials-context`, the recording screen's lecturer course list, and `useLecturer` in `lecture/[id].tsx`.
 
 ---
 
@@ -444,11 +458,17 @@ It is submitted as part of `POST /academic/onboarding` and edited later via `PUT
 flowchart TD
   Root[Root stack _layout] --> Onb[onboarding/*]
   Root --> Tabs["(tabs)"]
+  Root --> Lect["lecturer/* + teach/* (deferred)"]
+  Root --> Inst["institution/* + admin/* (deferred)"]
   Root --> Class["class/[sessionId] (new, full screen)"]
   Root --> Debrief["debrief/[id] (new)"]
   Root --> Stack[Detail stack]
 
-  Onb --> O1[welcome] --> O2[sign-up] --> O3[verify] --> O4[institution] --> O5[profile-setup]
+  Onb --> O1[welcome] --> RS[role-select]
+  RS -->|Student| O2[sign-up]
+  RS -->|Lecturer| LS["lecturer-setup (deferred)"] --> Lect
+  RS -->|School Board| SI["sign-in (role → institution)"] --> Inst
+  O2 --> O3[verify] --> O4[institution] --> O5[profile-setup]
   O5 --> O6[student-courses] --> O7[student-timetable] --> O8[timetable-review]
   O8 --> O9["course-materials (new)"] --> O10["diagnostic (new, optional)"]
   O10 --> O11["preferences (rebuilt)"] --> O12[permissions/microphone] --> O13[permissions/notifications] --> O14[complete]
@@ -457,6 +477,7 @@ flowchart TD
   Tabs --> C[Courses]
   Tabs --> P["Plan: exams + study plan (rebuilt)"]
   Tabs --> Y[You]
+  Tabs --> RT["Research (deferred)"] --> SCH["scholar/* (deferred)"]
 
   H --> UL[upcoming-lecture] --> Class
   Class --> Consent["consent sheet (new)"]
@@ -481,7 +502,7 @@ flowchart TD
   Stack --> Stat["status/[kind]"]
 ```
 
-**Tabs:** Home · Courses · Plan · You. A floating "Ask" / "Start class" action stays on Home.
+**Tabs:** Home · Courses · Plan · Research (deferred) · You. A floating "Ask" / "Start class" action stays on Home. Where role select sits in the flow (before or after sign-up) is unchanged from today; the map shows it before sign-up for clarity.
 
 ---
 
@@ -549,7 +570,7 @@ flowchart TD
 ## 9. Proposed mobile build order (matches spec §8)
 
 1. **With backend step 1:**
-   - **Scrap first:** remove the lecturer, institution and research apps, plus role select. That's 41 files and 3 providers (`LecturerProvider`, `InstitutionProvider`, `ResearchProvider`).
+   - **Scrap admin sign-in:** point role select "School Board" and the Welcome link to the normal sign-in. Leave the deferred lecturer, school admin and research apps in place, marked as previews.
    - **Personal courses:** switch the custom-course path in `academic-context` from `POST /courses` to `POST /academic/courses`. Drop `catalogue: false` "phone-only" handling, so classes for every course sync. Migrate existing phone-only courses once.
    - **Preferences:** rebuild `student-preferences`.
    - **Course materials:** add the course-materials step (4.1).
@@ -599,4 +620,5 @@ flowchart TD
 7. **Consent:** spec open question 1. Is consent per session from the student only, or does the institution/lecturer policy need to be fetched first? There's no endpoint for policy yet.
 8. **Debrief timing:** spec open question 5. If it's a preference, add it to the profile schema now so the preferences step can ask once.
 9. **Mastery owner:** spec open question 6. Once `knowledge-state` owns mastery, the app will stop computing its own. Will knowledge state accept the flashcard and quiz signals the app already logs locally (`signal_type: flashcard_review`)?
-10. **Assignments/projects:** the app tracks assignments and projects (app-only). Should they stay phone-only, or is there a home for them server-side (e.g. `AcademicEvent`)?
+10. **School admin accounts:** with the admin sign-in screen scrapped, how is an institution admin account created, and what `role` does the server return so the app routes it to `/institution`? The same question applies to lecturer accounts.
+11. **Assignments/projects:** the app tracks assignments and projects (app-only). Should they stay phone-only, or is there a home for them server-side (e.g. `AcademicEvent`)?
