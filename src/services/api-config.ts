@@ -5,6 +5,11 @@
  * never receive the git-ignored .env) signs people up with real email codes.
  * EXPO_PUBLIC_API_GATEWAY_URL in .env overrides it, e.g. for a staging server.
  * The gateway serves the REST API under /api/v1 and a health check at /health.
+ *
+ * A localhost address (http://localhost:8080) means "the backend on my
+ * computer". A phone can't reach that, so during development it's swapped for
+ * the computer's address on the network (taken from the Metro dev server),
+ * or 10.0.2.2 on an Android emulator.
  */
 
 export const DEFAULT_GATEWAY_URL = 'https://api.zurilearn.com';
