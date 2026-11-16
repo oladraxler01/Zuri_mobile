@@ -205,3 +205,10 @@ Part 2 — institution:
   - New on the context: `sync` (status), `syncFromServer`, `todayTimeline`, `nextClass`, `studyStats`, `weakTopics`, `actOnTimelineCard`, `dismissTimelineCard`, `submitLearningSignal`. Screens don't show the new server data yet.
 - `services/api-config.ts`: a `localhost` gateway URL now works from a real phone in development (uses the computer's address from Metro; `10.0.2.2` on the Android emulator).
 - Checked: `tsc` and an Android `expo export` bundle. Not yet tested against the live server with a signed-in account.
+
+### Live check of every server call, signed in (2026-11-16)
+- Ran each route the app uses against https://api.zurilearn.com as a new, email-verified student: sign-up → code → sign-in → profile, courses, timetable, next class, today, study stats, custom course create + list, study session, notification preferences, token refresh (old refresh token correctly rejected as reused). All answered as the app expects.
+- **The live academic catalogue is empty**: enrolling even `CSC 301` returns 400 "not found in academic catalog", so every course a student adds is saved as a custom course (the app's fallback, which works).
+- **Custom courses have no server timetable**: `POST /academic/timetable/slots` with a custom course id crashes with a 500 (backend bug), and mastery / study partner routes answer 404 for them.
+- App fixes: courses now record whether they're in the catalogue (`catalogue`). Classes for custom courses stay on the phone instead of being retried forever, anything the server refuses stops retrying, phone-only classes are no longer dropped by a sync, and learning signals / weak topics only use catalogue courses.
+- **Backend to do:** seed the academic catalogue for each institution, return 404 instead of 500 for unknown course ids on `/academic/timetable/slots`, and add delete routes for courses and classes.
