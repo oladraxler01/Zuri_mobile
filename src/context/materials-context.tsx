@@ -111,6 +111,7 @@ export function MaterialsProvider({ children }: { children: React.ReactNode }) {
             courseCode: m.courseCode,
             courseTitle: titles.current.get(m.id),
             category: m.category,
+            sizeBytes: m.sizeBytes,
             serverId: m.serverId,
             uploaded: m.uploaded,
             onServerId: (serverId) => updateMaterial(m.id, { serverId }),

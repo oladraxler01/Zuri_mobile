@@ -212,3 +212,9 @@ Part 2 — institution:
 - **Custom courses have no server timetable**: `POST /academic/timetable/slots` with a custom course id crashes with a 500 (backend bug), and mastery / study partner routes answer 404 for them.
 - App fixes: courses now record whether they're in the catalogue (`catalogue`). Classes for custom courses stay on the phone instead of being retried forever, anything the server refuses stops retrying, phone-only classes are no longer dropped by a sync, and learning signals / weak topics only use catalogue courses.
 - **Backend to do:** seed the academic catalogue for each institution, return 404 instead of 500 for unknown course ids on `/academic/timetable/slots`, and add delete routes for courses and classes.
+
+### Uploads start processing; summaries from Zuri's AI (2026-11-16)
+- Cause of "Processing" forever: the app never told the server the file had arrived. `upload-api.ts` now runs the backend's real flow: `POST /materials {title, mime_type, file_size}` → `POST /materials/{id}/presign {action:"upload"}` → PUT → **`POST /webhooks/material-uploaded {material_id}`** → poll `GET /materials/{id}` until `completed`/`failed`. Retries re-confirm (or re-send the file if the server answers 409 "not uploaded yet").
+- Fields now match the content service (`mime_type`, `file_size`); the ignored `course_code/content_type/filename/category` are gone.
+- New `services/ai-api.ts` (`POST /ai/execute`). After processing, `reading.analyse` with the `material_id` gives the summary, key points and key terms shown on the material page. Practice questions and passages come in a later step.
+- The server can only read PDF and text for now, so the file picker offers just those. Failures say why (recordings can't be transcribed yet; other types unsupported; scanned PDFs).
