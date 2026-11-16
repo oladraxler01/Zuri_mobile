@@ -65,7 +65,7 @@ function Step({
         <Text style={styles.stepDesc}>{desc}</Text>
         {state === 'active' && progress !== undefined && (
           <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
+            <View style={[styles.progressFill, { width: `${Math.round(Number(progress) * 100)}%` }]} />
           </View>
         )}
       </View>

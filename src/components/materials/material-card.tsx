@@ -33,7 +33,7 @@ function StatusLine({ m }: { m: Material }) {
   if (m.status === 'ready') return null;
   const map: Record<string, { text: string; color: string; icon: IoniconName }> = {
     waiting: { text: 'Waiting for internet', color: UI.inkSoft, icon: 'cloud-offline-outline' },
-    uploading: { text: `Uploading ${Math.round((m.progress ?? 0) * 100)}%`, color: UI.amber, icon: 'sync' },
+    uploading: { text: `Uploading ${Math.round(Number(m.progress ?? 0) * 100)}%`, color: UI.amber, icon: 'sync' },
     processing: { text: 'Reading the document…', color: UI.amber, icon: 'sync' },
     failed: { text: 'Couldn’t process · tap to retry', color: UI.error, icon: 'alert-circle' },
   };

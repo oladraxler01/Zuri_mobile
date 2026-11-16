@@ -74,8 +74,11 @@ async function putFile(url: string, input: UploadInput): Promise<void> {
       uploadType: UploadType.BINARY_CONTENT,
       headers,
       mimeType: input.mimeType,
+      // expo-file-system reports these as BigInt on some platforms; progress must be a plain number.
       onProgress: ({ bytesSent, totalBytes }) => {
-        if (totalBytes > 0) input.onProgress('uploading', bytesSent / totalBytes);
+        const sent = Number(bytesSent);
+        const total = Number(totalBytes);
+        if (total > 0) input.onProgress('uploading', Math.min(1, sent / total));
       },
     });
     if (result.status < 200 || result.status >= 300) {

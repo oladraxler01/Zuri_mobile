@@ -40,7 +40,7 @@ export function StatusPill({ lecture }: { lecture: Lecture }) {
   }
   const label =
     status === 'uploading'
-      ? `Uploading ${Math.round((progress ?? 0) * 100)}%`
+      ? `Uploading ${Math.round(Number(progress ?? 0) * 100)}%`
       : 'Processing';
   return (
     <View style={[styles.pill, { backgroundColor: UI.amberSoft }]}>
