@@ -230,3 +230,9 @@ Part 2 — institution:
   - **Exam-style**: theory + applied real-world-scenario questions like a lecturer would set, with marks, model answer and marking guide (`study.quiz.generate` with a descriptive `quiz_type`; the server puts it into its prompt).
 - New `components/materials/practice-tab.tsx`.
 - Recording: if iOS refuses the 16 kHz voice format ("Failed to prepare recorder"), retry once with `RecordingPresets.HIGH_QUALITY` (b1cb4a8). Not tested on an iPhone yet.
+
+### Ask Zuri answers with AI (2026-11-16)
+- `app/ask.tsx` now sends each question to `POST /ai/execute` `chat.generate` with up to 5 context passages and the last 4 turns. Passages come from the phone's own sources (lecture transcripts, material passages), plus, for one document, the server's best-matching passages (`retrieval.search` with that material's id) and, for everything / a course, the summaries of matching processed documents. The passages used are shown under the answer. If the AI fails, the passages are shown with the reason.
+- New `components/markdown-text.tsx` renders the AI's headings, bullets and bold.
+- Not used yet: the course study partner (`/academic/courses/:id/partner/chat`) only works for catalogue courses, and the live catalogue is empty.
+- **Backend security bug reported** (BACKEND_REQUESTS #0): `retrieval.*` isn't limited to the user's own documents. The app only calls it with a material id the user owns.

@@ -144,3 +144,61 @@ export async function generateMaterialExamQuestions(materialId: string, count = 
   if (!out.length) throw new Error('Zuri couldn’t make exam questions from this document. Please try again.');
   return out;
 }
+
+export interface RetrievedChunk {
+  text: string;
+  heading?: string | null;
+  chunk_index?: number;
+}
+
+/**
+ * The passages of ONE of the user's own processed materials that best match a question.
+ *   retrieval.search  input { query, material_id }, parameters { top_k }
+ *   → { chunks: [{ text, heading_or_section, chunk_index, … }] }
+ * Always pass a material_id the user owns: without it the server searches
+ * everyone's documents (reported in BACKEND_REQUESTS.md).
+ */
+export async function searchMaterial(materialId: string, query: string, topK = 4): Promise<RetrievedChunk[]> {
+  const res = await executeAI<{ chunks?: any[] }>('retrieval.search', { query, material_id: materialId }, { top_k: topK });
+  return (res.chunks ?? [])
+    .filter((c) => c?.text)
+    .map((c) => ({
+      text: String(c.text),
+      heading: c.heading_or_section ?? c.heading ?? null,
+      chunk_index: typeof c.chunk_index === 'number' ? c.chunk_index : undefined,
+    }));
+}
+
+export interface ChatTurn {
+  role: 'user' | 'zuri';
+  content: string;
+}
+
+/**
+ * Ask Zuri. The answer is grounded in contextChunks when given (the server
+ * labels them [Document 1]…[Document 5]); without them Zuri answers from
+ * general academic knowledge.
+ *   chat.generate  input { query, context_chunks[], history[{ role, content }] }, session_id
+ *   → { response (markdown), session_id, sources[] }
+ */
+export async function askZuri(query: string, contextChunks: string[], history: ChatTurn[], sessionId?: string): Promise<string> {
+  const env = await apiRequest<AIEnvelope<{ response?: string }>>('/ai/execute', {
+    method: 'POST',
+    body: {
+      operation: 'chat.generate',
+      session_id: sessionId,
+      input: {
+        query,
+        context_chunks: contextChunks.slice(0, 5),
+        history: history.slice(-4).map((h) => ({ role: h.role === 'zuri' ? 'assistant' : 'user', content: h.content })),
+      },
+      client: { platform: 'mobile' },
+    },
+    timeoutMs: 90_000,
+  });
+  const text = env.status === 'COMPLETED' ? env.result?.response?.trim() : '';
+  if (!text) {
+    throw new ApiError('server', env.error?.message || 'Zuri’s AI couldn’t answer that right now. Please try again.');
+  }
+  return text;
+}
