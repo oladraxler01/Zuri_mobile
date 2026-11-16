@@ -154,3 +154,11 @@ Part 2 — institution:
 - Editorial design (`components/research/editorial.tsx`): paper background, serif headlines, hairline rules, small-caps kickers.
 - Screens: Research home (tab), `scholar/search`, `scholar/paper/[id]` (metadata, summary, key findings, tap-a-sentence evidence extraction, citations + share, cited by / references, full text), `scholar/project/new`, `scholar/project/[id]` (workspace: tools + sources / evidence / notes), `…/map` (themes + literature map), `…/compare`, `…/synthesis` (share), `…/citations` (citation manager), `…/chat`, `…/settings`, `scholar/library` (saved, all papers, your documents, archived).
 - Research chat quotes your sources; AI-written answers need the backend.
+
+### Phase 6.7 — Profile & personalisation (done 2026-11-16)
+- You tab rebuilt as a profile hub: identity + verification badge, real stats (lectures, time studied, day streak), and Profile / Preferences / Account sections. Removed the hardcoded "Learning DNA" and GPA.
+- New screens: `profile/academic` (name, matric + verification, faculty, department, level, semester), `profile/learning` (strengths, growth areas, accuracy by course, study habits, all from real activity), `profile/goals` (target result, weekly hours, own semester goals), `profile/knowledge` (what Zuri stores, clear learning history / conversations / searches).
+- `settings/[section]`: study, notifications (permission status + request/open settings, reminder lead time, deadline/exam alerts), recording (quality, keep audio), Zuri assistant (answer style, personalisation), connected university, privacy & data (export JSON via share sheet, delete all data), account, help (FAQ, report a problem, replay intro, version).
+- Preferences now drive behaviour: recording quality sets the recorder; "keep audio" off deletes audio after processing; session length sets study sessions; answer style sets Ask Zuri sources; personalisation off hides activity-based suggestions.
+- `utils/reset.ts`: "Delete all my data" resets every store in memory first (so nothing re-saves), then removes saved keys and recording/material files.
+- Sign-up now saves the email.

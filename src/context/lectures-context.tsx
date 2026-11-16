@@ -8,6 +8,8 @@ import type { Lecture } from '@/types/lecture';
 import { processLecture, ApiError } from '@/services/lecture-api';
 import { STORAGE_KEYS } from '@/utils/storage';
 import { useNetwork } from '@/context/network-context';
+import { useAcademic } from '@/context/academic-context';
+import { onReset } from '@/utils/reset';
 
 const STORAGE_KEY = STORAGE_KEYS.lectures;
 
@@ -62,9 +64,15 @@ function deleteAudio(uri?: string) {
 export function LecturesProvider({ children }: { children: React.ReactNode }) {
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [loaded, setLoaded] = useState(false);
+
+  // "Delete all my data" empties this store.
+  useEffect(() => onReset(() => setLectures([])), []);
   const lecturesRef = useRef<Lecture[]>([]);
   lecturesRef.current = lectures;
   const { isOnline } = useNetwork();
+  const { state: academic } = useAcademic();
+  const keepAudioRef = useRef(true);
+  keepAudioRef.current = academic.preferences.keepAudio !== false;
   const onlineRef = useRef(isOnline);
   onlineRef.current = isOnline;
   /** ids currently uploading/processing, so a lecture never runs twice at once */
@@ -127,7 +135,13 @@ export function LecturesProvider({ children }: { children: React.ReactNode }) {
           },
           (stage, progress) => updateLecture(lecture.id, { status: stage, progress })
         );
-        updateLecture(lecture.id, { status: 'ready', progress: 1, analysis });
+        if (keepAudioRef.current) {
+          updateLecture(lecture.id, { status: 'ready', progress: 1, analysis });
+        } else {
+          // Preference: delete the audio once processed; transcript and notes stay.
+          deleteAudio(lecture.audioUri);
+          updateLecture(lecture.id, { status: 'ready', progress: 1, analysis, audioUri: undefined });
+        }
       } catch (e) {
         if (e instanceof ApiError && e.kind === 'network') {
           // Lost connection: wait and resume automatically when back online.

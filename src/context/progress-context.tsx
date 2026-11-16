@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { loadJSON, saveJSON } from '@/utils/storage';
+import { onReset } from '@/utils/reset';
 
 const KEY = 'lexi.progress.v1';
 
@@ -41,6 +42,9 @@ const ProgressContext = createContext<ProgressContextType | undefined>(undefined
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [events, setEvents] = useState<ProgressEvent[]>([]);
   const [loaded, setLoaded] = useState(false);
+
+  // "Delete all my data" empties this store.
+  useEffect(() => onReset(() => setEvents([])), []);
 
   useEffect(() => {
     loadJSON<ProgressEvent[]>(KEY).then((v) => {

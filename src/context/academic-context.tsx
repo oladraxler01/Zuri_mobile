@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { loadJSON, saveJSON, STORAGE_KEYS } from '@/utils/storage';
+import { onReset } from '@/utils/reset';
 
 export interface CourseItem {
   id: string;
@@ -20,8 +21,25 @@ export interface TimetableSlot {
   venue: string;     // e.g. "Lecture Theatre B"
 }
 
+export interface SemesterGoal {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
 export interface StudentPreferences {
   targetGpa: string;
+  /** items per personalised study session */
+  sessionSize: number;
+  preferredStudyTime: 'morning' | 'afternoon' | 'evening';
+  /** 'standard' = 16 kHz mono (smaller, ideal for transcription); 'high' = 44.1 kHz */
+  recordingQuality: 'standard' | 'high';
+  /** keep lecture audio after processing (off = delete audio to save space; transcript stays) */
+  keepAudio: boolean;
+  /** how much Ask Zuri shows per answer */
+  aiAnswerStyle: 'concise' | 'detailed';
+  /** use your activity to personalise recommendations */
+  aiPersonalise: boolean;
   weeklyStudyHours: number;
   lectureReminders: boolean;
   reminderLeadMinutes: number; // 15, 30, 45
@@ -32,6 +50,9 @@ export interface StudentPreferences {
 export interface StudentAcademicState {
   /** Name entered at sign-up; empty until set */
   studentName: string;
+  /** Email used at sign-up */
+  email: string;
+  goals: SemesterGoal[];
   /** Matriculation / student ID number, used for student verification */
   matricNumber: string;
   verification: 'unverified' | 'pending' | 'verified';
@@ -51,6 +72,8 @@ interface AcademicContextType {
   hydrated: boolean;
   setAcademicInfo: (info: {
     studentName?: string;
+    email?: string;
+    goals?: SemesterGoal[];
     matricNumber?: string;
     verification?: 'unverified' | 'pending' | 'verified';
     faculty?: string;
@@ -84,6 +107,8 @@ const DEFAULT_TIMETABLE: TimetableSlot[] = [
 
 const initialState: StudentAcademicState = {
   studentName: '',
+  email: '',
+  goals: [],
   matricNumber: '',
   verification: 'unverified',
   faculty: 'Faculty of Natural & Applied Sciences',
@@ -95,6 +120,12 @@ const initialState: StudentAcademicState = {
   timetable: DEFAULT_TIMETABLE,
   preferences: {
     targetGpa: '4.50+ (First Class)',
+    sessionSize: 8,
+    preferredStudyTime: 'evening',
+    recordingQuality: 'standard',
+    keepAudio: true,
+    aiAnswerStyle: 'detailed',
+    aiPersonalise: true,
     weeklyStudyHours: 16,
     lectureReminders: true,
     reminderLeadMinutes: 15,
@@ -108,6 +139,9 @@ const AcademicContext = createContext<AcademicContextType | undefined>(undefined
 export function AcademicProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<StudentAcademicState>(initialState);
   const [hydrated, setHydrated] = useState(false);
+
+  // "Delete all my data" empties this store.
+  useEffect(() => onReset(() => setState(initialState)), []);
 
   // Restore saved courses, timetable and preferences, then keep them saved.
   useEffect(() => {

@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import type { Assessment, AssessmentKind, CalendarEvent, PrepStep } from '@/types/planner';
 import { loadJSON, saveJSON, STORAGE_KEYS } from '@/utils/storage';
 import { localDateKey } from '@/utils/planner';
+import { onReset } from '@/utils/reset';
 
 const DEFAULT_STEPS: Record<AssessmentKind, string[]> = {
   assignment: [
@@ -116,6 +117,9 @@ const PlannerContext = createContext<PlannerContextType | undefined>(undefined);
 export function PlannerProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<PlannerState>({ assessments: [], calendar: [] });
   const [hydrated, setHydrated] = useState(false);
+
+  // "Delete all my data" empties this store.
+  useEffect(() => onReset(() => setData({ assessments: [], calendar: [] })), []);
 
   useEffect(() => {
     loadJSON<PlannerState>(STORAGE_KEYS.planner).then((saved) => {

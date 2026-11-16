@@ -75,7 +75,7 @@ export default function AskScreen() {
   const ask = (text?: string) => {
     const q = (text ?? input).trim();
     if (!q) return;
-    const hits = searchSources(q, { lectures, materials }, { courseId: courseId ?? undefined, materialId: material?.id }, 4);
+    const hits = searchSources(q, { lectures, materials }, { courseId: courseId ?? undefined, materialId: material?.id }, state.preferences.aiAnswerStyle === 'concise' ? 2 : 4);
     const reply: Msg = hits.length
       ? { role: 'lexi', text: `Here’s what your ${hits.length === 1 ? 'source says' : 'sources say'} about that:`, sources: hits }
       : {

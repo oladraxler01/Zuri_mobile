@@ -8,6 +8,7 @@ import { processMaterial } from '@/services/material-api';
 import { ApiError } from '@/services/lecture-api';
 import { loadJSON, saveJSON, STORAGE_KEYS } from '@/utils/storage';
 import { useNetwork } from '@/context/network-context';
+import { onReset } from '@/utils/reset';
 
 export interface NewMaterial {
   uri: string;
@@ -62,6 +63,9 @@ function deleteFile(uri?: string) {
 export function MaterialsProvider({ children }: { children: React.ReactNode }) {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loaded, setLoaded] = useState(false);
+
+  // "Delete all my data" empties this store.
+  useEffect(() => onReset(() => setMaterials([])), []);
   const ref = useRef<Material[]>([]);
   ref.current = materials;
   const { isOnline } = useNetwork();

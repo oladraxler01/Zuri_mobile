@@ -3,6 +3,7 @@ import type { TimetableSlot } from '@/context/academic-context';
 import type { LectureQuestion, NoteSection } from '@/types/lecture';
 import type { AssessmentKind } from '@/types/planner';
 import { loadJSON, saveJSON, STORAGE_KEYS } from '@/utils/storage';
+import { onReset } from '@/utils/reset';
 
 export interface LecturerProfile {
   title: string; // Dr., Prof., Mr., Mrs., Engr.
@@ -134,6 +135,9 @@ const LecturerContext = createContext<LecturerContextType | undefined>(undefined
 export function LecturerProvider({ children }: { children: React.ReactNode }) {
   const [s, setS] = useState<LecturerState>(initial);
   const [hydrated, setHydrated] = useState(false);
+
+  // "Delete all my data" empties this store.
+  useEffect(() => onReset(() => setS(initial)), []);
 
   useEffect(() => {
     loadJSON<LecturerState>(STORAGE_KEYS.lecturer).then((saved) => {

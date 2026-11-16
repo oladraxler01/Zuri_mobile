@@ -55,7 +55,15 @@ export default function LectureRecordingScreen() {
   const timetable = isLecturer ? teachingTimetable(lecturer.courses) : state.timetable;
   const { saveRecording } = useLectures();
 
-  const recorder = useAudioRecorder(LECTURE_RECORDING);
+  const { state: academicState } = useAcademic();
+  const recordingOptions = useMemo<RecordingOptions>(
+    () =>
+      academicState.preferences.recordingQuality === 'high'
+        ? { ...LECTURE_RECORDING, sampleRate: 44100, bitRate: 128000, web: { mimeType: 'audio/webm', bitsPerSecond: 128000 } }
+        : LECTURE_RECORDING,
+    []
+  );
+  const recorder = useAudioRecorder(recordingOptions);
   const recState = useAudioRecorderState(recorder, 200);
 
   const [phase, setPhase] = useState<Phase>('checking');

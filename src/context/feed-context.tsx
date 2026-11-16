@@ -5,6 +5,7 @@ import { useMaterials } from '@/context/materials-context';
 import { usePlanner } from '@/context/planner-context';
 import { buildFeed, type FeedItem } from '@/utils/recommendations';
 import { loadJSON, saveJSON } from '@/utils/storage';
+import { onReset } from '@/utils/reset';
 
 const KEY = 'lexi.feed.v1';
 
@@ -37,6 +38,9 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
   const { assessments } = usePlanner();
   const [s, setS] = useState<FeedState>({ read: [], hidden: {} });
   const [loaded, setLoaded] = useState(false);
+
+  // "Delete all my data" empties this store.
+  useEffect(() => onReset(() => setS({ read: [], hidden: {} })), []);
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -62,8 +66,11 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       assessments,
       weeklyStudyHours: state.preferences.weeklyStudyHours,
       now,
-    }).filter((i) => !(s.hidden[i.id] && new Date(s.hidden[i.id]) > now));
-  }, [state.timetable, state.courses, state.preferences.weeklyStudyHours, lectures, materials, assessments, s.hidden, tick]);
+    })
+      .filter((i) => !(s.hidden[i.id] && new Date(s.hidden[i.id]) > now))
+      // Personalisation off: keep factual alerts, drop suggestions based on your activity.
+      .filter((i) => state.preferences.aiPersonalise !== false || (i.kind !== 'gap' && i.kind !== 'study-today'));
+  }, [state.timetable, state.courses, state.preferences.weeklyStudyHours, state.preferences.aiPersonalise, lectures, materials, assessments, s.hidden, tick]);
 
   const readSet = new Set(s.read);
   const value: FeedContextType = {

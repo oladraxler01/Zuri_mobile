@@ -48,7 +48,7 @@ export default function SignUpScreen() {
       Alert.alert('Passwords Mismatch', 'Your passwords do not match. Please re-enter.');
       return;
     }
-    if (fullName.trim()) setAcademicInfo({ studentName: fullName.trim() });
+    setAcademicInfo({ ...(fullName.trim() ? { studentName: fullName.trim() } : {}), ...(email.trim() ? { email: email.trim() } : {}) });
     router.push({
       pathname: '/onboarding/verify',
       params: { email: email.trim() || 'student@university.edu' },

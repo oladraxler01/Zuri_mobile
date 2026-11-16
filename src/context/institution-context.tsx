@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AUDIT_SEED, PERMISSIONS, ROLES, STAFF_SEED } from '@/data/sample-institution';
 import { loadJSON, saveJSON, STORAGE_KEYS } from '@/utils/storage';
 import { localDateKey } from '@/utils/planner';
+import { onReset } from '@/utils/reset';
 
 export interface StaffMember {
   id: string;
@@ -120,6 +121,9 @@ const InstitutionContext = createContext<InstitutionContextType | undefined>(und
 export function InstitutionProvider({ children }: { children: React.ReactNode }) {
   const [s, setS] = useState<InstitutionState>(seed);
   const [hydrated, setHydrated] = useState(false);
+
+  // "Delete all my data" empties this store.
+  useEffect(() => onReset(() => setS(seed())), []);
 
   useEffect(() => {
     loadJSON<InstitutionState>(STORAGE_KEYS.institution).then((saved) => {

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { Evidence, Paper, ResearchNote, ResearchProject } from '@/types/research';
 import { loadJSON, saveJSON } from '@/utils/storage';
+import { onReset } from '@/utils/reset';
 
 const KEY = 'lexi.research.v1';
 
@@ -35,6 +36,9 @@ const uid = (p: string) => `${p}_${Date.now().toString(36)}${Math.random().toStr
 export function ResearchProvider({ children }: { children: React.ReactNode }) {
   const [s, setS] = useState<ResearchState>({ papers: {}, saved: [], projects: [] });
   const [loaded, setLoaded] = useState(false);
+
+  // "Delete all my data" empties this store.
+  useEffect(() => onReset(() => setS({ papers: {}, saved: [], projects: [] })), []);
 
   useEffect(() => {
     loadJSON<ResearchState>(KEY).then((v) => {

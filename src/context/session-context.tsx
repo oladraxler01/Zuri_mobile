@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { Href } from 'expo-router';
 import { loadJSON, saveJSON, removeKey, STORAGE_KEYS } from '@/utils/storage';
+import { onReset } from '@/utils/reset';
 
 /**
  * The three products. Each role gets its own navigation tree:
@@ -31,6 +32,9 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [role, setRoleState] = useState<UserRole | null>(null);
   const [hydrated, setHydrated] = useState(false);
+
+  // "Delete all my data" empties this store.
+  useEffect(() => onReset(() => setRoleState(null)), []);
 
   useEffect(() => {
     loadJSON<{ role: UserRole | null }>(STORAGE_KEYS.session).then((saved) => {

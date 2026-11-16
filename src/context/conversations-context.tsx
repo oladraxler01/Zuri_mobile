@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { SourceHit } from '@/utils/source-search';
 import { loadJSON, saveJSON } from '@/utils/storage';
+import { onReset } from '@/utils/reset';
 
 const KEY = 'lexi.conversations.v1';
 
@@ -37,6 +38,9 @@ const Ctx = createContext<ConversationsContextType | undefined>(undefined);
 export function ConversationsProvider({ children }: { children: React.ReactNode }) {
   const [list, setList] = useState<Conversation[]>([]);
   const [loaded, setLoaded] = useState(false);
+
+  // "Delete all my data" empties this store.
+  useEffect(() => onReset(() => setList([])), []);
 
   useEffect(() => {
     loadJSON<Conversation[]>(KEY).then((v) => {

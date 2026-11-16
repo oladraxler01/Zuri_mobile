@@ -9,6 +9,7 @@ import { UI } from '@/constants/lexi-ui';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
 import { useProgress } from '@/context/progress-context';
+import { useAcademic } from '@/context/academic-context';
 import { buildSession, type SessionItem, type SessionMode } from '@/utils/study-session';
 import { courseMastery, LEVEL_LABEL, type MasteryLevel } from '@/utils/mastery';
 import { searchTranscript } from '@/utils/transcript-search';
@@ -23,10 +24,16 @@ export default function StudySessionScreen() {
   const { lectures } = useLectures();
   const { materials } = useMaterials();
   const progress = useProgress();
+  const { state: academic } = useAcademic();
 
   const [items] = useState<SessionItem[]>(() =>
     buildSession(
-      { courseId: params.courseId || undefined, concept: params.concept || undefined, mode: (params.mode as SessionMode) || 'mixed' },
+      {
+        courseId: params.courseId || undefined,
+        concept: params.concept || undefined,
+        mode: (params.mode as SessionMode) || 'mixed',
+        size: academic.preferences.sessionSize || 8,
+      },
       { lectures, materials, events: progress.events }
     )
   );
