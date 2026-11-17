@@ -5,6 +5,7 @@ import { onReset } from '@/utils/reset';
 import { loadAuth, onAuthChange, currentUser, type AuthUser } from '@/services/api-client';
 import { logout } from '@/services/auth-api';
 import { registerThisDevice, unregisterThisDevice } from '@/services/notification-api';
+import { startDeviceSync, stopDeviceSync } from '@/services/device-sync';
 
 /**
  * The three products. Each role gets its own navigation tree:
@@ -44,6 +45,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   // Signed in: register this phone for Zuri's server notifications (no-op without permission).
   useEffect(() => {
     if (user) registerThisDevice();
+    // Live sync with the student's other devices while signed in.
+    if (user) startDeviceSync();
+    else stopDeviceSync();
   }, [user?.id]);
 
   // "Delete all my data" empties this store.
@@ -66,6 +70,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setRoleState(null);
     removeKey(STORAGE_KEYS.session);
     // Stop server pushes to this phone first (needs the token), then sign out.
+    stopDeviceSync();
     unregisterThisDevice().finally(() => logout());
   };
 

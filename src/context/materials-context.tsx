@@ -7,6 +7,7 @@ import type { Material, MaterialCategory, MaterialVisibility } from '@/types/mat
 import { processMaterial } from '@/services/material-api';
 import { ApiError } from '@/services/lecture-api';
 import { currentUser, onAuthChange } from '@/services/api-client';
+import { announceChange, onRemoteChange } from '@/services/device-sync';
 import {
   deleteServerMaterial,
   listServerMaterials,
@@ -169,6 +170,7 @@ export function MaterialsProvider({ children }: { children: React.ReactNode }) {
           (stage, progress) => updateMaterial(m.id, { status: stage, progress })
         );
         updateMaterial(m.id, { status: 'ready', progress: 1, analysis });
+        announceChange('materials');
       } catch (e) {
         if (e instanceof ApiError && e.kind === 'network') {
           updateMaterial(m.id, { status: 'waiting', progress: 0, error: e.message });
@@ -253,7 +255,7 @@ export function MaterialsProvider({ children }: { children: React.ReactNode }) {
       if (m?.serverId) {
         pendingDeletes.current = [...pendingDeletes.current.filter((x) => x !== m.serverId), m.serverId];
         saveJSON(PENDING_DELETES_KEY, pendingDeletes.current);
-        flushDeletes();
+        flushDeletes().then(() => announceChange('materials'));
       }
     },
     [flushDeletes]
@@ -263,7 +265,10 @@ export function MaterialsProvider({ children }: { children: React.ReactNode }) {
     const clean = title.trim();
     const m = ref.current.find((x) => x.id === id);
     if (!m || !clean) return;
-    if (m.serverId && currentUser()) await renameServerMaterial(m.serverId, clean);
+    if (m.serverId && currentUser()) {
+      await renameServerMaterial(m.serverId, clean);
+      announceChange('materials');
+    }
     setMaterials((prev) =>
       prev.map((x) => (x.id === id ? { ...x, analysis: x.analysis ? { ...x.analysis, title: clean } : x.analysis, name: x.analysis ? x.name : clean } : x))
     );
@@ -278,6 +283,32 @@ export function MaterialsProvider({ children }: { children: React.ReactNode }) {
       const known = new Set(ref.current.map((m) => m.serverId).filter(Boolean));
       const deleted = new Set(pendingDeletes.current);
       const missing = server.filter((s) => s.id && !known.has(s.id) && !deleted.has(s.id)).map(fromServer);
+
+      // Deleted or renamed on another device. Only trust "gone" when we have the full list.
+      const byId = new Map(server.map((s) => [s.id, s]));
+      const complete = server.length < 300;
+      setMaterials((prev) => {
+        let changed = false;
+        const next = prev
+          .filter((m) => {
+            const gone = complete && m.serverId && m.uploaded && !byId.has(m.serverId) && (m.status === 'ready' || m.status === 'failed');
+            if (gone) {
+              changed = true;
+              deleteFile(m.uri);
+            }
+            return !gone;
+          })
+          .map((m) => {
+            const s = m.serverId ? byId.get(m.serverId) : undefined;
+            if (s?.title && m.analysis && m.analysis.title !== s.title && m.status === 'ready') {
+              changed = true;
+              return { ...m, analysis: { ...m.analysis, title: s.title } };
+            }
+            return m;
+          });
+        return changed ? next : prev;
+      });
+
       if (missing.length) {
         setMaterials((prev) => {
           const have = new Set(prev.map((m) => m.serverId).filter(Boolean));
@@ -306,6 +337,14 @@ export function MaterialsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loaded && isOnline) flushDeletes();
   }, [loaded, isOnline, flushDeletes]);
+
+  // Another of the student's devices changed their materials: re-sync.
+  useEffect(() => {
+    if (!loaded) return;
+    return onRemoteChange('materials', () => {
+      syncFromServer();
+    });
+  }, [loaded, syncFromServer]);
 
   const getMaterial = useCallback((id: string) => materials.find((m) => m.id === id), [materials]);
 

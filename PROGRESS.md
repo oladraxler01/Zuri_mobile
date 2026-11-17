@@ -335,3 +335,9 @@ Part 2 — institution:
 - `academic-api`: `getLecturerSignals(courseIdOrCode)` → `GET /academic/courses/:idOrCode/lecturer-signals` (accepts the course code, so the lecturer's local courses work).
 - Lecturer → Insights: new `components/lecturer/class-signals.tsx` ("From your students on Zuri") above the sample figures: subtopics where students struggle, % and count (icon + words), and Zuri's recommendation. Hidden when the course isn't on the server.
 - Backend: no role check on this route (BACKEND_REQUESTS #23).
+
+### Live sync between the student's devices (2026-11-17)
+- New `services/device-sync.ts`: while signed in and the app is open, a WebSocket to `/api/v1/ws?token=…&device_id=…&device_type=…` (ping every 25 s, reconnect with back-off up to 60 s, closed in the background and on sign-out). A per-install `device_id` is saved.
+- After a change, the phone announces it with `POST /events {event_type: "materials.changed" | "courses.changed", payload: {device_id}}` (debounced 2 s): materials after processing finishes, rename and delete; courses/classes after they're saved on the server. Other devices get `{type:"event", payload:{event_type, data}}`, ignore their own, and re-sync that area. On (re)connect every area re-syncs once.
+- Materials sync now also removes materials deleted on another device (only when the full list was fetched) and picks up renames.
+- The backend doesn't publish its own changes yet (BACKEND_REQUESTS #24).

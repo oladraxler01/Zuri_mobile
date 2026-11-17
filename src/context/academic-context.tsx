@@ -3,6 +3,7 @@ import { loadJSON, saveJSON, STORAGE_KEYS } from '@/utils/storage';
 import { onReset } from '@/utils/reset';
 import { isBackendConfigured } from '@/services/api-config';
 import { ApiError, currentUser, loadAuth, onAuthChange } from '@/services/api-client';
+import { announceChange, onRemoteChange } from '@/services/device-sync';
 import {
   actOnIntervention,
   createPersonalCourse,
@@ -367,9 +368,11 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const pushPending = useCallback(async () => {
+    let saved = 0;
     for (const course of stateRef.current.courses.filter((c) => c.pendingSync)) {
       try {
         await pushCourse(course);
+        saved += 1;
       } catch (e) {
         if (e instanceof ApiError && e.kind !== 'server') return; // offline: stop, retry on next sync
         console.warn(`Could not save ${course.code} on the server`, e);
@@ -386,12 +389,15 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
       }
       try {
         await pushSlot(slot, course.serverId);
+        saved += 1;
       } catch (e) {
-        if (e instanceof ApiError && e.kind !== 'server') return;
+        if (e instanceof ApiError && e.kind !== 'server') break;
         console.warn(`Could not save a ${slot.courseCode} class on the server`, e);
         keepLocal('timetable', slot.id);
       }
     }
+    // Let the student's other devices pick up the new courses and classes.
+    if (saved) announceChange('courses');
   }, [pushCourse, pushSlot, keepLocal]);
 
   // One push at a time; changes made during a push run straight after it.
@@ -557,6 +563,14 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     return onAuthChange((user) => {
       if (user) syncFromServer();
       else setSync({ status: 'local' });
+    });
+  }, [hydrated, syncFromServer]);
+
+  // Another of the student's devices added courses or classes: re-sync.
+  useEffect(() => {
+    if (!hydrated) return;
+    return onRemoteChange('courses', () => {
+      syncFromServer();
     });
   }, [hydrated, syncFromServer]);
 
