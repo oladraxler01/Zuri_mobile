@@ -2,6 +2,7 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { ZuriBottomTabBar, type ZuriTabIcon } from '@/components/zuri-bottom-tab-bar';
 import { RoleGate } from '@/components/role-gate';
+import { PreviewBanner } from '@/components/preview-banner';
 
 const ICONS: Record<string, ZuriTabIcon> = {
   index: { outline: 'today-outline', filled: 'today' },
@@ -15,7 +16,12 @@ export default function LecturerTabsLayout() {
   return (
     <RoleGate role="lecturer">
       <Tabs
-        tabBar={(props) => <ZuriBottomTabBar {...props} icons={ICONS} />}
+        tabBar={(props) => (
+          <>
+            <PreviewBanner edge="top" message="Sample classes and insights. Lecturer accounts come later." />
+            <ZuriBottomTabBar {...props} icons={ICONS} />
+          </>
+        )}
         screenOptions={{ headerShown: false }}
       >
         <Tabs.Screen name="index" options={{ title: 'Today' }} />

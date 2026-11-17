@@ -142,9 +142,6 @@ export default function WelcomeScreen() {
             >
               <Text style={styles.secondaryButtonText}>Sign In</Text>
             </Pressable>
-            <Pressable onPress={() => router.push('/onboarding/admin-sign-in' as Href)} hitSlop={8} style={{ alignSelf: 'center', paddingVertical: 10 }}>
-              <Text style={{ fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: ZuriColors.onSurfaceVariant }}>Institution admin? Sign in here</Text>
-            </Pressable>
           </View>
 
           {/* Legal / Terms */}
