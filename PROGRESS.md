@@ -311,3 +311,8 @@ Part 2 — institution:
 - New `apiStream()` in `api-client` (expo/fetch, readable body; same token refresh; reads the quota headers; parses Server-Sent Events).
 - New `askZuriStream()` in `ai-api`: `POST /ai/execute/stream` `chat.generate` → `token` events build the answer live in the Ask screen (Markdown, polite live region); `completed` usage is recorded; an `error` event mid-answer keeps what arrived and says it was cut off. If streaming fails before any text, it falls back to the normal `/ai/execute`.
 - The gateway currently buffers the stream (no flush), so text may arrive in bursts until BACKEND_REQUESTS #15b is fixed.
+
+### Link the account to the university (memberships) (2026-11-17)
+- New `services/membership-api.ts`: `GET /users/me/memberships`, `POST /users/me/memberships {institution_id, role: "student", identifier: matric, is_default}`, `POST /users/me/switch-institution` (new tokens saved; `saveSession` now keeps the current user if a token response doesn't include it).
+- Settings → Connected university: new "Your university on Zuri" panel. Universities on the server are mapped by name (`SERVER_INSTITUTIONS`, only `Veritas University` → `veritas_uni` for now); others show "isn't on Zuri yet". Linking re-syncs courses.
+- **Backend security bug reported** (BACKEND_REQUESTS #0): the server lets any user give themselves any role at any university. The app only asks for "student".

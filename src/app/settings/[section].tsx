@@ -23,6 +23,7 @@ import { EmptyState } from '@/components/states/state-view';
 import { getNotificationPermission, requestNotificationPermission, type NotificationPermission } from '@/services/notifications';
 import { resetAllData } from '@/utils/reset';
 import { isBackendConfigured } from '@/services/lecture-api';
+import { UniversityAccountPanel } from '@/components/account/university-panel';
 import {
   getPreferences as getServerNotificationPrefs,
   savePreferences as saveServerNotificationPrefs,
@@ -275,6 +276,7 @@ function University() {
           onPress={() => router.push('/profile/academic' as Href)}
         />
       </Panel>
+      <UniversityAccountPanel />
       <Panel title="University systems">
         {['Student records & enrollment', 'Official timetable', 'Learning management system'].map((s, i) => (
           <View key={s}>

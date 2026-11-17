@@ -149,7 +149,8 @@ export async function saveSession(data: any): Promise<AuthUser> {
     accessToken: String(data.access_token),
     refreshToken: String(data.refresh_token),
     expiresAt,
-    user: data.user,
+    // Some token responses (e.g. switch-institution) may not repeat the user: keep the one we have.
+    user: data.user ?? auth?.user,
   };
   loadPromise = Promise.resolve(auth);
   await writeStored(auth);
