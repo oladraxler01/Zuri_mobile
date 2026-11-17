@@ -351,6 +351,24 @@ export function ingestLectureTranscript(
   );
 }
 
+// ─── Lecturer: where the class is struggling ─────────────────────
+
+export interface LecturerClassSignalDTO {
+  course_id: string;
+  course_code: string;
+  topic: string;
+  subtopic: string;
+  total_students: number;
+  struggling_count: number;
+  struggling_percentage: number;
+  recommendation?: string;
+}
+
+/** GET /academic/courses/:idOrCode/lecturer-signals → class-wide struggles per subtopic (catalogue courses). */
+export function getLecturerSignals(courseIdOrCode: string): Promise<LecturerClassSignalDTO[]> {
+  return apiRequest<LecturerClassSignalDTO[]>(`/academic/courses/${enc(courseIdOrCode)}/lecturer-signals`);
+}
+
 // ─── Missing information prompts ("context gaps") ────────────────
 
 export interface ContextGapDTO {

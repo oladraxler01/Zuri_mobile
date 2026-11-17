@@ -330,3 +330,8 @@ Part 2 — institution:
 
 ### Syllabus mastery map on the course page (2026-11-17)
 - Course → Topics: new `components/academic/mastery-map.tsx` from `GET /academic/courses/:id/knowledge-state` (catalogue courses): overall mastery, mastered/struggling counts, then each syllabus topic with a bar; expand a topic to see subtopics with status (icon + word), %, right/attempts and the last mistake; tap a subtopic to practise it. Hidden for custom courses or when the server has no data.
+
+### Lecturer: real class struggles from the academic service (2026-11-17)
+- `academic-api`: `getLecturerSignals(courseIdOrCode)` → `GET /academic/courses/:idOrCode/lecturer-signals` (accepts the course code, so the lecturer's local courses work).
+- Lecturer → Insights: new `components/lecturer/class-signals.tsx` ("From your students on Zuri") above the sample figures: subtopics where students struggle, % and count (icon + words), and Zuri's recommendation. Hidden when the course isn't on the server.
+- Backend: no role check on this route (BACKEND_REQUESTS #23).

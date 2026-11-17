@@ -9,6 +9,7 @@ import { ScreenShell, Panel, Grid, StatTile, BarChart, HBarList, SampleBanner, S
 import { Chip } from '@/components/ui/chip';
 import { EmptyState } from '@/components/states/state-view';
 import { insightsFor } from '@/utils/lecturer';
+import { ClassSignals } from '@/components/lecturer/class-signals';
 
 /** Class intelligence for one course: engagement, mastery, misconceptions, FAQs, results, cohort. */
 export default function LecturerInsightsScreen() {
@@ -39,6 +40,8 @@ export default function LecturerInsightsScreen() {
           <Chip key={c.id} label={c.code} on={c.id === course.id} onPress={() => setCourseId(c.id)} />
         ))}
       </ScrollView>
+
+      <ClassSignals courseCode={course.code} />
 
       <Panel>
         <Text style={styles.overviewTitle}>
