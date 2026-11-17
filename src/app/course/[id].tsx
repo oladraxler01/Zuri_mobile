@@ -20,6 +20,7 @@ import { useProgress } from '@/context/progress-context';
 import { courseMastery, overallMastery } from '@/utils/mastery';
 import { CourseTopics, ActivityList, activityFor } from '@/components/course/course-topics';
 import { WeakTopicsFromZuri } from '@/components/academic/from-zuri';
+import { MasteryMap } from '@/components/academic/mastery-map';
 import { describeStart, formatDuration, upcomingClasses } from '@/utils/time';
 
 const TABS = [
@@ -330,7 +331,12 @@ export default function CourseDetailScreen() {
           </>
         )}
 
-        {tab === 'topics' && <CourseTopics concepts={mastery} onRecord={record} courseId={course.id} />}
+        {tab === 'topics' && (
+          <>
+            <MasteryMap course={course} />
+            <CourseTopics concepts={mastery} onRecord={record} courseId={course.id} />
+          </>
+        )}
 
         {tab === 'activity' && <ActivityList items={activity} />}
 

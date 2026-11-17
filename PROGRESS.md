@@ -327,3 +327,6 @@ Part 2 — institution:
 - Partner extras are shown under the answer by new `components/partner-widget.tsx` (theme components): flashcards (tap to reveal), a short quiz (pick an option → right/wrong with icon + words, explanation) and concept cards (definition, formula, example, takeaway). Course citations shown as "From your course: …".
 - `ChatMessage` gains `widget` and `citations`, so they're kept in chat history.
 - Partner chats aren't counted in the daily AI allowance on the server (BACKEND_REQUESTS #15c).
+
+### Syllabus mastery map on the course page (2026-11-17)
+- Course → Topics: new `components/academic/mastery-map.tsx` from `GET /academic/courses/:id/knowledge-state` (catalogue courses): overall mastery, mastered/struggling counts, then each syllabus topic with a bar; expand a topic to see subtopics with status (icon + word), %, right/attempts and the last mistake; tap a subtopic to practise it. Hidden for custom courses or when the server has no data.
