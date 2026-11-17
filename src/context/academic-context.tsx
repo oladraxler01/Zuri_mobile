@@ -68,6 +68,8 @@ export interface SemesterGoal {
   id: string;
   text: string;
   done: boolean;
+  /** The goal's id in the account (/analytics/goals), once saved there. */
+  serverId?: string;
 }
 
 export interface StudentPreferences {

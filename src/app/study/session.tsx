@@ -17,6 +17,8 @@ import { formatClock } from '@/utils/time';
 import { StateView } from '@/components/states/state-view';
 import { MarkdownText } from '@/components/markdown-text';
 import { askZuri } from '@/services/ai-api';
+import { sendStudySession } from '@/services/progress-api';
+import { currentUser } from '@/services/api-client';
 
 type Answer = { item: SessionItem; correct: boolean };
 
@@ -105,6 +107,16 @@ export default function StudySessionScreen() {
       minutes,
       label: params.concept ? `Review: ${params.concept}` : params.mode === 'weak' ? 'Weak-topic review' : `${items.length}-item session`,
     });
+    // Also count it in the account's study stats and streak (POST /analytics/study-sessions).
+    if (currentUser()) {
+      const all = [...answers];
+      sendStudySession({
+        minutes,
+        quizzesCompleted: all.some((a) => a.item.kind === 'question') ? 1 : 0,
+        flashcardsReviewed: all.filter((a) => a.item.kind === 'card').length,
+        materialsReviewed: new Set(all.filter((a) => a.item.source.kind === 'material').map((a) => a.item.source.id)).size,
+      }).catch((e) => console.warn('[study] session not sent to the server', e));
+    }
     setDone(true);
   };
 

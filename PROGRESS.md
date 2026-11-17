@@ -254,3 +254,10 @@ Part 2 — institution:
 - Study session → wrong answer → "Explain it" → **Explain it with Zuri**: `chat.generate` explains why the right answer is right (and the chosen one wrong) with a short example, grounded in the concept summary and the lecture moments.
 - Practice tab: a generated quiz is also saved with `POST /quizzes` (options as `{text, is_correct}`), flashcards with `POST /flashcard-decks`. Finishing a quiz sends the picked answers to `POST /quizzes/:id/submit`; the server grades it, it counts towards study stats and topic mastery, and the score shows as "Your best". Quizzes made before this are saved to the server the first time they're finished.
 - `QuizTab.onAnswer` now also reports the chosen option index.
+
+### Progress from the account: streak, stats, topic mastery, goals (2026-11-17)
+- New `services/progress-api.ts` (analytics service).
+- Finishing a study session also sends `POST /analytics/study-sessions {session_date, duration_minutes, quizzes_completed, flashcards_reviewed, materials_reviewed}`.
+- Study history: new "In your account" panel (`/analytics/study-streak`, `/analytics/study-stats`).
+- Concept mastery: new "Mastery in your account" panel from server-graded quizzes (`/analytics/topic-mastery`) plus topics due for review (`/analytics/topics-for-review`).
+- Profile → Goals: semester goals sync with `/analytics/goals` (pulled on open, offline-made ones pushed; ticking one off → `/complete`, removing → `DELETE`). The account can't un-complete a goal, so unticking stays on the phone.
