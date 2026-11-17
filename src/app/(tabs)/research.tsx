@@ -7,6 +7,7 @@ import { ZuriFonts } from '@/constants/zuri-theme';
 import { useResearch } from '@/context/research-context';
 import { useAcademic } from '@/context/academic-context';
 import { useNetwork } from '@/context/network-context';
+import { PreviewBanner } from '@/components/preview-banner';
 import { ED, EdPage, Masthead, Rule, SectionHead, PaperRow, edStyles } from '@/components/research/editorial';
 
 /** Research home: search the literature, your projects, saved papers. */
@@ -25,6 +26,7 @@ export default function ResearchHomeScreen() {
     <EdPage back={false} right={<Pressable onPress={() => router.push('/scholar/library' as Href)} hitSlop={10} accessibilityLabel="Library"><Ionicons name="library-outline" size={22} color={ED.ink} /></Pressable>}>
       <Masthead kicker="ZURI RESEARCH" title="Read the literature, build an argument" dek="Search millions of scholarly papers, collect evidence into projects, and draft a synthesis with every source cited." />
       <Rule heavy />
+      <PreviewBanner message="Search is live. Projects stay on this phone, and syntheses quote your sources rather than writing new text." style={{ marginBottom: 12 }} />
 
       <View style={styles.searchRow}>
         <TextInput
