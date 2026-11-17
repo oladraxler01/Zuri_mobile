@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE } from '@/services/api-config';
 import { onReset } from '@/utils/reset';
 import { noteQuotaExhausted, noteQuotaHeaders, QUOTA_EXHAUSTED_MESSAGE } from '@/services/ai-quota';
+import { fetch as expoFetch } from 'expo/fetch';
 
 /**
  * One place for every call to the Zuri API gateway.
@@ -273,6 +274,99 @@ async function rawFetch(path: string, opts: RequestOptions, token?: string | nul
 function messageFrom(json: any): string | undefined {
   const m = json?.message ?? json?.error?.message ?? (typeof json?.error === 'string' ? json.error : undefined);
   return typeof m === 'string' ? m : undefined;
+}
+
+/**
+ * Call a Server-Sent Events endpoint (e.g. POST /ai/execute/stream) and hand
+ * each event to onEvent as it arrives: onEvent('token', { token }) … Uses
+ * expo/fetch, whose response body can be read as a stream on iOS, Android and web.
+ * Same sign-in handling as apiRequest (refresh once on 401). Throws ApiError.
+ */
+export async function apiStream(
+  path: string,
+  body: unknown,
+  onEvent: (event: string, data: any) => void,
+  timeoutMs = 120_000
+): Promise<void> {
+  const open = async (token: string | null) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await expoFetch(buildUrl(path), {
+        method: 'POST',
+        headers: {
+          Accept: 'text/event-stream',
+          'Content-Type': 'application/json',
+          'X-Client-Type': 'mobile',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      return { res, done: () => clearTimeout(timer) };
+    } catch (e) {
+      clearTimeout(timer);
+      const aborted = e instanceof Error && e.name === 'AbortError';
+      throw new ApiError('network', aborted ? 'The server took too long to answer. Please try again.' : 'No connection. Check your internet and try again.');
+    }
+  };
+
+  let token = await accessToken();
+  if (!token) throw new ApiError('session-expired', 'Please sign in to continue.', { status: 401 });
+  let { res, done } = await open(token);
+  if (res.status === 401 && (await refreshSession())) {
+    done();
+    token = auth?.accessToken ?? null;
+    ({ res, done } = await open(token));
+  }
+  noteQuotaHeaders(res.headers as unknown as Headers);
+  try {
+    if (!res.ok) {
+      const text = await res.text();
+      let json: any = null;
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch {
+        json = null;
+      }
+      throw errorForStatus(res.status, messageFrom(json), json);
+    }
+    if (!res.body) throw new ApiError('server', 'Streaming isn’t available here.');
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    const flush = (block: string) => {
+      let event = 'message';
+      const data: string[] = [];
+      for (const line of block.split('\n')) {
+        if (line.startsWith('event:')) event = line.slice(6).trim();
+        else if (line.startsWith('data:')) data.push(line.slice(5).trimStart());
+      }
+      if (!data.length) return;
+      const raw = data.join('\n');
+      let parsed: any = raw;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        // plain-text data
+      }
+      onEvent(event, parsed);
+    };
+    while (true) {
+      const { value, done: finished } = await reader.read();
+      if (finished) break;
+      buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
+      let cut: number;
+      while ((cut = buffer.indexOf('\n\n')) >= 0) {
+        flush(buffer.slice(0, cut));
+        buffer = buffer.slice(cut + 2);
+      }
+    }
+    if (buffer.trim()) flush(buffer);
+  } finally {
+    done();
+  }
 }
 
 /**

@@ -24,7 +24,7 @@ import { useMaterials } from '@/context/materials-context';
 import { Chip } from '@/components/ui/chip';
 import { SourceCard } from '@/components/source-card';
 import { queryTerms, searchSources, type SourceHit } from '@/utils/source-search';
-import { askZuri, searchMaterial } from '@/services/ai-api';
+import { askZuriStream, searchMaterial } from '@/services/ai-api';
 import { MarkdownText } from '@/components/markdown-text';
 import { AIQuotaNote } from '@/components/ai-quota-note';
 import { lightColors, radius, space } from '@/theme';
@@ -79,6 +79,8 @@ export default function AskScreen() {
   }, [lectures, materials, courseId, material]);
 
   const [thinking, setThinking] = useState(false);
+  /** The answer so far while it streams in. */
+  const [liveText, setLiveText] = useState('');
 
   /** Context for the AI: the best local passages, plus the user's own processed server materials. */
   const gatherSources = async (q: string): Promise<{ hits: SourceHit[]; chunks: string[] }> => {
@@ -141,7 +143,16 @@ export default function AskScreen() {
     const { hits, chunks } = await gatherSources(q);
     let reply: Msg;
     try {
-      const answer = await askZuri(q, chunks, history, convId);
+      const answer = await askZuriStream(
+        q,
+        chunks,
+        history,
+        (soFar) => {
+          setLiveText(soFar);
+          scrollRef.current?.scrollToEnd({ animated: false });
+        },
+        convId
+      );
       reply = { role: 'zuri', text: answer, sources: hits.length ? hits : undefined };
     } catch (e) {
       const why = e instanceof Error ? e.message : 'Zuri’s AI isn’t available right now.';
@@ -153,6 +164,7 @@ export default function AskScreen() {
     const turn: Msg[] = [userMsg, reply];
     setMsgs((m) => [...m, reply]);
     setThinking(false);
+    setLiveText('');
     // Every chat is kept in history; star it to save it.
     if (convId) convs.append(convId, turn);
     else setConvId(convs.start({ courseId: courseId ?? undefined, materialId: material?.id }, turn));
@@ -238,12 +250,17 @@ export default function AskScreen() {
               )}
             </View>
           ))}
-          {thinking && (
-            <View style={[styles.bubble, styles.zuri, { flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
-              <ActivityIndicator size="small" color={UI.ink} />
-              <Text style={styles.bubbleText}>Zuri is thinking…</Text>
-            </View>
-          )}
+          {thinking &&
+            (liveText ? (
+              <View style={[styles.bubble, styles.zuri]} accessibilityLiveRegion="polite">
+                <MarkdownText text={liveText} style={styles.bubbleText} />
+              </View>
+            ) : (
+              <View style={[styles.bubble, styles.zuri, { flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
+                <ActivityIndicator size="small" color={UI.ink} />
+                <Text style={styles.bubbleText}>Zuri is thinking…</Text>
+              </View>
+            ))}
         </ScrollView>
 
         {suggestions.length > 0 && msgs.length === 0 && (

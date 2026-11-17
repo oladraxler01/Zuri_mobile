@@ -306,3 +306,8 @@ Part 2 — institution:
 - Material page → Summary → "Listen to summary": `reading.analyse` with `tts: true` returns `tts_audio_b64` (MP3 of the first ~1,000 characters). Saved to the cache (`summary-<id>.mp3`, path kept on the material as `summaryAudioUri`), so replaying is free and works offline. Play/pause with `expo-audio`; works in silent mode.
 - The server has no standalone text-to-speech yet (BACKEND_REQUESTS #16), so each first listen costs one AI request and re-generates the summary on the server.
 - New `components/materials/listen-button.tsx` (theme `Button`/`Text`).
+
+### Ask Zuri answers appear as they're written (streaming) (2026-11-17)
+- New `apiStream()` in `api-client` (expo/fetch, readable body; same token refresh; reads the quota headers; parses Server-Sent Events).
+- New `askZuriStream()` in `ai-api`: `POST /ai/execute/stream` `chat.generate` → `token` events build the answer live in the Ask screen (Markdown, polite live region); `completed` usage is recorded; an `error` event mid-answer keeps what arrived and says it was cut off. If streaming fails before any text, it falls back to the normal `/ai/execute`.
+- The gateway currently buffers the stream (no flush), so text may arrive in bursts until BACKEND_REQUESTS #15b is fixed.

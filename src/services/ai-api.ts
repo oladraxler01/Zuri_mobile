@@ -1,4 +1,4 @@
-import { ApiError, apiRequest } from '@/services/api-client';
+import { ApiError, apiRequest, apiStream } from '@/services/api-client';
 
 /**
  * Zuri's AI on the API gateway.
@@ -232,6 +232,65 @@ export async function searchMaterial(materialId: string, query: string, topK = 4
       heading: c.heading_or_section ?? c.heading ?? null,
       chunk_index: typeof c.chunk_index === 'number' ? c.chunk_index : undefined,
     }));
+}
+
+/**
+ * Ask Zuri with the answer arriving as it's written (POST /ai/execute/stream,
+ * Server-Sent Events: started → token { token } … → completed { usage } | error { message }).
+ * onText gets the whole answer so far after every token. If streaming fails
+ * before any text arrives, it falls back to the normal request (askZuri).
+ * Resolves with the full answer.
+ */
+export async function askZuriStream(
+  query: string,
+  contextChunks: string[],
+  history: ChatTurn[],
+  onText: (textSoFar: string) => void,
+  sessionId?: string
+): Promise<string> {
+  const startedAt = Date.now();
+  let text = '';
+  let usage: AIEnvelope<unknown>['usage'] = null;
+  let failure = '';
+  try {
+    await apiStream(
+      '/ai/execute/stream',
+      {
+        operation: 'chat.generate',
+        session_id: sessionId,
+        input: {
+          query,
+          context_chunks: contextChunks.slice(0, 5),
+          history: history.slice(-4).map((h) => ({ role: h.role === 'zuri' ? 'assistant' : 'user', content: h.content })),
+        },
+        client: { platform: 'mobile' },
+      },
+      (event, data) => {
+        if (event === 'token' && typeof data?.token === 'string') {
+          text += data.token;
+          onText(text);
+        } else if (event === 'completed') {
+          usage = data?.usage ?? null;
+        } else if (event === 'error') {
+          failure = String(data?.message || 'Zuri’s AI stopped part-way. Please try again.');
+        }
+      }
+    );
+  } catch (e) {
+    if (!text) {
+      // Streaming unavailable (or failed before any text): use the normal request.
+      if (e instanceof ApiError && e.kind !== 'network' && /quota|sign in|session/i.test(e.message)) throw e;
+      return askZuri(query, contextChunks, history, sessionId);
+    }
+    failure = e instanceof Error ? e.message : 'The connection dropped.';
+  }
+  trackAI('chat.generate', startedAt, { request_id: '', status: failure ? 'FAILED' : 'COMPLETED', usage }, failure || undefined);
+  if (!text.trim()) {
+    if (failure) throw new ApiError('server', failure);
+    return askZuri(query, contextChunks, history, sessionId);
+  }
+  if (failure) return `${text}\n\n_(The answer was cut off: ${failure})_`;
+  return text.trim();
 }
 
 export interface ChatTurn {
