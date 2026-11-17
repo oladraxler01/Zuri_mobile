@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { monitoringEnabled, sendTestError } from '@/services/monitoring';
 import {
   BottomSheet,
   Button,
@@ -16,12 +17,15 @@ import {
   useTheme,
 } from '@/theme';
 
+/** Development and preview builds set EXPO_PUBLIC_DIAGNOSTICS=1 (eas.json). */
+const DIAGNOSTICS = __DEV__ || process.env.EXPO_PUBLIC_DIAGNOSTICS === '1';
+
 /**
- * Dev-only gallery of the design-system components (open /dev/design-system).
- * Use it for visual checks while screens migrate. Not reachable in production.
+ * Gallery of the design-system components (open /dev/design-system), plus a
+ * crash-reporting check. Reachable in dev and preview builds, not production.
  */
 export default function DesignSystemGallery() {
-  if (!__DEV__) return <Redirect href="/" />;
+  if (!DIAGNOSTICS) return <Redirect href="/" />;
   return <Gallery />;
 }
 
@@ -43,6 +47,7 @@ function Gallery() {
   const [style, setStyle] = useState('Examples first');
   const [email, setEmail] = useState('ada@gmail');
   const [sheet, setSheet] = useState(false);
+  const [sent, setSent] = useState(false);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.surface }}>
@@ -55,6 +60,24 @@ function Gallery() {
         }}
       >
         <Text variant="title-1">Design system</Text>
+
+        <Section title="DIAGNOSTICS">
+          <Text variant="callout" color="text-muted">
+            {monitoringEnabled ? 'Crash reporting is on for this build.' : 'Crash reporting is off: EXPO_PUBLIC_SENTRY_DSN isn’t set.'}
+          </Text>
+          <Button
+            label="Send test error"
+            variant="secondary"
+            icon="bug-outline"
+            disabled={!monitoringEnabled}
+            onPress={() => setSent(sendTestError())}
+          />
+          {sent ? (
+            <Text variant="footnote" color="success">
+              Sent. Check the Sentry project for “Zuri test error”.
+            </Text>
+          ) : null}
+        </Section>
 
         <Section title="TYPE">
           <Text variant="display">Know what to revise.</Text>

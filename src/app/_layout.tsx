@@ -20,12 +20,16 @@ import { ReminderSync } from '@/components/reminder-sync';
 import { StateView } from '@/components/states/state-view';
 import { UI } from '@/constants/zuri-ui';
 import { ThemeProvider } from '@/theme';
+import { initMonitoring, reportError, withMonitoring } from '@/services/monitoring';
 
 // Keep the native launch screen up until fonts and saved data are ready,
 // so the app never flashes a blank screen.
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-export default function RootLayout() {
+// Crash reporting starts before the first render (no-op without EXPO_PUBLIC_SENTRY_DSN).
+initMonitoring();
+
+function RootLayout() {
   return (
     <ThemeProvider>
     <NetworkProvider>
@@ -56,6 +60,8 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
+
+export default withMonitoring(RootLayout);
 
 function AppShell() {
   const [fontsLoaded, fontError] = useZuriFonts();
@@ -116,6 +122,7 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   useEffect(() => {
     SplashScreen.hideAsync().catch(() => {});
     console.error('Screen crashed:', error);
+    reportError(error);
   }, [error]);
 
   return (
