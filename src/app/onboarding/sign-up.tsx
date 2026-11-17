@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   Pressable,
   ScrollView,
   KeyboardAvoidingView,
@@ -16,13 +15,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic } from '@/context/academic-context';
 import { register, login, resendVerification, setPendingSignIn, MIN_PASSWORD_LENGTH } from '@/services/auth-api';
 import { isValidEmail } from '@/utils/validation';
+import { makeStyles, useTheme } from '@/theme';
 
 export default function SignUpScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const router = useRouter();
   const [fontsLoaded] = useZuriFonts();
 
@@ -113,7 +114,7 @@ export default function SignUpScreen() {
           accessibilityLabel="Go back"
           hitSlop={12}
         >
-          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
         <Text style={styles.headerTitle}>Zuri</Text>
         <View style={styles.headerSpacer} />
@@ -138,7 +139,7 @@ export default function SignUpScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="Full Name"
-                placeholderTextColor={ZuriColors.onSurfaceVariant}
+                placeholderTextColor={colors['text-muted']}
                 value={fullName}
                 onChangeText={setFullName}
                 autoCapitalize="words"
@@ -151,7 +152,7 @@ export default function SignUpScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="Email Address"
-                placeholderTextColor={ZuriColors.onSurfaceVariant}
+                placeholderTextColor={colors['text-muted']}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -166,7 +167,7 @@ export default function SignUpScreen() {
               <TextInput
                 style={[styles.input, styles.inputWithIcon]}
                 placeholder="Password"
-                placeholderTextColor={ZuriColors.onSurfaceVariant}
+                placeholderTextColor={colors['text-muted']}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -183,7 +184,7 @@ export default function SignUpScreen() {
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color={ZuriColors.onSurfaceVariant}
+                  color={colors['text-muted']}
                 />
               </Pressable>
             </View>
@@ -193,7 +194,7 @@ export default function SignUpScreen() {
               <TextInput
                 style={[styles.input, styles.inputWithIcon]}
                 placeholder="Confirm Password"
-                placeholderTextColor={ZuriColors.onSurfaceVariant}
+                placeholderTextColor={colors['text-muted']}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showConfirmPassword}
@@ -211,7 +212,7 @@ export default function SignUpScreen() {
                 <Ionicons
                   name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color={ZuriColors.onSurfaceVariant}
+                  color={colors['text-muted']}
                 />
               </Pressable>
             </View>
@@ -236,7 +237,7 @@ export default function SignUpScreen() {
               accessibilityState={{ busy, disabled: busy }}
             >
               {busy ? (
-                <ActivityIndicator color={ZuriColors.onPrimary} />
+                <ActivityIndicator color={colors['on-primary']} />
               ) : (
                 <Text style={styles.continueButtonText}>CONTINUE</Text>
               )}
@@ -271,7 +272,9 @@ export default function SignUpScreen() {
               accessibilityRole="button"
               accessibilityLabel="Continue with Google"
             >
-              <Ionicons name="logo-google" size={20} color="#EA4335" />
+              {/* Google brand colour: a third-party mark, not a Zuri token. */}
+              {/* eslint-disable-next-line no-restricted-syntax */}
+              <Ionicons name="logo-google" size={20} color={'#EA4335'} />
               <Text style={styles.socialButtonText}>Continue with Google</Text>
             </Pressable>
 
@@ -284,7 +287,7 @@ export default function SignUpScreen() {
               accessibilityRole="button"
               accessibilityLabel="Continue with Apple"
             >
-              <Ionicons name="logo-apple" size={22} color={ZuriColors.primary} />
+              <Ionicons name="logo-apple" size={22} color={colors.text} />
               <Text style={styles.socialButtonText}>Continue with Apple</Text>
             </Pressable>
           </View>
@@ -294,33 +297,29 @@ export default function SignUpScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
-    backgroundColor: ZuriColors.background,
+    backgroundColor: t.colors.surface,
   },
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
   },
   backButton: {
     padding: 6,
     marginLeft: -6,
-    borderRadius: 8,
+    borderRadius: t.radius.md,
   },
   backButtonPressed: {
     opacity: 0.7,
     transform: [{ scale: 0.95 }],
   },
-  headerTitle: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 22,
-    color: ZuriColors.primary,
-    fontWeight: '600',
-  },
+  headerTitle: { ...t.type['title-2'], color: t.colors.text,
+    },
   headerSpacer: {
     width: 32,
   },
@@ -328,18 +327,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
     paddingTop: 16,
     paddingBottom: 32,
     maxWidth: 420,
     width: '100%',
     alignSelf: 'center',
   },
-  headline: {
-    fontFamily: ZuriFonts.headlineLgMobile,
-    fontSize: 28,
-    lineHeight: 34,
-    color: ZuriColors.primary,
+  headline: { ...t.type['title-1'], color: t.colors.text,
     marginBottom: 28,
     marginTop: 8,
   },
@@ -351,17 +346,14 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
   },
-  input: {
-    width: '100%',
+  input: { ...t.type.callout, width: '100%',
     height: 52,
-    backgroundColor: '#F5F3EF',
+    backgroundColor: t.colors['surface-sunken'],
     borderWidth: 1,
-    borderColor: '#E0DDD8',
-    borderRadius: 12,
+    borderColor: t.colors.border,
+    borderRadius: t.radius.md,
     paddingHorizontal: 16,
-    fontFamily: ZuriFonts.bodyLg,
-    fontSize: 15,
-    color: ZuriColors.onSurface,
+    color: t.colors.text,
   },
   inputWithIcon: {
     paddingRight: 48,
@@ -374,16 +366,10 @@ const styles = StyleSheet.create({
   continueButton: {
     height: 56,
     marginTop: 8,
-    backgroundColor: ZuriColors.primaryContainer,
-    borderRadius: 12,
+    backgroundColor: t.colors.primary,
+    borderRadius: t.radius.full,
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: ZuriColors.primaryContainer,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-  },
+    justifyContent: 'center', boxShadow: t.shadows.card,},
   continueButtonPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.985 }],
@@ -391,32 +377,22 @@ const styles = StyleSheet.create({
   continueButtonBusy: {
     opacity: 0.7,
   },
-  formError: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 13,
-    color: '#ba1a1a',
+  formError: { ...t.type.footnote, color: t.colors.danger,
     marginTop: -4,
   },
-  continueButtonText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 14,
-    color: ZuriColors.onPrimary,
+  continueButtonText: { ...t.type.subhead, color: t.colors['on-primary'],
     letterSpacing: 1,
-    fontWeight: '600',
-  },
+    },
   signInPrompt: {
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 24,
   },
-  signInPromptText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 14,
-    color: ZuriColors.onSurfaceVariant,
+  signInPromptText: { ...t.type.callout, color: t.colors['text-muted'],
   },
   signInLink: {
-    color: ZuriColors.primaryContainer,
-    fontFamily: ZuriFonts.bodyMdMedium,
+    color: t.colors.text,
+    fontFamily: t.type.subhead.fontFamily,
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
@@ -432,10 +408,7 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: 'rgba(195, 200, 194, 0.6)',
   },
-  dividerText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 12,
-    color: ZuriColors.onSurfaceVariant,
+  dividerText: { ...t.type.caption, color: t.colors['text-muted'],
     textTransform: 'uppercase',
     letterSpacing: 1.2,
   },
@@ -449,19 +422,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
-    borderRadius: 12,
+    borderRadius: t.radius.md,
     borderWidth: 1,
-    borderColor: ZuriColors.outlineVariant,
-    backgroundColor: ZuriColors.surfaceContainerLowest,
+    borderColor: t.colors.border,
+    backgroundColor: t.colors['surface-raised'],
   },
   socialButtonPressed: {
-    backgroundColor: ZuriColors.surfaceContainerLow,
+    backgroundColor: t.colors['surface-sunken'],
     transform: [{ scale: 0.99 }],
   },
-  socialButtonText: {
-    fontFamily: ZuriFonts.bodyLg,
-    fontSize: 15,
-    color: ZuriColors.onSurface,
-    fontWeight: '500',
-  },
-});
+  socialButtonText: { ...t.type.callout, color: t.colors.text,
+    },
+}));

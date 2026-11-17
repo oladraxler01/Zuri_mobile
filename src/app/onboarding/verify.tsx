@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   Pressable,
   KeyboardAvoidingView,
   Platform,
@@ -16,12 +15,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { verifyEmail, resendVerification, login, getPendingSignIn, setPendingSignIn } from '@/services/auth-api';
 import { useSession, ROLE_HOME } from '@/context/session-context';
+import { makeStyles, useTheme } from '@/theme';
 
 export default function VerifyEmailScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams<{ email?: string; userId?: string }>();
   const [fontsLoaded] = useZuriFonts();
@@ -191,7 +192,7 @@ export default function VerifyEmailScreen() {
           accessibilityLabel="Go back"
           hitSlop={12}
         >
-          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
         <Text style={styles.headerTitle}>Zuri</Text>
         <View style={styles.headerSpacer} />
@@ -255,12 +256,12 @@ export default function VerifyEmailScreen() {
               accessibilityState={{ busy, disabled: busy }}
             >
               {busy ? (
-                <ActivityIndicator color={ZuriColors.onPrimary} />
+                <ActivityIndicator color={colors['on-primary']} />
               ) : (
                 <Text style={styles.verifyButtonText}>Verify</Text>
               )}
             </Pressable>
-            {!!codeError && <Text style={{ color: '#ba1a1a', fontSize: 13, textAlign: 'center', marginTop: 10 }}>{codeError}</Text>}
+            {!!codeError && <Text style={{ color: colors.danger, fontSize: 13, textAlign: 'center', marginTop: 10 }}>{codeError}</Text>}
 
             {/* Resend Code Section */}
             <View style={styles.resendContainer}>
@@ -282,17 +283,17 @@ export default function VerifyEmailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
-    backgroundColor: ZuriColors.background,
+    backgroundColor: t.colors.surface,
   },
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(228, 226, 225, 0.4)',
   },
@@ -301,19 +302,15 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 20,
+    borderRadius: t.radius.full,
     marginLeft: -8,
   },
   backButtonPressed: {
     opacity: 0.7,
     transform: [{ scale: 0.95 }],
   },
-  headerTitle: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 22,
-    color: ZuriColors.primary,
-    fontWeight: '700',
-  },
+  headerTitle: { ...t.type['title-2'], color: t.colors.text,
+    },
   headerSpacer: {
     width: 40,
   },
@@ -322,7 +319,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
     paddingTop: 32,
     paddingBottom: 32,
     justifyContent: 'space-between',
@@ -334,21 +331,13 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 32,
   },
-  headline: {
-    fontFamily: ZuriFonts.headlineLgMobile,
-    fontSize: 28,
-    lineHeight: 34,
-    color: ZuriColors.primary,
+  headline: { ...t.type['title-1'], color: t.colors.text,
   },
-  subtitle: {
-    fontFamily: ZuriFonts.bodyLg,
-    fontSize: 16,
-    lineHeight: 24,
-    color: ZuriColors.onSurfaceVariant,
+  subtitle: { ...t.type.body, color: t.colors['text-muted'],
   },
   emailHighlight: {
-    color: ZuriColors.primary,
-    fontFamily: ZuriFonts.bodyMdMedium,
+    color: t.colors.text,
+    fontFamily: t.type.subhead.fontFamily,
   },
   otpContainer: {
     flexDirection: 'row',
@@ -358,30 +347,20 @@ const styles = StyleSheet.create({
     marginBottom: 'auto',
     paddingTop: 8,
   },
-  otpBox: {
-    flex: 1,
+  otpBox: { ...t.type['title-2'], flex: 1,
     maxWidth: 52,
     height: 56,
-    borderRadius: 12,
-    backgroundColor: '#F5F3EF',
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors['surface-sunken'],
     borderWidth: 1.5,
-    borderColor: ZuriColors.outlineVariant,
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 22,
-    color: ZuriColors.primary,
-    fontWeight: '600',
-  },
+    borderColor: t.colors.border,
+    color: t.colors.text,
+    },
   otpBoxFocused: {
-    borderColor: ZuriColors.primary,
-    backgroundColor: ZuriColors.surfaceContainerLowest,
-    shadowColor: ZuriColors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
+    borderColor: t.colors.primary,
+    backgroundColor: t.colors['surface-raised'], boxShadow: t.shadows.card,},
   otpBoxFilled: {
-    borderColor: ZuriColors.primaryContainer,
+    borderColor: t.colors.primary,
   },
   bottomActions: {
     gap: 20,
@@ -391,24 +370,15 @@ const styles = StyleSheet.create({
   verifyButton: {
     width: '100%',
     height: 56,
-    backgroundColor: ZuriColors.primaryContainer,
-    borderRadius: 12,
+    backgroundColor: t.colors.primary,
+    borderRadius: t.radius.full,
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: ZuriColors.primaryContainer,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-  },
+    justifyContent: 'center', boxShadow: t.shadows.card,},
   verifyButtonPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.985 }],
   },
-  verifyButtonText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 15,
-    color: ZuriColors.onPrimary,
+  verifyButtonText: { ...t.type.subhead, color: t.colors['on-primary'],
     letterSpacing: 0.5,
   },
   resendContainer: {
@@ -417,21 +387,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
   },
-  resendQuestion: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 14,
-    color: ZuriColors.onSurfaceVariant,
+  resendQuestion: { ...t.type.callout, color: t.colors['text-muted'],
   },
-  resendDisabled: {
-    fontFamily: ZuriFonts.bodyMdMedium,
-    fontSize: 14,
-    color: ZuriColors.onSurfaceVariant,
+  resendDisabled: { ...t.type.subhead, color: t.colors['text-muted'],
     opacity: 0.6,
   },
-  resendActive: {
-    fontFamily: ZuriFonts.bodyMdMedium,
-    fontSize: 14,
-    color: ZuriColors.primaryContainer,
+  resendActive: { ...t.type.subhead, color: t.colors.text,
     textDecorationLine: 'underline',
   },
-});
+}));

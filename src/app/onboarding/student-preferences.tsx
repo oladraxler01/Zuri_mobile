@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Pressable,
   ScrollView,
   StatusBar,
@@ -12,10 +11,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic } from '@/context/academic-context';
 import { useSession } from '@/context/session-context';
+import { makeStyles, useTheme } from '@/theme';
 
 const GPA_GOALS = [
   '4.50+ (First Class)',
@@ -26,6 +25,8 @@ const GPA_GOALS = [
 const STUDY_HOURS_OPTIONS = [10, 15, 20, 25];
 
 export default function StudentPreferencesScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const router = useRouter();
   const [fontsLoaded] = useZuriFonts();
   const { state, updatePreferences } = useAcademic();
@@ -80,7 +81,7 @@ export default function StudentPreferencesScreen() {
           accessibilityLabel="Go back"
           hitSlop={12}
         >
-          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
 
         <View style={styles.headerCenter}>
@@ -108,7 +109,7 @@ export default function StudentPreferencesScreen() {
         {/* Academic Goals Card */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionTitleRow}>
-            <Ionicons name="ribbon-outline" size={20} color={ZuriColors.tertiary} />
+            <Ionicons name="ribbon-outline" size={20} color={colors['accent-text']} />
             <Text style={styles.sectionTitle}>Target Academic Goal</Text>
           </View>
 
@@ -124,7 +125,7 @@ export default function StudentPreferencesScreen() {
                   <Ionicons
                     name={isSelected ? 'radio-button-on' : 'radio-button-off'}
                     size={16}
-                    color={isSelected ? ZuriColors.primaryContainer : ZuriColors.outline}
+                    color={isSelected ? colors.text : colors['text-subtle']}
                   />
                   <Text
                     style={[
@@ -168,7 +169,7 @@ export default function StudentPreferencesScreen() {
         {/* Smart Reminders Section */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionTitleRow}>
-            <Ionicons name="notifications-outline" size={20} color={ZuriColors.primaryContainer} />
+            <Ionicons name="notifications-outline" size={20} color={colors.text} />
             <Text style={styles.sectionTitle}>Smart Proactive Reminders</Text>
           </View>
 
@@ -183,8 +184,8 @@ export default function StudentPreferencesScreen() {
             <Switch
               value={lectureReminders}
               onValueChange={setLectureReminders}
-              trackColor={{ false: '#e4e2e1', true: ZuriColors.primaryContainer }}
-              thumbColor="#ffffff"
+              trackColor={{ false: colors.border, true: colors.text }}
+              thumbColor={colors['surface-raised']}
             />
           </View>
 
@@ -226,8 +227,8 @@ export default function StudentPreferencesScreen() {
             <Switch
               value={assignmentAlerts}
               onValueChange={setAssignmentAlerts}
-              trackColor={{ false: '#e4e2e1', true: ZuriColors.primaryContainer }}
-              thumbColor="#ffffff"
+              trackColor={{ false: colors.border, true: colors.text }}
+              thumbColor={colors['surface-raised']}
             />
           </View>
 
@@ -244,8 +245,8 @@ export default function StudentPreferencesScreen() {
             <Switch
               value={examCountdown}
               onValueChange={setExamCountdown}
-              trackColor={{ false: '#e4e2e1', true: ZuriColors.primaryContainer }}
-              thumbColor="#ffffff"
+              trackColor={{ false: colors.border, true: colors.text }}
+              thumbColor={colors['surface-raised']}
             />
           </View>
         </View>
@@ -254,7 +255,7 @@ export default function StudentPreferencesScreen() {
         <View style={styles.summaryCard}>
           <View style={styles.summaryHeader}>
             <View style={styles.crestCircle}>
-              <Ionicons name="school" size={20} color="#ffffff" />
+              <Ionicons name="school" size={20} color={colors['on-primary']} />
             </View>
             <View style={styles.summaryTitleCol}>
               <Text style={styles.summaryUni}>{state.university}</Text>
@@ -266,15 +267,15 @@ export default function StudentPreferencesScreen() {
 
           <View style={styles.summaryStatsRow}>
             <View style={styles.statPill}>
-              <Ionicons name="book-outline" size={14} color={ZuriColors.primaryContainer} />
+              <Ionicons name="book-outline" size={14} color={colors.text} />
               <Text style={styles.statPillText}>{state.courses.length} Courses</Text>
             </View>
             <View style={styles.statPill}>
-              <Ionicons name="time-outline" size={14} color={ZuriColors.primaryContainer} />
+              <Ionicons name="time-outline" size={14} color={colors.text} />
               <Text style={styles.statPillText}>{state.timetable.length} Weekly Lectures</Text>
             </View>
             <View style={styles.statPill}>
-              <Ionicons name="flash-outline" size={14} color={ZuriColors.tertiary} />
+              <Ionicons name="flash-outline" size={14} color={colors['accent-text']} />
               <Text style={styles.statPillText}>Sync Ready</Text>
             </View>
           </View>
@@ -292,7 +293,7 @@ export default function StudentPreferencesScreen() {
           accessibilityRole="button"
           accessibilityLabel="Launch My Dashboard"
         >
-          <Ionicons name="sparkles" size={18} color="#ffffff" />
+          <Ionicons name="sparkles" size={18} color={colors['on-primary']} />
           <Text style={styles.launchButtonText}>LAUNCH MY DASHBOARD</Text>
         </Pressable>
       </View>
@@ -300,22 +301,22 @@ export default function StudentPreferencesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
-    backgroundColor: ZuriColors.background,
+    backgroundColor: t.colors.surface,
   },
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
   },
   backButton: {
     padding: 6,
     marginLeft: -6,
-    borderRadius: 8,
+    borderRadius: t.radius.md,
   },
   backButtonPressed: {
     opacity: 0.7,
@@ -325,31 +326,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
   },
-  headerTitle: {
-    fontFamily: ZuriFonts.headlineLgMobile,
-    fontSize: 22,
-    color: ZuriColors.primary,
-    fontWeight: '700',
-  },
+  headerTitle: { ...t.type['title-2'], color: t.colors.text,
+    },
   stepBadge: {
-    backgroundColor: ZuriColors.surfaceContainerLow,
+    backgroundColor: t.colors['surface-sunken'],
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 10,
+    borderRadius: t.radius.md,
     borderWidth: 1,
     borderColor: 'rgba(203, 167, 47, 0.3)',
   },
-  stepBadgeText: {
-    fontFamily: ZuriFonts.labelSm,
-    fontSize: 11,
-    color: ZuriColors.tertiary,
-    fontWeight: '600',
-  },
+  stepBadgeText: { ...t.type.caption, color: t.colors['accent-text'],
+    },
   headerSpacer: {
     width: 32,
   },
   scrollContent: {
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
     paddingTop: 16,
     paddingBottom: 24,
     maxWidth: 420,
@@ -360,24 +353,16 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 20,
   },
-  headline: {
-    fontFamily: ZuriFonts.headlineLgMobile,
-    fontSize: 26,
-    lineHeight: 32,
-    color: ZuriColors.primary,
+  headline: { ...t.type['title-1'], color: t.colors.text,
   },
-  subtitle: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 14,
-    lineHeight: 20,
-    color: ZuriColors.onSurfaceVariant,
+  subtitle: { ...t.type.callout, color: t.colors['text-muted'],
   },
   sectionCard: {
-    backgroundColor: '#F5F3EF',
-    borderRadius: 16,
+    backgroundColor: t.colors['surface-sunken'],
+    borderRadius: t.radius.md,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#E5E3DF',
+    borderColor: t.colors.border,
     marginBottom: 20,
   },
   sectionTitleRow: {
@@ -386,12 +371,8 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 14,
   },
-  sectionTitle: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 16,
-    color: ZuriColors.primary,
-    fontWeight: '600',
-  },
+  sectionTitle: { ...t.type['title-2'], color: t.colors.text,
+    },
   gpaGrid: {
     gap: 8,
   },
@@ -401,28 +382,22 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    borderRadius: 12,
-    backgroundColor: '#ffffff',
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors['surface-raised'],
     borderWidth: 1,
-    borderColor: ZuriColors.outlineVariant,
+    borderColor: t.colors.border,
   },
   gpaChipSelected: {
-    borderColor: ZuriColors.primaryContainer,
+    borderColor: t.colors.primary,
     borderWidth: 1.5,
   },
-  gpaChipText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 13,
-    color: ZuriColors.onSurface,
+  gpaChipText: { ...t.type.footnote, color: t.colors.text,
   },
   gpaChipTextSelected: {
     fontWeight: '600',
-    color: ZuriColors.primaryContainer,
+    color: t.colors.text,
   },
-  fieldSublabel: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 12,
-    color: ZuriColors.primary,
+  fieldSublabel: { ...t.type.caption, color: t.colors.text,
     marginBottom: 8,
   },
   hoursRow: {
@@ -432,23 +407,20 @@ const styles = StyleSheet.create({
   hoursChip: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: '#ffffff',
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors['surface-raised'],
     borderWidth: 1,
-    borderColor: ZuriColors.outlineVariant,
+    borderColor: t.colors.border,
     alignItems: 'center',
   },
   hoursChipSelected: {
-    backgroundColor: ZuriColors.primaryContainer,
-    borderColor: ZuriColors.primaryContainer,
+    backgroundColor: t.colors.primary,
+    borderColor: t.colors.primary,
   },
-  hoursChipText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 12,
-    color: ZuriColors.onSurface,
+  hoursChipText: { ...t.type.caption, color: t.colors.text,
   },
   hoursChipTextSelected: {
-    color: '#ffffff',
+    color: t.colors['on-primary'],
     fontWeight: '600',
   },
   toggleRow: {
@@ -461,17 +433,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingRight: 12,
   },
-  toggleTitle: {
-    fontFamily: ZuriFonts.bodyLg,
-    fontSize: 14,
-    fontWeight: '600',
-    color: ZuriColors.onSurface,
+  toggleTitle: { ...t.type.callout, color: t.colors.text,
     marginBottom: 2,
   },
-  toggleDesc: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 12,
-    color: ZuriColors.onSurfaceVariant,
+  toggleDesc: { ...t.type.caption, color: t.colors['text-muted'],
   },
   leadTimeRow: {
     flexDirection: 'row',
@@ -480,30 +445,24 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 6,
   },
-  leadTimeLabel: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 12,
-    color: ZuriColors.onSurfaceVariant,
+  leadTimeLabel: { ...t.type.caption, color: t.colors['text-muted'],
   },
   leadChip: {
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 8,
-    backgroundColor: '#ffffff',
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors['surface-raised'],
     borderWidth: 1,
-    borderColor: ZuriColors.outlineVariant,
+    borderColor: t.colors.border,
   },
   leadChipSelected: {
-    backgroundColor: ZuriColors.primaryContainer,
-    borderColor: ZuriColors.primaryContainer,
+    backgroundColor: t.colors.primary,
+    borderColor: t.colors.primary,
   },
-  leadChipText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 11,
-    color: ZuriColors.onSurfaceVariant,
+  leadChipText: { ...t.type.caption, color: t.colors['text-muted'],
   },
   leadChipTextSelected: {
-    color: '#ffffff',
+    color: t.colors['on-primary'],
     fontWeight: '600',
   },
   divider: {
@@ -512,18 +471,12 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   summaryCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
+    backgroundColor: t.colors['surface-raised'],
+    borderRadius: t.radius.full,
     padding: 16,
     borderWidth: 1.5,
-    borderColor: ZuriColors.primaryContainer,
-    shadowColor: ZuriColors.primaryContainer,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 2,
-    marginBottom: 10,
-  },
+    borderColor: t.colors.primary,
+    marginBottom: 10, boxShadow: t.shadows.card,},
   summaryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -533,24 +486,17 @@ const styles = StyleSheet.create({
   crestCircle: {
     width: 42,
     height: 42,
-    borderRadius: 21,
-    backgroundColor: ZuriColors.primaryContainer,
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   summaryTitleCol: {
     flex: 1,
   },
-  summaryUni: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 15,
-    fontWeight: '700',
-    color: ZuriColors.primary,
+  summaryUni: { ...t.type['title-2'], color: t.colors.text,
   },
-  summaryMeta: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 12,
-    color: ZuriColors.onSurfaceVariant,
+  summaryMeta: { ...t.type.caption, color: t.colors['text-muted'],
     marginTop: 2,
   },
   summaryStatsRow: {
@@ -562,22 +508,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: '#F5F3EF',
+    backgroundColor: t.colors['surface-sunken'],
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 8,
+    borderRadius: t.radius.md,
   },
-  statPillText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 12,
-    color: ZuriColors.primary,
-    fontWeight: '500',
-  },
+  statPillText: { ...t.type.caption, color: t.colors.text,
+    },
   footer: {
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
     paddingTop: 12,
     paddingBottom: 20,
-    backgroundColor: ZuriColors.background,
+    backgroundColor: t.colors.surface,
     maxWidth: 420,
     width: '100%',
     alignSelf: 'center',
@@ -588,23 +530,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: ZuriColors.primaryContainer,
-    borderRadius: 14,
-    shadowColor: ZuriColors.primaryContainer,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    elevation: 3,
-  },
+    backgroundColor: t.colors.primary,
+    borderRadius: t.radius.full, boxShadow: t.shadows.card,},
   launchButtonPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.985 }],
   },
-  launchButtonText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 14,
-    color: ZuriColors.onPrimary,
+  launchButtonText: { ...t.type.subhead, color: t.colors['on-primary'],
     letterSpacing: 1.2,
-    fontWeight: '700',
-  },
-});
+    },
+}));

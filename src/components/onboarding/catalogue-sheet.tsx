@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Modal, View, Text, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriFonts } from '@/constants/zuri-theme';
-import { UI } from '@/constants/zuri-ui';
 import { catalogueFor, type CatalogueCourse } from '@/constants/course-catalogue';
+import { makeStyles, useTheme } from '@/theme';
 
 /** Pick courses from the department catalogue for the student's level. */
 export function CatalogueSheet({
@@ -21,6 +20,8 @@ export function CatalogueSheet({
   onClose: () => void;
   onImport: (courses: CatalogueCourse[]) => void;
 }) {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const list = catalogueFor(department, level);
   const fresh = list.filter((c) => !existingCodes.includes(c.code));
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -48,7 +49,7 @@ export function CatalogueSheet({
               </Text>
             </View>
             <Pressable onPress={onClose} hitSlop={10} accessibilityLabel="Close">
-              <Ionicons name="close" size={24} color={UI.ink} />
+              <Ionicons name="close" size={24} color={colors.text} />
             </Pressable>
           </View>
 
@@ -71,7 +72,7 @@ export function CatalogueSheet({
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: on, disabled: already }}
                   >
-                    <Ionicons name={on ? 'checkbox' : 'square-outline'} size={22} color={on ? UI.success : UI.muted} />
+                    <Ionicons name={on ? 'checkbox' : 'square-outline'} size={22} color={on ? colors.success : colors['text-subtle']} />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.code}>
                         {c.code} · {c.units} units
@@ -104,18 +105,18 @@ export function CatalogueSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  sheet: { backgroundColor: UI.bg, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 22, paddingBottom: 32 },
+  sheet: { backgroundColor: t.colors.surface, borderTopLeftRadius: t.radius.lg, borderTopRightRadius: t.radius.lg, padding: 22, paddingBottom: 32 },
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 12 },
-  title: { fontFamily: ZuriFonts.headlineMd, fontSize: 21, color: UI.ink },
-  sub: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted, marginTop: 2 },
-  empty: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft, marginVertical: 12 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: UI.borderSoft },
-  code: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: UI.amber },
-  courseTitle: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink, marginTop: 2 },
-  added: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted },
-  primary: { height: 52, borderRadius: 26, backgroundColor: UI.ink, alignItems: 'center', justifyContent: 'center', marginTop: 16 },
-  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
-  note: { fontFamily: ZuriFonts.bodyRegular, fontSize: 11, color: UI.muted, textAlign: 'center', marginTop: 8 },
-});
+  title: { ...t.type['title-2'], color: t.colors.text },
+  sub: { ...t.type.footnote, color: t.colors['text-subtle'], marginTop: 2 },
+  empty: { ...t.type.callout, color: t.colors['text-muted'], marginVertical: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: t.colors.border },
+  code: { ...t.type.caption, letterSpacing: 0.8, color: t.colors['accent-text'] },
+  courseTitle: { ...t.type.subhead, color: t.colors.text, marginTop: 2 },
+  added: { ...t.type.caption, color: t.colors['text-subtle'] },
+  primary: { height: 52, borderRadius: t.radius.full, backgroundColor: t.colors.primary, alignItems: 'center', justifyContent: 'center', marginTop: 16 },
+  primaryText: { ...t.type.subhead, color: t.colors['on-primary'] },
+  note: { ...t.type.caption, color: t.colors['text-subtle'], textAlign: 'center', marginTop: 8 },
+}));

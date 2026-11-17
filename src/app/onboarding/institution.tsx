@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   Pressable,
   FlatList,
   StatusBar,
@@ -14,12 +13,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { NIGERIAN_UNIVERSITIES, University } from '@/constants/nigerian-universities';
 import { useAcademic } from '@/context/academic-context';
+import { makeStyles, useTheme } from '@/theme';
 
 export default function InstitutionSelectScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const router = useRouter();
   const [fontsLoaded] = useZuriFonts();
   const { setAcademicInfo } = useAcademic();
@@ -100,7 +101,7 @@ export default function InstitutionSelectScreen() {
       >
         {/* Placeholder Crest */}
         <View style={styles.crestBox}>
-          <Ionicons name="business-outline" size={22} color={ZuriColors.outline} />
+          <Ionicons name="business-outline" size={22} color={colors['text-subtle']} />
         </View>
 
         {/* University Info */}
@@ -116,7 +117,7 @@ export default function InstitutionSelectScreen() {
         {/* Checkmark Badge */}
         {isSelected ? (
           <View style={styles.checkBadge}>
-            <Ionicons name="checkmark" size={14} color="#ffffff" />
+            <Ionicons name="checkmark" size={14} color={colors['on-primary']} />
           </View>
         ) : (
           <View style={styles.unselectedIndicator} />
@@ -138,7 +139,7 @@ export default function InstitutionSelectScreen() {
           accessibilityLabel="Go back"
           hitSlop={12}
         >
-          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
         <Text style={styles.headerTitle}>Zuri</Text>
         <View style={styles.headerSpacer} />
@@ -154,13 +155,13 @@ export default function InstitutionSelectScreen() {
             <Ionicons
               name="search"
               size={20}
-              color={ZuriColors.outline}
+              color={colors['text-subtle']}
               style={styles.searchIcon}
             />
             <TextInput
               style={styles.searchInput}
               placeholder="Search for your university..."
-              placeholderTextColor={ZuriColors.outline}
+              placeholderTextColor={colors['text-subtle']}
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCapitalize="words"
@@ -172,7 +173,7 @@ export default function InstitutionSelectScreen() {
                 hitSlop={8}
                 style={styles.clearButton}
               >
-                <Ionicons name="close-circle" size={18} color={ZuriColors.outline} />
+                <Ionicons name="close-circle" size={18} color={colors['text-subtle']} />
               </Pressable>
             )}
           </View>
@@ -191,7 +192,7 @@ export default function InstitutionSelectScreen() {
           windowSize={10}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="school-outline" size={40} color={ZuriColors.outline} />
+              <Ionicons name="school-outline" size={40} color={colors['text-subtle']} />
               <Text style={styles.emptyTitle}>No institution found</Text>
               <Text style={styles.emptySubtitle}>
                 No universities found matching "{searchQuery}".
@@ -231,33 +232,29 @@ export default function InstitutionSelectScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
-    backgroundColor: ZuriColors.background,
+    backgroundColor: t.colors.surface,
   },
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
   },
   backButton: {
     padding: 6,
     marginLeft: -6,
-    borderRadius: 8,
+    borderRadius: t.radius.md,
   },
   backButtonPressed: {
     opacity: 0.7,
     transform: [{ scale: 0.95 }],
   },
-  headerTitle: {
-    fontFamily: ZuriFonts.headlineLgMobile,
-    fontSize: 24,
-    color: ZuriColors.primary,
-    fontWeight: '700',
-  },
+  headerTitle: { ...t.type['title-1'], color: t.colors.text,
+    },
   headerSpacer: {
     width: 32,
   },
@@ -266,17 +263,13 @@ const styles = StyleSheet.create({
     maxWidth: 420,
     width: '100%',
     alignSelf: 'center',
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
   },
   titleSection: {
     paddingTop: 12,
     paddingBottom: 16,
   },
-  headline: {
-    fontFamily: ZuriFonts.headlineLgMobile,
-    fontSize: 28,
-    lineHeight: 34,
-    color: ZuriColors.primary,
+  headline: { ...t.type['title-1'], color: t.colors.text,
     marginBottom: 20,
   },
   searchContainer: {
@@ -290,18 +283,15 @@ const styles = StyleSheet.create({
     left: 14,
     zIndex: 1,
   },
-  searchInput: {
-    width: '100%',
+  searchInput: { ...t.type.callout, width: '100%',
     height: 48,
-    backgroundColor: '#F5F3EF',
+    backgroundColor: t.colors['surface-sunken'],
     borderWidth: 1,
-    borderColor: ZuriColors.outlineVariant,
-    borderRadius: 10,
+    borderColor: t.colors.border,
+    borderRadius: t.radius.md,
     paddingLeft: 44,
     paddingRight: 40,
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 15,
-    color: ZuriColors.onSurface,
+    color: t.colors.text,
   },
   clearButton: {
     position: 'absolute',
@@ -316,8 +306,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 14,
     padding: 14,
-    borderRadius: 14,
-    backgroundColor: '#F5F3EF',
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors['surface-sunken'],
   },
   cardDefault: {
     borderWidth: 1.5,
@@ -325,52 +315,39 @@ const styles = StyleSheet.create({
   },
   cardSelected: {
     borderWidth: 1.5,
-    borderColor: ZuriColors.primary,
-    backgroundColor: '#ffffff',
-    shadowColor: ZuriColors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
-  },
+    borderColor: t.colors.primary,
+    backgroundColor: t.colors['surface-raised'], boxShadow: t.shadows.card,},
   cardPressed: {
     transform: [{ scale: 0.985 }],
   },
   crestBox: {
     width: 44,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: ZuriColors.surfaceContainerHigh,
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors['surface-sunken'],
     alignItems: 'center',
     justifyContent: 'center',
   },
   infoBox: {
     flex: 1,
   },
-  uniName: {
-    fontFamily: ZuriFonts.bodyLg,
-    fontSize: 15,
-    fontWeight: '600',
-    color: ZuriColors.primary,
+  uniName: { ...t.type.callout, color: t.colors.text,
     marginBottom: 2,
   },
-  uniLocation: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 13,
-    color: ZuriColors.onSurfaceVariant,
+  uniLocation: { ...t.type.footnote, color: t.colors['text-muted'],
   },
   checkBadge: {
     width: 24,
     height: 24,
-    borderRadius: 12,
-    backgroundColor: ZuriColors.primary,
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   unselectedIndicator: {
     width: 24,
     height: 24,
-    borderRadius: 12,
+    borderRadius: t.radius.full,
     borderWidth: 1.5,
     borderColor: 'transparent',
   },
@@ -380,72 +357,49 @@ const styles = StyleSheet.create({
     paddingVertical: 36,
     gap: 8,
   },
-  emptyTitle: {
-    fontFamily: ZuriFonts.bodyLg,
-    fontSize: 16,
-    fontWeight: '600',
-    color: ZuriColors.primary,
+  emptyTitle: { ...t.type.body, color: t.colors.text,
   },
-  emptySubtitle: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 13,
-    color: ZuriColors.onSurfaceVariant,
+  emptySubtitle: { ...t.type.footnote, color: t.colors['text-muted'],
     textAlign: 'center',
   },
   requestButton: {
     marginTop: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: ZuriColors.surfaceContainerHigh,
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors['surface-sunken'],
   },
-  requestButtonText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 13,
-    color: ZuriColors.primary,
+  requestButtonText: { ...t.type.subhead, color: t.colors.text,
   },
   footer: {
     paddingTop: 12,
     paddingBottom: 20,
     gap: 12,
-    backgroundColor: ZuriColors.background,
+    backgroundColor: t.colors.surface,
   },
   continueButton: {
     width: '100%',
     height: 56,
-    backgroundColor: ZuriColors.primary,
-    borderRadius: 14,
+    backgroundColor: t.colors.primary,
+    borderRadius: t.radius.full,
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: ZuriColors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-  },
+    justifyContent: 'center', boxShadow: t.shadows.card,},
   continueButtonPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.985 }],
   },
-  continueButtonText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 14,
-    color: ZuriColors.onPrimary,
+  continueButtonText: { ...t.type.subhead, color: t.colors['on-primary'],
     letterSpacing: 1.2,
-    fontWeight: '700',
-  },
+    },
   requestFooterRow: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  requestFooterText: {
-    fontFamily: ZuriFonts.labelSm,
-    fontSize: 13,
-    color: ZuriColors.onSurfaceVariant,
+  requestFooterText: { ...t.type.footnote, color: t.colors['text-muted'],
   },
   requestFooterLink: {
-    color: ZuriColors.primary,
+    color: t.colors.text,
     textDecorationLine: 'underline',
     fontWeight: '600',
   },
-});
+}));

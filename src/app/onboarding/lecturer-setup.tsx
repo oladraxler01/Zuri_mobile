@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriFonts } from '@/constants/zuri-theme';
-import { UI } from '@/constants/zuri-ui';
 import { useLecturer, type TaughtCourse } from '@/context/lecturer-context';
 import { useSession } from '@/context/session-context';
 import { Chip } from '@/components/ui/chip';
 import { StateView } from '@/components/states/state-view';
 import type { TimetableSlot } from '@/context/academic-context';
+import { makeStyles, useTheme } from '@/theme';
 
 const TITLES = ['Dr.', 'Prof.', 'Engr.', 'Mr.', 'Mrs.', 'Ms.'];
 const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 /** Lecturer onboarding: profile → courses taught → done. */
 export default function LecturerSetupScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const lecturer = useLecturer();
   const { setRole } = useSession();
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -101,7 +102,7 @@ export default function LecturerSetupScreen() {
           hitSlop={10}
           accessibilityLabel="Back"
         >
-          <Ionicons name="arrow-back" size={24} color={UI.ink} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
         <Text style={styles.stepText}>Step {step} of 2</Text>
         <View style={{ width: 24 }} />
@@ -124,16 +125,16 @@ export default function LecturerSetupScreen() {
                 ))}
               </View>
               <Text style={styles.label}>FULL NAME</Text>
-              <TextInput style={styles.input} value={fullName} onChangeText={setFullName} placeholder="e.g. Folake Adeyemi" placeholderTextColor={UI.muted} />
+              <TextInput style={styles.input} value={fullName} onChangeText={setFullName} placeholder="e.g. Folake Adeyemi" placeholderTextColor={colors['text-subtle']} />
               <Text style={styles.label}>DEPARTMENT</Text>
-              <TextInput style={styles.input} value={department} onChangeText={setDepartment} placeholder="e.g. Computer Science" placeholderTextColor={UI.muted} />
+              <TextInput style={styles.input} value={department} onChangeText={setDepartment} placeholder="e.g. Computer Science" placeholderTextColor={colors['text-subtle']} />
               <Text style={styles.label}>STAFF ID (FOR VERIFICATION)</Text>
               <TextInput
                 style={styles.input}
                 value={staffId}
                 onChangeText={setStaffId}
                 placeholder="e.g. VU/STF/1042"
-                placeholderTextColor={UI.muted}
+                placeholderTextColor={colors['text-subtle']}
                 autoCapitalize="characters"
               />
               <Text style={styles.hint}>Your university confirms this before your courses go live to students.</Text>
@@ -161,7 +162,7 @@ export default function LecturerSetupScreen() {
                       hitSlop={10}
                       accessibilityLabel={`Remove ${c.code}`}
                     >
-                      <Ionicons name="trash-outline" size={18} color={UI.inkSoft} />
+                      <Ionicons name="trash-outline" size={18} color={colors['text-muted']} />
                     </Pressable>
                   </View>
                 ))}
@@ -170,10 +171,10 @@ export default function LecturerSetupScreen() {
               {adding ? (
                 <View style={styles.addCard}>
                   <View style={styles.row2}>
-                    <TextInput style={[styles.input, { flex: 0.8 }]} value={nc.code} onChangeText={(v) => setNc({ ...nc, code: v })} placeholder="Code e.g. CSC 305" placeholderTextColor={UI.muted} autoCapitalize="characters" />
-                    <TextInput style={[styles.input, { flex: 0.6 }]} value={nc.cohort} onChangeText={(v) => setNc({ ...nc, cohort: v.replace(/\D/g, '') })} placeholder="Students" placeholderTextColor={UI.muted} keyboardType="number-pad" />
+                    <TextInput style={[styles.input, { flex: 0.8 }]} value={nc.code} onChangeText={(v) => setNc({ ...nc, code: v })} placeholder="Code e.g. CSC 305" placeholderTextColor={colors['text-subtle']} autoCapitalize="characters" />
+                    <TextInput style={[styles.input, { flex: 0.6 }]} value={nc.cohort} onChangeText={(v) => setNc({ ...nc, cohort: v.replace(/\D/g, '') })} placeholder="Students" placeholderTextColor={colors['text-subtle']} keyboardType="number-pad" />
                   </View>
-                  <TextInput style={styles.input} value={nc.title} onChangeText={(v) => setNc({ ...nc, title: v })} placeholder="Course title" placeholderTextColor={UI.muted} />
+                  <TextInput style={styles.input} value={nc.title} onChangeText={(v) => setNc({ ...nc, title: v })} placeholder="Course title" placeholderTextColor={colors['text-subtle']} />
                   <View style={styles.wrap}>
                     {['100L', '200L', '300L', '400L', '500L'].map((l) => (
                       <Chip key={l} label={l} on={nc.level === l} onPress={() => setNc({ ...nc, level: l })} />
@@ -186,10 +187,10 @@ export default function LecturerSetupScreen() {
                     ))}
                   </View>
                   <View style={styles.row2}>
-                    <TextInput style={[styles.input, { flex: 1 }]} value={nc.start} onChangeText={(v) => setNc({ ...nc, start: v })} placeholder="09:00 AM" placeholderTextColor={UI.muted} />
-                    <TextInput style={[styles.input, { flex: 1 }]} value={nc.end} onChangeText={(v) => setNc({ ...nc, end: v })} placeholder="11:00 AM" placeholderTextColor={UI.muted} />
+                    <TextInput style={[styles.input, { flex: 1 }]} value={nc.start} onChangeText={(v) => setNc({ ...nc, start: v })} placeholder="09:00 AM" placeholderTextColor={colors['text-subtle']} />
+                    <TextInput style={[styles.input, { flex: 1 }]} value={nc.end} onChangeText={(v) => setNc({ ...nc, end: v })} placeholder="11:00 AM" placeholderTextColor={colors['text-subtle']} />
                   </View>
-                  <TextInput style={styles.input} value={nc.venue} onChangeText={(v) => setNc({ ...nc, venue: v })} placeholder="Venue e.g. LT B" placeholderTextColor={UI.muted} />
+                  <TextInput style={styles.input} value={nc.venue} onChangeText={(v) => setNc({ ...nc, venue: v })} placeholder="Venue e.g. LT B" placeholderTextColor={colors['text-subtle']} />
                   <View style={styles.row2}>
                     <Pressable style={[styles.secondary, { flex: 1 }]} onPress={() => setAdding(false)}>
                       <Text style={styles.secondaryText}>Cancel</Text>
@@ -201,7 +202,7 @@ export default function LecturerSetupScreen() {
                 </View>
               ) : (
                 <Pressable style={styles.addBtn} onPress={() => setAdding(true)}>
-                  <Ionicons name="add" size={18} color={UI.ink} />
+                  <Ionicons name="add" size={18} color={colors.text} />
                   <Text style={styles.addText}>Add a course</Text>
                 </Pressable>
               )}
@@ -211,7 +212,7 @@ export default function LecturerSetupScreen() {
           {!!error && <Text style={styles.error}>{error}</Text>}
           <Pressable style={({ pressed }) => [styles.primary, pressed && { opacity: 0.88 }]} onPress={next}>
             <Text style={styles.primaryText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={18} color="#fff" />
+            <Ionicons name="arrow-forward" size={18} color={colors['on-primary']} />
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -219,35 +220,32 @@ export default function LecturerSetupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: UI.bg },
+const useStyles = makeStyles((t) => ({
+  container: { flex: 1, backgroundColor: t.colors.surface },
   topBar: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 },
-  stepText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.muted },
-  progress: { height: 3, backgroundColor: UI.cardMuted, marginHorizontal: 20, borderRadius: 2 },
-  progressFill: { height: '100%', backgroundColor: UI.amber, borderRadius: 2 },
+  stepText: { ...t.type.subhead, color: t.colors['text-subtle'] },
+  progress: { height: 3, backgroundColor: t.colors['surface-sunken'], marginHorizontal: 20, borderRadius: t.radius.full },
+  progressFill: { height: '100%', backgroundColor: t.colors.accent, borderRadius: t.radius.sm },
   scroll: { padding: 20, paddingBottom: 48, maxWidth: 560, width: '100%', alignSelf: 'center' },
-  h1: { fontFamily: ZuriFonts.headlineLg, fontSize: 28, color: UI.ink, marginTop: 8 },
-  lead: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, lineHeight: 22, color: UI.inkSoft, marginTop: 6 },
-  label: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginTop: 20, marginBottom: 8 },
-  subLabel: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginTop: 4 },
+  h1: { ...t.type['title-1'], color: t.colors.text, marginTop: 8 },
+  lead: { ...t.type.callout, color: t.colors['text-muted'], marginTop: 6 },
+  label: { ...t.type.eyebrow, color: t.colors['text-subtle'], marginTop: 20, marginBottom: 8 },
+  subLabel: { ...t.type.eyebrow, color: t.colors['text-subtle'], marginTop: 4 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  input: {
-    height: 50,
-    borderRadius: 12,
+  input: { ...t.type.callout, height: 50,
+    borderRadius: t.radius.md,
     borderWidth: 1,
-    borderColor: UI.border,
-    backgroundColor: UI.card,
+    borderColor: t.colors.border,
+    backgroundColor: t.colors['surface-raised'],
     paddingHorizontal: 14,
-    fontFamily: ZuriFonts.bodyRegular,
-    fontSize: 15,
-    color: UI.ink,
+    color: t.colors.text,
   },
-  hint: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 6 },
-  courseCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: UI.card, borderRadius: 14, borderWidth: 1, borderColor: UI.border, padding: 14 },
-  courseCode: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: UI.amber },
-  courseTitle: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, color: UI.ink, marginTop: 2 },
-  courseMeta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
-  addCard: { gap: 10, backgroundColor: UI.card, borderRadius: 14, borderWidth: 1, borderColor: UI.border, padding: 14, marginTop: 12 },
+  hint: { ...t.type.caption, color: t.colors['text-subtle'], marginTop: 6 },
+  courseCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: t.colors['surface-raised'], borderRadius: t.radius.md, borderWidth: 1, borderColor: t.colors.border, padding: 14 },
+  courseCode: { ...t.type.caption, letterSpacing: 0.8, color: t.colors['accent-text'] },
+  courseTitle: { ...t.type.subhead, color: t.colors.text, marginTop: 2 },
+  courseMeta: { ...t.type.caption, color: t.colors['text-subtle'], marginTop: 2 },
+  addCard: { gap: 10, backgroundColor: t.colors['surface-raised'], borderRadius: t.radius.md, borderWidth: 1, borderColor: t.colors.border, padding: 14, marginTop: 12 },
   row2: { flexDirection: 'row', gap: 10 },
   addBtn: {
     flexDirection: 'row',
@@ -255,27 +253,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     height: 48,
-    borderRadius: 24,
+    borderRadius: t.radius.full,
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderColor: UI.border,
+    borderColor: t.colors.border,
     marginTop: 12,
   },
-  addText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.ink },
-  error: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.error, marginTop: 14 },
+  addText: { ...t.type.subhead, color: t.colors.text },
+  error: { ...t.type.subhead, color: t.colors.danger, marginTop: 14 },
   primary: {
     height: 54,
-    borderRadius: 27,
-    backgroundColor: UI.ink,
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     marginTop: 28,
   },
-  primarySm: { height: 46, borderRadius: 23, backgroundColor: UI.ink, alignItems: 'center', justifyContent: 'center' },
-  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
-  secondary: { height: 46, borderRadius: 23, borderWidth: 1, borderColor: UI.border, alignItems: 'center', justifyContent: 'center' },
-  secondaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.ink },
-  verifyNote: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted, textAlign: 'center', marginBottom: 16 },
-});
+  primarySm: { height: 46, borderRadius: t.radius.full, backgroundColor: t.colors.primary, alignItems: 'center', justifyContent: 'center' },
+  primaryText: { ...t.type.subhead, color: t.colors['on-primary'] },
+  secondary: { height: 46, borderRadius: t.radius.full, borderWidth: 1, borderColor: t.colors.border, alignItems: 'center', justifyContent: 'center' },
+  secondaryText: { ...t.type.subhead, color: t.colors.text },
+  verifyNote: { ...t.type.footnote, color: t.colors['text-subtle'], textAlign: 'center', marginBottom: 16 },
+}));

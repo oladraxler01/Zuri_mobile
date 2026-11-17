@@ -45,6 +45,11 @@ module.exports = defineConfig([
     rules: { 'no-restricted-syntax': ['warn', noHexColours] },
   },
   {
+    // On tokens, not yet clean of the pre-existing hook rules: hex literals are errors.
+    files: ['src/app/onboarding/**/*.{ts,tsx}', 'src/components/onboarding/**/*.{ts,tsx}'],
+    rules: { 'no-restricted-syntax': ['error', noHexColours] },
+  },
+  {
     files: CLEAN_AREAS,
     rules: { ...promote(PRE_EXISTING), 'no-restricted-syntax': ['error', noHexColours] },
   },

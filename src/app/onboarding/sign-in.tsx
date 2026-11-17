@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   Pressable,
   ScrollView,
   KeyboardAvoidingView,
@@ -16,13 +15,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { login, resendVerification, setPendingSignIn } from '@/services/auth-api';
 import { useSession, ROLE_HOME } from '@/context/session-context';
 import { isValidEmail } from '@/utils/validation';
+import { makeStyles, useTheme } from '@/theme';
 
 export default function SignInScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const router = useRouter();
   const [fontsLoaded] = useZuriFonts();
 
@@ -96,7 +97,7 @@ export default function SignInScreen() {
           accessibilityLabel="Go back"
           hitSlop={12}
         >
-          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
         <Text style={styles.headerTitle}>Zuri</Text>
         <View style={styles.headerSpacer} />
@@ -125,7 +126,7 @@ export default function SignInScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="name@example.com"
-                placeholderTextColor={ZuriColors.onSurfaceVariant}
+                placeholderTextColor={colors['text-muted']}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -142,7 +143,7 @@ export default function SignInScreen() {
                 <TextInput
                   style={[styles.input, styles.inputWithIcon]}
                   placeholder="••••••••"
-                  placeholderTextColor={ZuriColors.onSurfaceVariant}
+                  placeholderTextColor={colors['text-muted']}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
@@ -160,7 +161,7 @@ export default function SignInScreen() {
                   <Ionicons
                     name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                     size={20}
-                    color={ZuriColors.onSurfaceVariant}
+                    color={colors['text-muted']}
                   />
                 </Pressable>
               </View>
@@ -195,7 +196,7 @@ export default function SignInScreen() {
               accessibilityState={{ busy, disabled: busy }}
             >
               {busy ? (
-                <ActivityIndicator color={ZuriColors.onPrimary} />
+                <ActivityIndicator color={colors['on-primary']} />
               ) : (
                 <Text style={styles.signInButtonText}>Sign In</Text>
               )}
@@ -230,7 +231,9 @@ export default function SignInScreen() {
               accessibilityRole="button"
               accessibilityLabel="Continue with Google"
             >
-              <Ionicons name="logo-google" size={20} color="#EA4335" />
+              {/* Google brand colour: a third-party mark, not a Zuri token. */}
+              {/* eslint-disable-next-line no-restricted-syntax */}
+              <Ionicons name="logo-google" size={20} color={'#EA4335'} />
               <Text style={styles.socialButtonText}>Google</Text>
             </Pressable>
 
@@ -243,7 +246,7 @@ export default function SignInScreen() {
               accessibilityRole="button"
               accessibilityLabel="Continue with Apple"
             >
-              <Ionicons name="logo-apple" size={22} color={ZuriColors.primary} />
+              <Ionicons name="logo-apple" size={22} color={colors.text} />
               <Text style={styles.socialButtonText}>Apple</Text>
             </Pressable>
           </View>
@@ -253,33 +256,29 @@ export default function SignInScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
-    backgroundColor: ZuriColors.background,
+    backgroundColor: t.colors.surface,
   },
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
   },
   backButton: {
     padding: 6,
     marginLeft: -6,
-    borderRadius: 8,
+    borderRadius: t.radius.md,
   },
   backButtonPressed: {
     opacity: 0.7,
     transform: [{ scale: 0.95 }],
   },
-  headerTitle: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 22,
-    color: ZuriColors.primary,
-    fontWeight: '600',
-  },
+  headerTitle: { ...t.type['title-2'], color: t.colors.text,
+    },
   headerSpacer: {
     width: 32,
   },
@@ -287,7 +286,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
     paddingTop: 16,
     paddingBottom: 32,
     maxWidth: 420,
@@ -299,17 +298,9 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     marginTop: 8,
   },
-  headline: {
-    fontFamily: ZuriFonts.headlineLgMobile,
-    fontSize: 28,
-    lineHeight: 34,
-    color: ZuriColors.primary,
+  headline: { ...t.type['title-1'], color: t.colors.text,
   },
-  subtitle: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 14,
-    lineHeight: 20,
-    color: ZuriColors.onSurfaceVariant,
+  subtitle: { ...t.type.callout, color: t.colors['text-muted'],
   },
   formGroup: {
     gap: 18,
@@ -319,27 +310,21 @@ const styles = StyleSheet.create({
     gap: 6,
     width: '100%',
   },
-  fieldLabel: {
-    fontFamily: ZuriFonts.labelSm,
-    fontSize: 13,
-    color: '#8A8A8A',
+  fieldLabel: { ...t.type.footnote, color: t.colors['text-subtle'],
     marginLeft: 4,
   },
   passwordInputContainer: {
     position: 'relative',
     width: '100%',
   },
-  input: {
-    width: '100%',
+  input: { ...t.type.callout, width: '100%',
     height: 52,
-    backgroundColor: '#F5F3EF',
+    backgroundColor: t.colors['surface-sunken'],
     borderWidth: 1,
-    borderColor: '#E5E3DF',
-    borderRadius: 12,
+    borderColor: t.colors.border,
+    borderRadius: t.radius.md,
     paddingHorizontal: 16,
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 15,
-    color: ZuriColors.onSurface,
+    color: t.colors.text,
   },
   inputWithIcon: {
     paddingRight: 48,
@@ -353,25 +338,16 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginTop: -6,
   },
-  forgotPasswordText: {
-    fontFamily: ZuriFonts.labelSm,
-    fontSize: 13,
-    color: ZuriColors.primary,
+  forgotPasswordText: { ...t.type.footnote, color: t.colors.text,
     textDecorationLine: 'underline',
   },
   signInButton: {
     height: 56,
     marginTop: 8,
-    backgroundColor: ZuriColors.primaryContainer,
-    borderRadius: 12,
+    backgroundColor: t.colors.primary,
+    borderRadius: t.radius.full,
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: ZuriColors.primaryContainer,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-  },
+    justifyContent: 'center', boxShadow: t.shadows.card,},
   signInButtonPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.985 }],
@@ -379,30 +355,20 @@ const styles = StyleSheet.create({
   signInButtonBusy: {
     opacity: 0.7,
   },
-  formError: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 13,
-    color: '#ba1a1a',
+  formError: { ...t.type.footnote, color: t.colors.danger,
   },
-  signInButtonText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 15,
-    color: ZuriColors.onPrimary,
-    fontWeight: '600',
-  },
+  signInButtonText: { ...t.type.subhead, color: t.colors['on-primary'],
+    },
   signUpPrompt: {
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 28,
   },
-  signUpPromptText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 14,
-    color: ZuriColors.onSurfaceVariant,
+  signUpPromptText: { ...t.type.callout, color: t.colors['text-muted'],
   },
   signUpLink: {
-    color: ZuriColors.primary,
-    fontFamily: ZuriFonts.bodyMdMedium,
+    color: t.colors.text,
+    fontFamily: t.type.subhead.fontFamily,
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
@@ -416,15 +382,10 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: ZuriColors.surfaceContainerHigh,
+    backgroundColor: t.colors['surface-sunken'],
   },
-  dividerText: {
-    fontFamily: ZuriFonts.labelSm,
-    fontSize: 11,
-    color: ZuriColors.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
-  },
+  dividerText: { ...t.type.eyebrow, color: t.colors['text-muted'],
+    },
   socialGroup: {
     gap: 12,
     width: '100%',
@@ -435,19 +396,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
-    borderRadius: 12,
+    borderRadius: t.radius.md,
     borderWidth: 1,
-    borderColor: ZuriColors.outlineVariant,
-    backgroundColor: ZuriColors.surfaceContainerLowest,
+    borderColor: t.colors.border,
+    backgroundColor: t.colors['surface-raised'],
   },
   socialButtonPressed: {
-    backgroundColor: ZuriColors.surfaceContainerLow,
+    backgroundColor: t.colors['surface-sunken'],
     transform: [{ scale: 0.99 }],
   },
-  socialButtonText: {
-    fontFamily: ZuriFonts.labelSm,
-    fontSize: 14,
-    color: ZuriColors.onSurface,
-    fontWeight: '500',
-  },
-});
+  socialButtonText: { ...t.type.subhead, color: t.colors.text,
+    },
+}));

@@ -16,8 +16,8 @@ import Animated, {
   interpolate,
   Easing,
 } from 'react-native-reanimated';
-import { ZuriFonts } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
+import { brand, makeStyles } from '@/theme';
 
 /**
  * Launch splash: kinetic typography on deep forest green.
@@ -28,11 +28,13 @@ import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
-const INK = '#17231b'; // primary
-const INK_SOFT = '#2c3930'; // primaryContainer
-const CREAM = '#fbf9f8';
-const GOLD = '#e9c349'; // tertiaryFixedDim
-const GOLD_DEEP = '#cba72f';
+// The splash is a brand moment on Forest in both themes, so it uses the
+// brand primitives rather than the semantic (theme-dependent) colours.
+const INK = brand.forest;
+const INK_SOFT = brand.pine;
+const CREAM = brand.paper;
+const GOLD = brand.gold;
+const GOLD_DEEP = brand['gold-deep'];
 const MUTED = 'rgba(251, 249, 248, 0.62)';
 
 const LETTERS = ['Z', 'U', 'R', 'I'];
@@ -52,6 +54,7 @@ const T = {
 };
 
 export default function OnboardingSplashScreen() {
+  const styles = useStyles();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [fontsLoaded] = useZuriFonts();
@@ -248,6 +251,7 @@ export default function OnboardingSplashScreen() {
 // ─── Pieces ────────────────────────────────────────────────────────
 
 function RevealLetter({ letter, delay, instant }: { letter: string; delay: number; instant: boolean }) {
+  const styles = useStyles();
   const p = useSharedValue(instant ? 1 : 0);
 
   useEffect(() => {
@@ -283,6 +287,7 @@ function RevealWord({
   accent: boolean;
   instant: boolean;
 }) {
+  const styles = useStyles();
   const p = useSharedValue(instant ? 1 : 0);
 
   useEffect(() => {
@@ -307,6 +312,7 @@ function RevealWord({
 
 /** Endless horizontal ticker of academic words. */
 function Ticker({ paused }: { paused: boolean }) {
+  const styles = useStyles();
   const [rowWidth, setRowWidth] = useState(0);
   const x = useSharedValue(0);
 
@@ -350,7 +356,7 @@ function Ticker({ paused }: { paused: boolean }) {
 
 const RING = Math.min(SCREEN_W * 1.25, 520);
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
     backgroundColor: INK,
@@ -362,7 +368,7 @@ const styles = StyleSheet.create({
     left: SCREEN_W / 2 - 180,
     width: 360,
     height: 360,
-    borderRadius: 180,
+    borderRadius: t.radius.full,
     backgroundColor: 'rgba(203, 167, 47, 0.10)',
   },
   ringsWrap: {
@@ -407,11 +413,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  edition: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 10,
-    letterSpacing: 2.4,
-    color: 'rgba(251, 249, 248, 0.38)',
+  edition: { ...t.type.eyebrow, color: 'rgba(251, 249, 248, 0.38)',
   },
   center: {
     alignItems: 'center',
@@ -426,18 +428,14 @@ const styles = StyleSheet.create({
     height: 112,
     justifyContent: 'flex-end',
   },
-  letter: {
-    fontFamily: ZuriFonts.displayBold,
-    fontSize: 88,
-    lineHeight: 112,
-    color: CREAM,
+  letter: { ...t.type.display, color: CREAM,
     letterSpacing: 2,
     includeFontPadding: false,
   },
   stop: {
     width: 16,
     height: 16,
-    borderRadius: 8,
+    borderRadius: t.radius.full,
     backgroundColor: GOLD,
     marginLeft: 4,
     marginBottom: 24,
@@ -445,7 +443,7 @@ const styles = StyleSheet.create({
   rule: {
     width: 120,
     height: 2,
-    borderRadius: 1,
+    borderRadius: t.radius.full,
     backgroundColor: GOLD_DEEP,
     marginTop: 10,
     marginBottom: 22,
@@ -460,11 +458,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     paddingHorizontal: 3,
   },
-  word: {
-    fontFamily: ZuriFonts.bodyMedium,
-    fontSize: 17,
-    lineHeight: 26,
-    color: MUTED,
+  word: { ...t.type.body, color: MUTED,
   },
   wordAccent: {
     color: GOLD,
@@ -488,16 +482,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  tickerText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 12,
-    letterSpacing: 3,
+  tickerText: { ...t.type.caption, letterSpacing: 3,
     color: 'rgba(251, 249, 248, 0.5)',
   },
   tickerDot: {
     width: 4,
     height: 4,
-    borderRadius: 2,
+    borderRadius: t.radius.full,
     backgroundColor: GOLD_DEEP,
     marginHorizontal: 18,
   },
@@ -506,7 +497,7 @@ const styles = StyleSheet.create({
   },
   button: {
     height: 58,
-    borderRadius: 999,
+    borderRadius: t.radius.full,
     backgroundColor: CREAM,
     flexDirection: 'row',
     alignItems: 'center',
@@ -526,18 +517,15 @@ const styles = StyleSheet.create({
     width: 70,
     backgroundColor: 'rgba(233, 195, 73, 0.28)',
   },
-  buttonText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 16,
-    color: INK,
+  buttonText: { ...t.type.headline, color: INK,
     letterSpacing: 0.2,
   },
   buttonArrow: {
     width: 46,
     height: 46,
-    borderRadius: 23,
+    borderRadius: t.radius.full,
     backgroundColor: INK_SOFT,
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

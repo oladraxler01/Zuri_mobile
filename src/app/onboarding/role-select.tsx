@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Pressable,
   ScrollView,
   StatusBar,
@@ -11,9 +10,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useSession, ROLE_HOME } from '@/context/session-context';
+import { makeStyles, useTheme } from '@/theme';
 
 type RoleType = 'student' | 'lecturer' | 'school-board';
 
@@ -46,6 +45,8 @@ const ROLES: RoleOption[] = [
 ];
 
 export default function RoleSelectScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams<{ universityName?: string; universityId?: string }>();
   const [fontsLoaded] = useZuriFonts();
@@ -103,7 +104,7 @@ export default function RoleSelectScreen() {
           accessibilityLabel="Go back"
           hitSlop={12}
         >
-          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
         <Text style={styles.headerTitle}>Zuri</Text>
         <View style={styles.headerSpacer} />
@@ -138,7 +139,7 @@ export default function RoleSelectScreen() {
               >
                 {/* Role Icon */}
                 <View style={styles.roleIconWrapper}>
-                  <Ionicons name={role.icon} size={22} color={ZuriColors.primary} />
+                  <Ionicons name={role.icon} size={22} color={colors.text} />
                 </View>
 
                 {/* Role Description */}
@@ -158,7 +159,7 @@ export default function RoleSelectScreen() {
                     <Ionicons
                       name="checkmark-circle"
                       size={24}
-                      color={ZuriColors.primaryContainer}
+                      color={colors.text}
                     />
                   )}
                 </View>
@@ -186,38 +187,34 @@ export default function RoleSelectScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
-    backgroundColor: ZuriColors.background,
+    backgroundColor: t.colors.surface,
   },
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
   },
   backButton: {
     padding: 6,
     marginLeft: -6,
-    borderRadius: 8,
+    borderRadius: t.radius.md,
   },
   backButtonPressed: {
     opacity: 0.7,
     transform: [{ scale: 0.95 }],
   },
-  headerTitle: {
-    fontFamily: ZuriFonts.headlineLgMobile,
-    fontSize: 24,
-    color: ZuriColors.primary,
-    fontWeight: '700',
-  },
+  headerTitle: { ...t.type['title-1'], color: t.colors.text,
+    },
   headerSpacer: {
     width: 32,
   },
   scrollContent: {
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
     paddingTop: 24,
     paddingBottom: 36,
     maxWidth: 420,
@@ -230,17 +227,9 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 28,
   },
-  headline: {
-    fontFamily: ZuriFonts.headlineLgMobile,
-    fontSize: 28,
-    lineHeight: 34,
-    color: ZuriColors.primary,
+  headline: { ...t.type['title-1'], color: t.colors.text,
   },
-  subtitle: {
-    fontFamily: ZuriFonts.bodyLg,
-    fontSize: 16,
-    lineHeight: 24,
-    color: ZuriColors.onSurfaceVariant,
+  subtitle: { ...t.type.body, color: t.colors['text-muted'],
   },
   rolesGroup: {
     gap: 16,
@@ -251,51 +240,37 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 14,
     padding: 18,
-    borderRadius: 16,
+    borderRadius: t.radius.md,
     borderWidth: 1.5,
   },
   roleCardDefault: {
-    backgroundColor: '#F5F3EF',
-    borderColor: '#E5E3DF',
+    backgroundColor: t.colors['surface-sunken'],
+    borderColor: t.colors.border,
   },
   roleCardActive: {
-    backgroundColor: '#ffffff',
-    borderColor: ZuriColors.primaryContainer,
-    shadowColor: ZuriColors.primaryContainer,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
-  },
+    backgroundColor: t.colors['surface-raised'],
+    borderColor: t.colors.primary, boxShadow: t.shadows.card,},
   roleCardPressed: {
     transform: [{ scale: 0.985 }],
   },
   roleIconWrapper: {
     width: 44,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: ZuriColors.surfaceContainerLowest,
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors['surface-raised'],
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: ZuriColors.outlineVariant,
+    borderColor: t.colors.border,
   },
   roleTextBox: {
     flex: 1,
     paddingRight: 8,
   },
-  roleTitle: {
-    fontFamily: ZuriFonts.bodyLg,
-    fontSize: 16,
-    fontWeight: '600',
-    color: ZuriColors.onSurface,
+  roleTitle: { ...t.type.body, color: t.colors.text,
     marginBottom: 4,
   },
-  roleDesc: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 13,
-    lineHeight: 19,
-    color: ZuriColors.onSurfaceVariant,
+  roleDesc: { ...t.type.footnote, color: t.colors['text-muted'],
   },
   checkCircle: {
     width: 24,
@@ -313,24 +288,14 @@ const styles = StyleSheet.create({
   getStartedButton: {
     width: '100%',
     height: 56,
-    backgroundColor: ZuriColors.primaryContainer,
-    borderRadius: 14,
+    backgroundColor: t.colors.primary,
+    borderRadius: t.radius.full,
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: ZuriColors.primaryContainer,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-  },
+    justifyContent: 'center', boxShadow: t.shadows.card,},
   getStartedButtonPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.985 }],
   },
-  getStartedButtonText: {
-    fontFamily: ZuriFonts.bodyLg,
-    fontSize: 16,
-    color: ZuriColors.onPrimary,
-    fontWeight: '600',
-  },
-});
+  getStartedButtonText: { ...t.type.body, color: t.colors['on-primary'],
+    },
+}));
