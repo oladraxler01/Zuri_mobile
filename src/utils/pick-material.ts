@@ -4,15 +4,9 @@ import { router } from 'expo-router';
 /** Open the system file picker, then the upload details screen. */
 export async function pickAndUploadMaterial(courseId?: string) {
   const res = await DocumentPicker.getDocumentAsync({
-    type: [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.ms-powerpoint',
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-      'text/*',
-      'image/*',
-    ],
+    // Zuri's server can read PDF and text files for now. Word, PowerPoint and
+    // photos come back once the backend supports them (BACKEND_REQUESTS #2).
+    type: ['application/pdf', 'text/*'],
     copyToCacheDirectory: true,
     multiple: false,
   });

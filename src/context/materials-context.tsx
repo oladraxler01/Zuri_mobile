@@ -6,6 +6,13 @@ import type { Href } from 'expo-router';
 import type { Material, MaterialCategory, MaterialVisibility } from '@/types/material';
 import { processMaterial } from '@/services/material-api';
 import { ApiError } from '@/services/lecture-api';
+import { currentUser, onAuthChange } from '@/services/api-client';
+import {
+  deleteServerMaterial,
+  listServerMaterials,
+  renameServerMaterial,
+  type ServerMaterial,
+} from '@/services/upload-api';
 import { loadJSON, saveJSON, STORAGE_KEYS } from '@/utils/storage';
 import { useNetwork } from '@/context/network-context';
 import { onReset } from '@/utils/reset';
@@ -30,6 +37,43 @@ interface MaterialsContextType {
   updateMaterial: (id: string, patch: Partial<Material>) => void;
   retryMaterial: (id: string) => void;
   deleteMaterial: (id: string) => void;
+  /** Rename here and on the server (PUT /materials/:id). Throws if the server refuses. */
+  renameMaterial: (id: string, title: string) => Promise<void>;
+  /** Bring in materials uploaded from another phone (GET /materials). */
+  syncFromServer: () => Promise<void>;
+  syncing: boolean;
+}
+
+/** Server material ids whose delete still has to reach the server (offline when deleted). */
+const PENDING_DELETES_KEY = 'zuri.materials.pending-deletes.v1';
+
+/** A material that exists on the server but not on this phone (e.g. uploaded from another device). */
+function fromServer(s: ServerMaterial): Material {
+  const status = String(s.processing_status ?? '').toLowerCase();
+  const title = s.title || 'Document';
+  return {
+    id: `srv_${s.id}`,
+    serverId: s.id,
+    uploaded: true,
+    name: title,
+    mimeType: s.mime_type || undefined,
+    sizeBytes: typeof s.file_size === 'number' && s.file_size > 0 ? s.file_size : undefined,
+    uri: '',
+    addedAt: s.created_at || new Date().toISOString(),
+    category: 'other',
+    visibility: 'private',
+    status: status === 'completed' ? 'ready' : status === 'failed' ? 'failed' : status === 'processing' ? 'processing' : 'failed',
+    error:
+      status === 'failed'
+        ? 'Zuri couldn’t read this file.'
+        : status === 'pending'
+          ? 'This upload didn’t finish on the other device. Upload the file again from there.'
+          : undefined,
+    analysis:
+      status === 'completed'
+        ? { source: 'server', title, summary: '', concepts: [], questions: [], passages: [] }
+        : undefined,
+  };
 }
 
 const MaterialsContext = createContext<MaterialsContextType | undefined>(undefined);
@@ -72,9 +116,14 @@ export function MaterialsProvider({ children }: { children: React.ReactNode }) {
   const onlineRef = useRef(isOnline);
   onlineRef.current = isOnline;
   const running = useRef(new Set<string>());
+  const pendingDeletes = useRef<string[]>([]);
+  const [syncing, setSyncing] = useState(false);
   const titles = useRef(new Map<string, string>()); // material id → course title (for processing)
 
   useEffect(() => {
+    loadJSON<string[]>(PENDING_DELETES_KEY).then((ids) => {
+      pendingDeletes.current = ids ?? [];
+    });
     loadJSON<Material[]>(STORAGE_KEYS.materials).then((saved) => {
       if (saved) {
         setMaterials(
@@ -111,6 +160,7 @@ export function MaterialsProvider({ children }: { children: React.ReactNode }) {
             courseCode: m.courseCode,
             courseTitle: titles.current.get(m.id),
             category: m.category,
+            sizeBytes: m.sizeBytes,
             serverId: m.serverId,
             uploaded: m.uploaded,
             onServerId: (serverId) => updateMaterial(m.id, { serverId }),
@@ -182,16 +232,97 @@ export function MaterialsProvider({ children }: { children: React.ReactNode }) {
     [run]
   );
 
-  const deleteMaterial = useCallback((id: string) => {
-    deleteFile(ref.current.find((m) => m.id === id)?.uri);
-    setMaterials((prev) => prev.filter((m) => m.id !== id));
+  const flushDeletes = useCallback(async () => {
+    if (!currentUser() || !pendingDeletes.current.length) return;
+    for (const serverId of [...pendingDeletes.current]) {
+      try {
+        await deleteServerMaterial(serverId);
+        pendingDeletes.current = pendingDeletes.current.filter((x) => x !== serverId);
+      } catch {
+        break; // offline or server trouble: try again later
+      }
+    }
+    saveJSON(PENDING_DELETES_KEY, pendingDeletes.current);
   }, []);
+
+  const deleteMaterial = useCallback(
+    (id: string) => {
+      const m = ref.current.find((x) => x.id === id);
+      deleteFile(m?.uri);
+      setMaterials((prev) => prev.filter((x) => x.id !== id));
+      if (m?.serverId) {
+        pendingDeletes.current = [...pendingDeletes.current.filter((x) => x !== m.serverId), m.serverId];
+        saveJSON(PENDING_DELETES_KEY, pendingDeletes.current);
+        flushDeletes();
+      }
+    },
+    [flushDeletes]
+  );
+
+  const renameMaterial = useCallback(async (id: string, title: string) => {
+    const clean = title.trim();
+    const m = ref.current.find((x) => x.id === id);
+    if (!m || !clean) return;
+    if (m.serverId && currentUser()) await renameServerMaterial(m.serverId, clean);
+    setMaterials((prev) =>
+      prev.map((x) => (x.id === id ? { ...x, analysis: x.analysis ? { ...x.analysis, title: clean } : x.analysis, name: x.analysis ? x.name : clean } : x))
+    );
+  }, []);
+
+  const syncFromServer = useCallback(async () => {
+    if (!currentUser()) return;
+    setSyncing(true);
+    try {
+      await flushDeletes();
+      const server = await listServerMaterials();
+      const known = new Set(ref.current.map((m) => m.serverId).filter(Boolean));
+      const deleted = new Set(pendingDeletes.current);
+      const missing = server.filter((s) => s.id && !known.has(s.id) && !deleted.has(s.id)).map(fromServer);
+      if (missing.length) {
+        setMaterials((prev) => {
+          const have = new Set(prev.map((m) => m.serverId).filter(Boolean));
+          const add = missing.filter((m) => !have.has(m.serverId));
+          return [...prev, ...add].sort((a, b) => b.addedAt.localeCompare(a.addedAt));
+        });
+        // Ones still being read on the server: keep checking.
+        missing.filter((m) => m.status === 'processing').forEach((m) => setTimeout(() => run(m), 500));
+      }
+    } catch (e) {
+      console.warn('[materials] sync from server failed', e);
+    } finally {
+      setSyncing(false);
+    }
+  }, [flushDeletes, run]);
+
+  // Sync when the app opens signed in, and on every sign-in.
+  useEffect(() => {
+    if (!loaded) return;
+    syncFromServer();
+    return onAuthChange((user) => {
+      if (user) syncFromServer();
+    });
+  }, [loaded, syncFromServer]);
+
+  useEffect(() => {
+    if (loaded && isOnline) flushDeletes();
+  }, [loaded, isOnline, flushDeletes]);
 
   const getMaterial = useCallback((id: string) => materials.find((m) => m.id === id), [materials]);
 
   return (
     <MaterialsContext.Provider
-      value={{ materials, loaded, getMaterial, addMaterial, updateMaterial, retryMaterial, deleteMaterial }}
+      value={{
+        materials,
+        loaded,
+        getMaterial,
+        addMaterial,
+        updateMaterial,
+        retryMaterial,
+        deleteMaterial,
+        renameMaterial,
+        syncFromServer,
+        syncing,
+      }}
     >
       {children}
     </MaterialsContext.Provider>

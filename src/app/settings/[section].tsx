@@ -23,6 +23,11 @@ import { EmptyState } from '@/components/states/state-view';
 import { getNotificationPermission, requestNotificationPermission, type NotificationPermission } from '@/services/notifications';
 import { resetAllData } from '@/utils/reset';
 import { isBackendConfigured } from '@/services/lecture-api';
+import {
+  getPreferences as getServerNotificationPrefs,
+  savePreferences as saveServerNotificationPrefs,
+  type NotificationPrefs,
+} from '@/services/notification-api';
 
 const TITLES: Record<string, string> = {
   study: 'Study preferences',
@@ -136,7 +141,60 @@ function Notifications() {
         <Divider />
         <Toggle title="Tests & exams" desc="The day before and 2 hours before" value={p.examCountdown} onChange={(v) => updatePreferences({ examCountdown: v })} />
       </Panel>
+      <ServerNotificationPrefs />
     </>
+  );
+}
+
+/** Account-level notification settings (GET/PUT /notifications/preferences). */
+function ServerNotificationPrefs() {
+  const { user } = useSession();
+  const [prefs, setPrefs] = useState<NotificationPrefs | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!user) return;
+    getServerNotificationPrefs()
+      .then(setPrefs)
+      .catch((e) => setError(e instanceof Error ? e.message : 'Couldn’t load your account settings.'));
+  }, [user]);
+
+  if (!user) return null;
+
+  const set = (key: keyof NotificationPrefs, value: boolean) => {
+    if (!prefs) return;
+    const before = prefs;
+    setPrefs({ ...prefs, [key]: value });
+    setError('');
+    saveServerNotificationPrefs({ [key]: value }).catch((e) => {
+      setPrefs(before);
+      setError(e instanceof Error ? e.message : 'Couldn’t save that. Please try again.');
+    });
+  };
+
+  return (
+    <Panel title="From Zuri" subtitle="Saved in your account. Phone alerts from Zuri’s server start once its sender is live; class and deadline reminders above already work.">
+      {!prefs ? (
+        <Text style={styles.toggleDesc}>{error || 'Loading…'}</Text>
+      ) : (
+        <>
+          <Toggle title="Phone notifications" desc="Allow Zuri’s server to notify this account" value={prefs.push_enabled} onChange={(v) => set('push_enabled', v)} />
+          <Divider />
+          <Toggle title="Email" desc="Summaries and important updates by email" value={prefs.email_enabled} onChange={(v) => set('email_enabled', v)} />
+          <Divider />
+          <Toggle title="Document ready" desc="When Zuri has finished reading an upload" value={prefs.notify_on_material_processed} onChange={(v) => set('notify_on_material_processed', v)} />
+          <Divider />
+          <Toggle title="Study reminders" desc="Nudges to keep your streak going" value={prefs.notify_on_study_reminder} onChange={(v) => set('notify_on_study_reminder', v)} />
+          <Divider />
+          <Toggle title="Quiz results" desc="When a quiz is graded" value={prefs.notify_on_quiz_completion} onChange={(v) => set('notify_on_quiz_completion', v)} />
+          <Divider />
+          <Toggle title="Streaks" desc="When you reach a study streak" value={prefs.notify_on_streak_achievement} onChange={(v) => set('notify_on_streak_achievement', v)} />
+          <Divider />
+          <Toggle title="Goals" desc="When you complete a goal" value={prefs.notify_on_goal_completion} onChange={(v) => set('notify_on_goal_completion', v)} />
+          {!!error && <Text style={[styles.toggleDesc, { color: UI.error }]}>{error}</Text>}
+        </>
+      )}
+    </Panel>
   );
 }
 
@@ -303,15 +361,27 @@ function Privacy() {
 
 function Account() {
   const { state } = useAcademic();
-  const { signOut } = useSession();
+  const { signOut, user } = useSession();
   return (
     <>
       <Panel>
         <ListRow icon="person-outline" title={state.studentName || 'Name not set'} subtitle="Name" onPress={() => router.push('/profile/academic' as Href)} />
         <Divider />
-        <ListRow icon="mail-outline" title={state.email || 'Not set'} subtitle="Email" />
+        <ListRow icon="mail-outline" title={user?.email || state.email || 'Not set'} subtitle="Email" />
         <Divider />
-        <ListRow icon="key-outline" title="Change password" subtitle={isBackendConfigured ? 'Send a reset link to your email' : 'Available once accounts are connected to the server'} />
+        <ListRow
+          icon="key-outline"
+          title="Change password"
+          subtitle={user ? 'Needs your current password' : 'Sign in first'}
+          onPress={user ? () => router.push('/account/password' as Href) : undefined}
+        />
+        <Divider />
+        <ListRow
+          icon="phone-portrait-outline"
+          title="Signed-in devices"
+          subtitle="See where you’re signed in, or sign out everywhere"
+          onPress={user ? () => router.push('/account/devices' as Href) : undefined}
+        />
       </Panel>
       <Panel>
         <ListRow

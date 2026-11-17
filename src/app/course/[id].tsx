@@ -19,6 +19,7 @@ import { pickAndUploadMaterial } from '@/utils/pick-material';
 import { useProgress } from '@/context/progress-context';
 import { courseMastery, overallMastery } from '@/utils/mastery';
 import { CourseTopics, ActivityList, activityFor } from '@/components/course/course-topics';
+import { WeakTopicsFromZuri } from '@/components/academic/from-zuri';
 import { describeStart, formatDuration, upcomingClasses } from '@/utils/time';
 
 const TABS = [
@@ -162,6 +163,7 @@ export default function CourseDetailScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {tab === 'overview' && (
           <>
+            <WeakTopicsFromZuri course={course} />
             <Text style={styles.sectionLabel}>YOUR STANDING</Text>
             <Pressable style={({ pressed }) => [styles.card, pressed && styles.pressed]} onPress={() => setTab('topics')}>
               <View style={styles.rowBetween}>

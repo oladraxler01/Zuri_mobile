@@ -1,18 +1,5 @@
-// GENERATED FILE. Do not edit by hand.
-// Source: .claude/skills/zuri-design-system/tokens.json (Zuri Mobile v1, synced 2026-11-16)
-// Regenerate with: node scripts/generate-tokens.mjs
-
-/** Brand primitives. Screens use the semantic colours below, not these. */
-export const brand = {
-  forest: "#17231b",
-  pine: "#2c3930",
-  paper: "#fbf9f8",
-  gold: "#e9c349",
-  "gold-deep": "#cba72f",
-  "gold-text": "#735c00",
-  mint: "#d7e6d9",
-  ink: "#1b1c1c",
-} as const;
+// GENERATED from .claude/skills/zuri-design-system/tokens.json by
+// scripts/generate-theme-tokens.py. Do not edit by hand.
 
 /** Semantic colours, light theme. */
 export const lightColors = {
@@ -46,8 +33,8 @@ export const lightColors = {
   recording: "#d92d20",
 } as const;
 
-/** Semantic colours, dark theme. */
-export const darkColors: { readonly [K in keyof typeof lightColors]: string } = {
+/** Semantic colours, dark theme (same keys as light). */
+export const darkColors: Record<keyof typeof lightColors, string> = {
   surface: "#0f1712",
   "surface-raised": "#18221b",
   "surface-sunken": "#0a100c",
@@ -78,10 +65,52 @@ export const darkColors: { readonly [K in keyof typeof lightColors]: string } = 
   recording: "#ff6b5e",
 };
 
-export type ColorToken = keyof typeof lightColors;
-export type ThemeColors = { readonly [K in ColorToken]: string };
+/** Brand primitives. Screens use the semantic colours above, not these. */
+export const brand = {
+  forest: "#17231b",
+  pine: "#2c3930",
+  paper: "#fbf9f8",
+  gold: "#e9c349",
+  "gold-deep": "#cba72f",
+  "gold-text": "#735c00",
+  mint: "#d7e6d9",
+  ink: "#1b1c1c",
+} as const;
 
-/** Type styles. Use them through <Text variant>, not directly. */
+/** 4-pt spacing scale: space[4] = 16. */
+export const space = {
+  "1": 4,
+  "2": 8,
+  "3": 12,
+  "4": 16,
+  "5": 20,
+  "6": 24,
+  "8": 32,
+  "12": 48,
+} as const;
+
+/** The five corner radii. */
+export const radius = {
+  sm: 8,
+  md: 14,
+  lg: 20,
+  xl: 28,
+  full: 999,
+} as const;
+
+/** Fixed sizes (touch-target, control-height, …). */
+export const size = {
+  "touch-target": 48,
+  "control-height": 52,
+  "control-height-sm": 36,
+  "tab-bar-height": 64,
+  "icon-sm": 16,
+  "icon-md": 20,
+  "icon-lg": 24,
+  "record-button": 72,
+} as const;
+
+/** Type styles: spread into a Text style, e.g. {...type.headline}. */
 export const type = {
   display: {
     fontFamily: "SourceSerif4_600SemiBold",
@@ -136,60 +165,16 @@ export const type = {
     fontSize: 11,
     lineHeight: 14,
     letterSpacing: 1.1,
+    textTransform: "uppercase",
   },
   stat: {
     fontFamily: "Inter_600SemiBold",
     fontSize: 32,
     lineHeight: 36,
     letterSpacing: -0.64,
+    fontVariant: ["tabular-nums"],
   },
 } as const;
 
-export type TypeVariant = keyof typeof type;
-
-/** 4-point spacing scale: space[4] is 16. */
-export const space = {
-  "1": 4,
-  "2": 8,
-  "3": 12,
-  "4": 16,
-  "5": 20,
-  "6": 24,
-  "8": 32,
-  "12": 48,
-} as const;
-
-/** The five radii. */
-export const radius = {
-  sm: 8,
-  md: 14,
-  lg: 20,
-  xl: 28,
-  full: 999,
-} as const;
-
-/** Fixed sizes (touch target, control heights, icons). */
-export const size = {
-  touchTarget: 48,
-  controlHeight: 52,
-  controlHeightSm: 36,
-  tabBarHeight: 64,
-  iconSm: 16,
-  iconMd: 20,
-  iconLg: 24,
-  recordButton: 72,
-} as const;
-
-/** CSS box-shadow strings; undefined means no shadow in that theme. */
-export const lightShadows: { readonly [K in ShadowToken]: string | undefined } = {
-  card: "0 1px 2px rgba(23, 35, 27, 0.06), 0 6px 16px rgba(23, 35, 27, 0.06)",
-  raised: "0 8px 24px rgba(23, 35, 27, 0.14)",
-  sheet: "0 -8px 32px rgba(23, 35, 27, 0.16)",
-};
-export const darkShadows: { readonly [K in ShadowToken]: string | undefined } = {
-  card: undefined,
-  raised: "0 8px 24px rgba(0, 0, 0, 0.5)",
-  sheet: "0 -8px 32px rgba(0, 0, 0, 0.6)",
-};
-
-export type ShadowToken = "card" | "raised" | "sheet";
+export type ColorName = keyof typeof lightColors;
+export type TypeStyle = keyof typeof type;

@@ -76,10 +76,7 @@ export default function SignInScreen() {
   };
 
   const handleForgotPassword = () => {
-    Alert.alert(
-      'Reset Password',
-      'Password reset isn’t available in the app yet. Contact support@zurilearn.com and we’ll help you get back in.'
-    );
+    router.push({ pathname: '/onboarding/forgot-password', params: { email: email.trim().toLowerCase() } } as any);
   };
 
   const handleSocialSignIn = (provider: 'Google' | 'Apple') => {

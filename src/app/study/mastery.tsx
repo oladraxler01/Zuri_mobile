@@ -10,6 +10,7 @@ import { Chip } from '@/components/ui/chip';
 import { CourseTopics } from '@/components/course/course-topics';
 import { EmptyState } from '@/components/states/state-view';
 import { courseMastery, overallMastery } from '@/utils/mastery';
+import { AccountMasteryPanel } from '@/components/progress/account-progress';
 
 /** Concept mastery across all courses. */
 export default function ConceptMasteryScreen() {
@@ -28,6 +29,7 @@ export default function ConceptMasteryScreen() {
 
   return (
     <ScreenShell back eyebrow="STUDY" title="Concept mastery" edges={['top', 'bottom']}>
+      <AccountMasteryPanel />
       {!perCourse.length ? (
         <EmptyState icon="git-network-outline" title="No topics yet" message="Topics appear once you have processed lectures or materials." />
       ) : (

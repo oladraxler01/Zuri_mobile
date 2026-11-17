@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ZuriFonts } from '@/constants/zuri-theme';
@@ -6,6 +6,8 @@ import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { ScreenShell, Panel } from '@/components/dashboard';
 import { Chip } from '@/components/ui/chip';
+import { useSession } from '@/context/session-context';
+import { completeGoal, createGoal, deleteGoal, listGoals } from '@/services/progress-api';
 
 const GPA_TARGETS = ['4.50+ (First Class)', '3.50–4.49 (Second Class Upper)', '2.40–3.49 (Second Class Lower)', 'Just pass every course'];
 
@@ -14,14 +16,64 @@ export default function GoalsScreen() {
   const { state, updatePreferences, setAcademicInfo } = useAcademic();
   const p = state.preferences;
   const [text, setText] = useState('');
+  const [syncNote, setSyncNote] = useState('');
+  const { user } = useSession();
+  const goalsRef = useRef(state.goals);
+  goalsRef.current = state.goals;
 
-  const add = () => {
+  // Goals live in the account too (/analytics/goals): pull them in, and push any made offline.
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      try {
+        const server = await listGoals();
+        let goals = [...goalsRef.current];
+        const known = new Set(goals.map((g) => g.serverId).filter(Boolean));
+        server
+          .filter((s) => !known.has(s.id))
+          .forEach((s) => goals.push({ id: `g_${s.id}`, serverId: s.id, text: s.title, done: s.is_completed }));
+        goals = goals.map((g) => {
+          const s = server.find((x) => x.id === g.serverId);
+          return s && s.is_completed && !g.done ? { ...g, done: true } : g;
+        });
+        for (const g of goals.filter((x) => !x.serverId)) {
+          const created = await createGoal(g.text);
+          if (g.done) await completeGoal(created.id).catch(() => {});
+          goals = goals.map((x) => (x.id === g.id ? { ...x, serverId: created.id } : x));
+        }
+        setAcademicInfo({ goals });
+        setSyncNote('');
+      } catch (e) {
+        setSyncNote('Couldn’t sync your goals with your account right now.');
+      }
+    })();
+  }, [user]);
+
+  const add = async () => {
     if (!text.trim()) return;
-    setAcademicInfo({ goals: [...state.goals, { id: `g_${Date.now().toString(36)}`, text: text.trim(), done: false }] });
+    const goal = { id: `g_${Date.now().toString(36)}`, text: text.trim(), done: false };
+    setAcademicInfo({ goals: [...state.goals, goal] });
     setText('');
+    if (user) {
+      try {
+        const created = await createGoal(goal.text);
+        setAcademicInfo({ goals: goalsRef.current.map((g) => (g.id === goal.id ? { ...g, serverId: created.id } : g)) });
+      } catch {
+        setSyncNote('Saved on this phone. It will be added to your account next time.');
+      }
+    }
   };
-  const toggle = (id: string) => setAcademicInfo({ goals: state.goals.map((g) => (g.id === id ? { ...g, done: !g.done } : g)) });
-  const remove = (id: string) => setAcademicInfo({ goals: state.goals.filter((g) => g.id !== id) });
+  const toggle = (id: string) => {
+    const g = state.goals.find((x) => x.id === id);
+    setAcademicInfo({ goals: state.goals.map((x) => (x.id === id ? { ...x, done: !x.done } : x)) });
+    // The account can mark a goal complete but not undo it.
+    if (user && g?.serverId && !g.done) completeGoal(g.serverId).catch(() => setSyncNote('Couldn’t update your account right now.'));
+  };
+  const remove = (id: string) => {
+    const g = state.goals.find((x) => x.id === id);
+    setAcademicInfo({ goals: state.goals.filter((x) => x.id !== id) });
+    if (user && g?.serverId) deleteGoal(g.serverId).catch(() => setSyncNote('Couldn’t remove it from your account right now.'));
+  };
 
   return (
     <ScreenShell back eyebrow="PROFILE" title="Goals" edges={['top', 'bottom']}>
@@ -64,6 +116,7 @@ export default function GoalsScreen() {
             <Ionicons name="add" size={20} color="#fff" />
           </Pressable>
         </View>
+        {!!syncNote && <Text style={styles.muted}>{syncNote}</Text>}
       </Panel>
     </ScreenShell>
   );

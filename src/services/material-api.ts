@@ -3,14 +3,16 @@ import { File } from 'expo-file-system';
 import type { MaterialAnalysis, MaterialCategory, MaterialPassage } from '@/types/material';
 import { isBackendConfigured } from '@/services/api-config';
 import { uploadToZuri } from '@/services/upload-api';
+import { summariseMaterial } from '@/services/ai-api';
 import { buildSampleAnalysis } from '@/data/sample-lecture-analysis';
 
 /**
  * Material upload + processing.
  *
- * Backend: the file is sent with uploadToZuri (create → signed upload → wait),
- * and the finished record's { title, summary, concepts[], questions[],
- * passages[{ location, text }] } is mapped onto the material screen.
+ * Backend: the file is sent with uploadToZuri (create → signed upload →
+ * confirm → wait for processing), then Zuri's AI (reading.analyse) writes the
+ * summary, key points and key terms. Practice questions and quotable passages
+ * come in a later step.
  *
  * With the live API off:
  * - plain text / Markdown files get a basic analysis done on the phone
@@ -25,6 +27,7 @@ export interface ProcessMaterialInput {
   courseCode?: string;
   courseTitle?: string;
   category: MaterialCategory;
+  sizeBytes?: number;
   /** From an earlier attempt, so retries don't upload twice. */
   serverId?: string;
   uploaded?: boolean;
@@ -46,14 +49,12 @@ export async function processMaterial(input: ProcessMaterialInput, onProgress: P
 // ─── Real backend ─────────────────────────────────────────────────
 
 async function uploadToBackend(input: ProcessMaterialInput, onProgress: Progress): Promise<MaterialAnalysis> {
-  const json = await uploadToZuri({
+  const record = await uploadToZuri({
     uri: input.uri,
     name: input.name,
-    mimeType: input.mimeType ?? 'application/octet-stream',
+    mimeType: input.mimeType || guessMimeType(input.name),
     title: titleFromName(input.name) || input.name,
-    courseCode: input.courseCode,
-    courseTitle: input.courseTitle,
-    category: input.category,
+    sizeBytes: input.sizeBytes,
     serverId: input.serverId,
     uploaded: input.uploaded,
     onServerId: input.onServerId,
@@ -61,30 +62,39 @@ async function uploadToBackend(input: ProcessMaterialInput, onProgress: Progress
     onProgress,
   });
 
-  const data = json?.data ?? json;
+  // The server has read the file. Ask Zuri's AI for the summary and key terms.
+  let summary = '';
+  let concepts: MaterialAnalysis['concepts'] = [];
+  try {
+    const ai = await summariseMaterial(record.id);
+    const takeaways = (ai.key_takeaways ?? []).filter(Boolean);
+    summary = [ai.summary, ...takeaways.map((k) => `• ${k}`)].filter(Boolean).join('\n\n');
+    concepts = (ai.vocab_terms ?? [])
+      .filter((v) => v?.term)
+      .slice(0, 8)
+      .map((v, i) => ({ id: `c${i}`, title: v.term, summary: v.definition ?? '', icon: 'bulb-outline' }));
+  } catch (e) {
+    summary = `Zuri has read this file, but the summary isn’t available right now (${
+      e instanceof Error ? e.message : 'unknown error'
+    }). Open it again later.`;
+  }
+
   return {
     source: 'server',
-    title: data.title ?? input.name,
-    summary: data.summary ?? '',
-    concepts: (data.concepts ?? []).map((c: any, i: number) => ({
-      id: String(c.id ?? i),
-      title: c.title,
-      summary: c.summary,
-      icon: 'bulb-outline',
-    })),
-    questions: (data.questions ?? []).map((q: any, i: number) => ({
-      id: String(q.id ?? i),
-      question: q.question,
-      options: q.options,
-      correctIndex: q.correctIndex,
-      explanation: q.explanation ?? '',
-    })),
-    passages: (data.passages ?? []).map((p: any, i: number) => ({
-      id: String(p.id ?? i),
-      location: p.location ?? `Part ${i + 1}`,
-      text: p.text,
-    })),
+    title: record.title ?? titleFromName(input.name),
+    summary,
+    concepts,
+    questions: [],
+    passages: [],
   };
+}
+
+function guessMimeType(name: string): string {
+  if (/\.pdf$/i.test(name)) return 'application/pdf';
+  if (/\.(md|markdown)$/i.test(name)) return 'text/markdown';
+  if (/\.csv$/i.test(name)) return 'text/csv';
+  if (/\.txt$/i.test(name)) return 'text/plain';
+  return 'application/octet-stream';
 }
 
 // ─── On the phone ─────────────────────────────────────────────────

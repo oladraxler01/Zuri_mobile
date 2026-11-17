@@ -11,7 +11,7 @@ interface Props {
   best?: { score: number; total: number };
   onFinish: (score: number, total: number) => void;
   /** called once per question when its answer is checked */
-  onAnswer?: (question: LectureQuestion, correct: boolean) => void;
+  onAnswer?: (question: LectureQuestion, correct: boolean, chosenIndex: number) => void;
 }
 
 /** One question at a time → instant feedback → results with review. */
@@ -129,7 +129,7 @@ export function QuizTab({ questions, best, onFinish, onAnswer }: Props) {
     if (selected === null) return;
     if (!checked) {
       setChecked(true);
-      onAnswer?.(q, selected === q.correctIndex);
+      onAnswer?.(q, selected === q.correctIndex, selected);
       return;
     }
     const nextAnswers = [...answers, selected];

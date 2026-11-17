@@ -212,3 +212,80 @@ Part 2 — institution:
 - **Custom courses have no server timetable**: `POST /academic/timetable/slots` with a custom course id crashes with a 500 (backend bug), and mastery / study partner routes answer 404 for them.
 - App fixes: courses now record whether they're in the catalogue (`catalogue`). Classes for custom courses stay on the phone instead of being retried forever, anything the server refuses stops retrying, phone-only classes are no longer dropped by a sync, and learning signals / weak topics only use catalogue courses.
 - **Backend to do:** seed the academic catalogue for each institution, return 404 instead of 500 for unknown course ids on `/academic/timetable/slots`, and add delete routes for courses and classes.
+
+### Uploads start processing; summaries from Zuri's AI (2026-11-16)
+- Cause of "Processing" forever: the app never told the server the file had arrived. `upload-api.ts` now runs the backend's real flow: `POST /materials {title, mime_type, file_size}` → `POST /materials/{id}/presign {action:"upload"}` → PUT → **`POST /webhooks/material-uploaded {material_id}`** → poll `GET /materials/{id}` until `completed`/`failed`. Retries re-confirm (or re-send the file if the server answers 409 "not uploaded yet").
+- Fields now match the content service (`mime_type`, `file_size`); the ignored `course_code/content_type/filename/category` are gone.
+- New `services/ai-api.ts` (`POST /ai/execute`). After processing, `reading.analyse` with the `material_id` gives the summary, key points and key terms shown on the material page. Practice questions and passages come in a later step.
+- The server can only read PDF and text for now, so the file picker offers just those. Failures say why (recordings can't be transcribed yet; other types unsupported; scanned PDFs).
+
+### Practice quiz for materials from Zuri's AI (2026-11-16)
+- Material page → Quiz tab → "Create practice quiz": `POST /ai/execute` `study.quiz.generate` with the material's server id (`count: 5`, `multiple_choice`). Options `{A..D}` + `correct_answer` are mapped to the app's question format; malformed questions are skipped. Questions are kept with the material, so it costs one AI request per material. Answers still feed mastery.
+- Fixed: upload progress from expo-file-system arrives as BigInt and crashed the progress label.
+
+### Practice tab: quiz, flashcards or exam-style questions (2026-11-16)
+- Material page "Quiz" tab is now "Practice" with three choices, each generated on request by Zuri's AI and kept with the material (one AI request each):
+  - **Quiz**: 5 multiple-choice questions (`study.quiz.generate`, `multiple_choice`).
+  - **Flashcards**: 10 cards (`study.flashcards.generate`), tap to flip, "Still learning" / "Got it" feeds mastery.
+  - **Exam-style**: theory + applied real-world-scenario questions like a lecturer would set, with marks, model answer and marking guide (`study.quiz.generate` with a descriptive `quiz_type`; the server puts it into its prompt).
+- New `components/materials/practice-tab.tsx`.
+- Recording: if iOS refuses the 16 kHz voice format ("Failed to prepare recorder"), retry once with `RecordingPresets.HIGH_QUALITY` (b1cb4a8). Not tested on an iPhone yet.
+
+### Ask Zuri answers with AI (2026-11-16)
+- `app/ask.tsx` now sends each question to `POST /ai/execute` `chat.generate` with up to 5 context passages and the last 4 turns. Passages come from the phone's own sources (lecture transcripts, material passages), plus, for one document, the server's best-matching passages (`retrieval.search` with that material's id) and, for everything / a course, the summaries of matching processed documents. The passages used are shown under the answer. If the AI fails, the passages are shown with the reason.
+- New `components/markdown-text.tsx` renders the AI's headings, bullets and bold.
+- Not used yet: the course study partner (`/academic/courses/:id/partner/chat`) only works for catalogue courses, and the live catalogue is empty.
+- **Backend security bug reported** (BACKEND_REQUESTS #0): `retrieval.*` isn't limited to the user's own documents. The app only calls it with a material id the user owns.
+
+### Account: passwords, devices, sign out everywhere, profile sync (2026-11-17)
+- Forgot password (sign-in → "Forgot Password?" → `onboarding/forgot-password`): email → `POST /auth/forgot-password` → paste the code from the email + new password → `POST /auth/reset-password {token, new_password}`. The emailed code is currently a long token (6-digit code requested, BACKEND_REQUESTS #9).
+- Settings → Account: **Change password** (`account/password`, `POST /users/me/change-password`) and **Signed-in devices** (`account/devices`, `GET/DELETE /users/me/sessions`, "Sign out of all devices" → `POST /auth/logout-all`).
+- Sign out now calls `POST /auth/logout` with no body (the server revokes the token it was called with).
+- Profile → Academic profile also saves name, school, department, level and timezone to the account (`PUT /users/me`). Matric number, faculty and semester stay on the phone (no server fields yet).
+- Friendlier messages for 429 (too many tries) and deactivated accounts.
+
+### Materials synced with the server: list, rename, delete (2026-11-17)
+- `materials-context` syncs on launch and on every sign-in: `GET /materials` (all pages) brings in materials uploaded from another device (`srv_<id>`, no local file; summary on request with "Create summary" → `reading.analyse`). Ones still processing keep being checked.
+- Rename: material page → Summary → NAME → Save → `PUT /materials/:id {title}`.
+- Delete also runs `DELETE /materials/:id`; if offline, the id is remembered (`zuri.materials.pending-deletes.v1`) and sent later, and a sync never brings a deleted one back.
+- Opening the file of a material from another device explains that the file isn't on this phone.
+
+### Study: AI "Explain it", practice saved to the account, server-graded quizzes (2026-11-17)
+- Study session → wrong answer → "Explain it" → **Explain it with Zuri**: `chat.generate` explains why the right answer is right (and the chosen one wrong) with a short example, grounded in the concept summary and the lecture moments.
+- Practice tab: a generated quiz is also saved with `POST /quizzes` (options as `{text, is_correct}`), flashcards with `POST /flashcard-decks`. Finishing a quiz sends the picked answers to `POST /quizzes/:id/submit`; the server grades it, it counts towards study stats and topic mastery, and the score shows as "Your best". Quizzes made before this are saved to the server the first time they're finished.
+- `QuizTab.onAnswer` now also reports the chosen option index.
+
+### Progress from the account: streak, stats, topic mastery, goals (2026-11-17)
+- New `services/progress-api.ts` (analytics service).
+- Finishing a study session also sends `POST /analytics/study-sessions {session_date, duration_minutes, quizzes_completed, flashcards_reviewed, materials_reviewed}`.
+- Study history: new "In your account" panel (`/analytics/study-streak`, `/analytics/study-stats`).
+- Concept mastery: new "Mastery in your account" panel from server-graded quizzes (`/analytics/topic-mastery`) plus topics due for review (`/analytics/topics-for-review`).
+- Profile → Goals: semester goals sync with `/analytics/goals` (pulled on open, offline-made ones pushed; ticking one off → `/complete`, removing → `DELETE`). The account can't un-complete a goal, so unticking stays on the phone.
+
+### Notifications: phone registration, account settings, history (2026-11-17)
+- New `services/notification-api.ts` (notification service; responses not wrapped in `{data}`).
+- This phone registers for server pushes (`POST /notifications/devices/register {device_token, device_type}`, native FCM/APNs token) when signed in with permission, and right after permission is granted; it unregisters (`DELETE /notifications/devices/:token`) before sign-out. Needs a development/production build (no device token in Expo Go).
+- Settings → Notifications: new "From Zuri" panel with the account's settings (`GET/PUT /notifications/preferences`: push, email, document ready, study reminders, quiz results, streaks, goals).
+- Notification centre: "From Zuri" section with `GET /notifications/history`; its settings link now opens Settings → Notifications.
+- Class and deadline reminders stay on the phone (work offline, no duplicates). Server pushes don't arrive yet: the backend's sender is a stub (BACKEND_REQUESTS #3).
+
+### Today's cards and weak topics from the academic service on screen (2026-11-17)
+- New `components/academic/from-zuri.tsx`.
+- Home: "Today from Zuri" shows the top 4 open cards from `GET /academic/today` (class countdown, pre-class prep, post-class summary, deadline, practice gap, lecturer revision pack). Tap → `POST …/act` and opens the matching screen (upcoming class, planner, course, weak-topic study session); × → `POST …/dismiss`. Hidden when there are no cards.
+- Course page → Overview: "Zuri suggests revising" from `GET /academic/courses/:id/weak-topics` for catalogue courses; tap a topic to practise it.
+- Live catalogue is still empty, so most students see neither panel until courses are seeded (custom courses have no server mastery).
+
+### Research: AI answers and evidence overview (2026-11-17)
+- Research project → Ask your sources: each question is answered by `chat.generate` from the best 5 matching passages (abstracts, saved evidence, notes), citing author-year, saying where sources disagree; the passages are listed under "Sources used". The last 2 turns are sent as history.
+- Synthesis: "Overview with Zuri" writes a short overview from the evidence, theme by theme (top 5 themes), with citations, gaps and what to read next; it can be shared. Marked as a study aid, not finished prose.
+- Paper search stays on OpenAlex directly (no backend needed). Projects still live on the phone only (no research routes on the server, BACKEND_REQUESTS #20).
+
+### Admin: AI usage and cost (2026-11-17)
+- Admin → Academic intelligence: "AI usage and cost" panel from `GET /ai/analytics/costs` (scoped with `institution_id` from `/users/me` when the account has one): requests, estimated cost, tokens, cache hit rate and tokens saved.
+- **Backend security bug reported** (BACKEND_REQUESTS #0): this route has no role check, so any signed-in user can read AI spend. Admin sign-in in the app is still local (no admin accounts on the server yet).
+
+### Design system: theme tokens, and today's new screens moved onto them (2026-11-17)
+- New `src/theme/tokens.ts`, generated from `.claude/skills/zuri-design-system/tokens.json` by `scripts/generate-theme-tokens.py` (never edit by hand): light/dark semantic colours, brand primitives, spacing, radii, sizes and type styles.
+- New `src/theme/index.ts` with `useTheme()` → `{ colors, space, radius, size, type }`. `DARK_MODE_ENABLED = false` until every student screen is on tokens, so migrated and old screens look the same.
+- On tokens (no hex, type styles, 4-pt spacing, the five radii, 48px touch targets, accessibility roles/labels): forgot password, change password, signed-in devices, Practice tab, Markdown answers, "Today from Zuri" / weak topics, account progress panels, AI cost panel. Hex literals added today inside older screens now use theme tokens.
+- Older screens still use `UI` / `ZuriColors`; migrate them area by area (design system `reference/migration.md`).

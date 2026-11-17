@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet, StatusBar, Platform, Linking, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet, StatusBar, Platform, Linking, ActivityIndicator, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -11,7 +11,7 @@ import { UI } from '@/constants/zuri-ui';
 import { useMaterials } from '@/context/materials-context';
 import { useAcademic } from '@/context/academic-context';
 import { categoryLabel, fileIcon, formatSize } from '@/components/materials/material-card';
-import { QuizTab } from '@/components/lecture/quiz-tab';
+import { PracticeTab } from '@/components/materials/practice-tab';
 import { Chip, Segmented } from '@/components/ui/chip';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
 import { StateView } from '@/components/states/state-view';
@@ -19,12 +19,14 @@ import { useProgress } from '@/context/progress-context';
 import { conceptForQuestion } from '@/utils/mastery';
 import { MATERIAL_CATEGORIES, type Material } from '@/types/material';
 import { formatLectureDate } from '@/utils/time';
+import { summariseMaterial } from '@/services/ai-api';
+import { lightColors, radius, space } from '@/theme';
 
 type Tab = 'summary' | 'concepts' | 'questions' | 'passages';
 
 export default function MaterialScreen() {
   const params = useLocalSearchParams<{ id: string; tab?: string }>();
-  const { getMaterial, loaded, updateMaterial, retryMaterial, deleteMaterial } = useMaterials();
+  const { getMaterial, loaded, updateMaterial, retryMaterial, deleteMaterial, renameMaterial } = useMaterials();
   const { state } = useAcademic();
   const m = getMaterial(params.id);
   const [tab, setTab] = useState<Tab>(
@@ -32,6 +34,8 @@ export default function MaterialScreen() {
   );
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [openError, setOpenError] = useState('');
+  const [summaryBusy, setSummaryBusy] = useState(false);
+  const [summaryError, setSummaryError] = useState('');
   const progress = useProgress();
 
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/materials' as Href));
@@ -47,6 +51,10 @@ export default function MaterialScreen() {
 
   const openDocument = async () => {
     setOpenError('');
+    if (!m.uri) {
+      setOpenError('This file was uploaded from another device, so it isn’t stored on this phone. Its summary and practice still work.');
+      return;
+    }
     try {
       if (Platform.OS === 'web') {
         await Linking.openURL(m.uri);
@@ -155,7 +163,7 @@ export default function MaterialScreen() {
               options={[
                 { key: 'summary', label: 'Summary' },
                 { key: 'concepts', label: `Concepts${a.concepts.length ? ` ${a.concepts.length}` : ''}` },
-                { key: 'questions', label: 'Quiz' },
+                { key: 'questions', label: 'Practice' },
                 { key: 'passages', label: 'Passages' },
               ]}
               value={tab}
@@ -165,8 +173,56 @@ export default function MaterialScreen() {
             <View style={{ marginTop: 16 }}>
               {tab === 'summary' && (
                 <>
-                  <Text style={styles.body}>{a.summary}</Text>
-                  <Settings m={m} courses={state.courses} onChange={(patch) => updateMaterial(m.id, patch)} />
+                  {a.summary ? (
+                    <Text style={styles.body}>{a.summary}</Text>
+                  ) : summaryBusy ? (
+                    <View style={{ alignItems: 'center', paddingVertical: 24, gap: 10 }}>
+                      <ActivityIndicator color={UI.ink} />
+                      <Text style={styles.cardBody}>Zuri is summarising this document…</Text>
+                    </View>
+                  ) : (
+                    <StateView
+                      compact
+                      icon="document-text-outline"
+                      title="No summary on this phone yet"
+                      message={summaryError || 'Zuri can summarise this document and list its key terms.'}
+                      primary={
+                        m.serverId
+                          ? {
+                              label: summaryError ? 'Try again' : 'Create summary',
+                              onPress: async () => {
+                                setSummaryBusy(true);
+                                setSummaryError('');
+                                try {
+                                  const ai = await summariseMaterial(m.serverId!);
+                                  const takeaways = (ai.key_takeaways ?? []).filter(Boolean);
+                                  updateMaterial(m.id, {
+                                    analysis: {
+                                      ...a,
+                                      summary: [ai.summary, ...takeaways.map((k) => `• ${k}`)].filter(Boolean).join('\n\n'),
+                                      concepts: (ai.vocab_terms ?? [])
+                                        .filter((v) => v?.term)
+                                        .slice(0, 8)
+                                        .map((v, i) => ({ id: `c${i}`, title: v.term, summary: v.definition ?? '', icon: 'bulb-outline' })),
+                                    },
+                                  });
+                                } catch (e) {
+                                  setSummaryError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
+                                } finally {
+                                  setSummaryBusy(false);
+                                }
+                              },
+                            }
+                          : undefined
+                      }
+                    />
+                  )}
+                  <Settings
+                    m={m}
+                    courses={state.courses}
+                    onChange={(patch) => updateMaterial(m.id, patch)}
+                    onRename={(title) => renameMaterial(m.id, title)}
+                  />
                 </>
               )}
 
@@ -188,25 +244,36 @@ export default function MaterialScreen() {
 
               {tab === 'questions' && (
                 <View style={{ marginHorizontal: -20 }}>
-                  {a.questions.length ? (
-                    <QuizTab
-                      questions={a.questions}
-                      onFinish={() => {}}
-                      onAnswer={(q, correct) =>
-                        progress.log({
-                          type: 'quiz-answer',
-                          courseId: m.courseId,
-                          courseCode: m.courseCode,
-                          concept: conceptForQuestion(q, a.concepts),
-                          correct,
-                          sourceId: m.id,
-                          sourceKind: 'material',
-                        })
-                      }
-                    />
-                  ) : (
-                    <StateView compact icon="help-circle-outline" title="No quiz yet" message="Practice questions are generated once the document server is connected." />
-                  )}
+                  <PracticeTab
+                    analysis={a}
+                    serverId={m.serverId}
+                    onSave={(patch) => updateMaterial(m.id, { analysis: { ...a, ...patch } })}
+                    onAnswer={(q, correct) =>
+                      progress.log({
+                        type: 'quiz-answer',
+                        courseId: m.courseId,
+                        courseCode: m.courseCode,
+                        concept: conceptForQuestion(q, a.concepts),
+                        correct,
+                        sourceId: m.id,
+                        sourceKind: 'material',
+                      })
+                    }
+                    onCard={(card, knew) =>
+                      progress.log({
+                        type: 'flashcard',
+                        courseId: m.courseId,
+                        courseCode: m.courseCode,
+                        concept: conceptForQuestion(
+                          { id: '', question: card.front, options: [card.back], correctIndex: 0, explanation: '' },
+                          a.concepts
+                        ),
+                        correct: knew,
+                        sourceId: m.id,
+                        sourceKind: 'material',
+                      })
+                    }
+                  />
                 </View>
               )}
 
@@ -290,13 +357,57 @@ function Settings({
   m,
   courses,
   onChange,
+  onRename,
 }: {
   m: Material;
   courses: { id: string; code: string }[];
   onChange: (patch: Partial<Material>) => void;
+  onRename: (title: string) => Promise<void>;
 }) {
+  const current = m.analysis?.title ?? m.name;
+  const [title, setTitle] = useState(current);
+  const [renaming, setRenaming] = useState(false);
+  const [renameMsg, setRenameMsg] = useState('');
+  const changed = title.trim() !== '' && title.trim() !== current;
+
+  const saveTitle = async () => {
+    if (!changed || renaming) return;
+    setRenaming(true);
+    setRenameMsg('');
+    try {
+      await onRename(title.trim());
+      setRenameMsg('Saved.');
+    } catch (e) {
+      setRenameMsg(e instanceof Error ? e.message : 'Couldn’t rename it. Please try again.');
+    } finally {
+      setRenaming(false);
+    }
+  };
+
   return (
     <View style={styles.settings}>
+      <Text style={styles.label}>NAME</Text>
+      <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+        <TextInput
+          style={styles.titleInput}
+          value={title}
+          onChangeText={(v) => {
+            setTitle(v);
+            setRenameMsg('');
+          }}
+          onSubmitEditing={saveTitle}
+          returnKeyType="done"
+          maxLength={255}
+          placeholder="Name this document"
+          placeholderTextColor={UI.muted}
+        />
+        {changed && (
+          <Pressable style={styles.titleSave} onPress={saveTitle} disabled={renaming} accessibilityLabel="Save the new name">
+            {renaming ? <ActivityIndicator size="small" color={lightColors['on-primary']} /> : <Text style={styles.titleSaveText}>Save</Text>}
+          </Pressable>
+        )}
+      </View>
+      {!!renameMsg && <Text style={styles.hint}>{renameMsg}</Text>}
       <Text style={styles.label}>TYPE</Text>
       <View style={styles.wrap}>
         {MATERIAL_CATEGORIES.map((c) => (
@@ -320,6 +431,20 @@ function Settings({
 }
 
 const styles = StyleSheet.create({
+  titleInput: {
+    flex: 1,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: UI.border,
+    backgroundColor: UI.card,
+    paddingHorizontal: 12,
+    fontFamily: ZuriFonts.bodyRegular,
+    fontSize: 14,
+    color: UI.ink,
+  },
+  titleSave: { height: 44, paddingHorizontal: 16, borderRadius: 22, backgroundColor: UI.ink, alignItems: 'center', justifyContent: 'center' },
+  titleSaveText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: lightColors['on-primary'] },
   container: { flex: 1, backgroundColor: UI.bg },
   topBar: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 },
   topActions: { flexDirection: 'row', gap: 20 },

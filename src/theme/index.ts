@@ -1,30 +1,23 @@
-/**
- * The Zuri Mobile design system in code.
- *
- *   import { useTheme, Text, Button, Card } from '@/theme';
- *
- * Values come from src/theme/tokens.ts, generated from
- * .claude/skills/zuri-design-system/tokens.json. Don't add colours, sizes or
- * radii anywhere else.
- */
-export * from './tokens';
-export {
-  ThemeProvider,
-  useTheme,
-  useAppearance,
-  buildTheme,
-  DARK_MODE_ENABLED,
-  type Theme,
-  type AppearancePreference,
-  type ColorScheme,
-} from './theme-provider';
-export { Text, MAX_FONT_SCALE, type TextProps } from './text';
-export { haptics } from './haptics';
+import { useColorScheme } from 'react-native';
+import { darkColors, lightColors, radius, size, space, type, type ColorName } from '@/theme/tokens';
 
-export { Button, type ButtonProps, type ButtonVariant } from './components/button';
-export { Card, type CardProps } from './components/card';
-export { ListGroup, ListRow, LIST_ROW_MIN_HEIGHT, type ListRowProps } from './components/list-row';
-export { Chip, type ChipProps, type ChipStatus } from './components/chip';
-export { TextField, type TextFieldProps } from './components/text-field';
-export { StateView, Skeleton, type StateViewProps, type StateKind } from './components/state-view';
-export { BottomSheet, type BottomSheetProps, type SheetAction } from './components/bottom-sheet';
+export { lightColors, darkColors, radius, size, space, type };
+export type { ColorName };
+
+/**
+ * Dark mode stays off until every screen in the student loop is on tokens
+ * (docs/MOBILE_ROADMAP.md, Phase 0; design system migration.md step 4).
+ * Until then useTheme() always returns the light colours, so migrated and
+ * unmigrated screens look the same.
+ */
+export const DARK_MODE_ENABLED = false;
+
+export type ThemeColors = Record<ColorName, string>;
+
+/** The design system's tokens for the current theme: { colors, space, radius, size, type, dark }. */
+export function useTheme() {
+  const scheme = useColorScheme();
+  const dark = DARK_MODE_ENABLED && scheme === 'dark';
+  const colors: ThemeColors = dark ? darkColors : lightColors;
+  return { colors, space, radius, size, type, dark };
+}

@@ -9,6 +9,7 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
   type ScrollViewInstance,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,14 +23,18 @@ import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
 import { Chip } from '@/components/ui/chip';
 import { SourceCard } from '@/components/source-card';
-import { searchSources, type SourceHit } from '@/utils/source-search';
+import { queryTerms, searchSources, type SourceHit } from '@/utils/source-search';
+import { askZuri, searchMaterial } from '@/services/ai-api';
+import { MarkdownText } from '@/components/markdown-text';
+import { lightColors, radius, space } from '@/theme';
 import { useConversations } from '@/context/conversations-context';
 
 type Msg = import('@/context/conversations-context').ChatMessage;
 
 /**
- * Ask questions across your lectures and materials. Every answer is made of
- * quotes from your own sources, each linking to the exact moment or passage.
+ * Ask Zuri (chat.generate). Each question is answered by Zuri's AI using the
+ * best-matching passages from the student's own lectures and materials, shown
+ * under the answer. If the AI is unavailable, the passages alone are shown.
  * Scope: everything, one course (?courseId), or one document (?materialId).
  */
 export default function AskScreen() {
@@ -72,25 +77,84 @@ export default function AskScreen() {
     return Array.from(new Set(pool.map((c) => c.title))).slice(0, 4).map((t) => `What is ${t.toLowerCase()}?`);
   }, [lectures, materials, courseId, material]);
 
-  const ask = (text?: string) => {
+  const [thinking, setThinking] = useState(false);
+
+  /** Context for the AI: the best local passages, plus the user's own processed server materials. */
+  const gatherSources = async (q: string): Promise<{ hits: SourceHit[]; chunks: string[] }> => {
+    const style = state.preferences.aiAnswerStyle === 'concise' ? 2 : 4;
+    const hits = searchSources(q, { lectures, materials }, { courseId: courseId ?? undefined, materialId: material?.id }, style);
+
+    // One document: ask the server for its best-matching passages.
+    if (material?.serverId && material.analysis?.source === 'server') {
+      try {
+        const found = await searchMaterial(material.serverId, q, 4);
+        found.forEach((c, i) =>
+          hits.push({
+            kind: 'material',
+            id: material.id,
+            title: material.analysis?.title ?? material.name,
+            courseCode: material.courseCode,
+            location: c.heading || (typeof c.chunk_index === 'number' ? `Part ${c.chunk_index + 1}` : `Passage ${i + 1}`),
+            text: c.text.length > 600 ? `${c.text.slice(0, 600).trim()}…` : c.text,
+            score: 10 - i,
+          })
+        );
+      } catch {
+        // Fall back to the summary below.
+      }
+      if (!hits.length && material.analysis?.summary) {
+        hits.push({ kind: 'material', id: material.id, title: material.analysis.title, courseCode: material.courseCode, location: 'Summary', text: material.analysis.summary, score: 1 });
+      }
+    } else if (!material) {
+      // Everything / one course: add the summaries of the user's processed documents that match the question.
+      const terms = queryTerms(q);
+      materials
+        .filter((m) => m.analysis?.source === 'server' && m.analysis.summary && (!courseId || m.courseId === courseId))
+        .map((m) => {
+          const hay = `${m.analysis!.title} ${m.analysis!.summary} ${m.analysis!.concepts.map((c) => `${c.title} ${c.summary}`).join(' ')}`.toLowerCase();
+          return { m, score: terms.filter((t) => hay.includes(t)).length };
+        })
+        .filter((x) => x.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 2)
+        .forEach(({ m, score }) =>
+          hits.push({ kind: 'material', id: m.id, title: m.analysis!.title, courseCode: m.courseCode, location: 'Summary', text: m.analysis!.summary, score })
+        );
+    }
+
+    const top = hits.slice(0, 5);
+    const chunks = top.map((h) => `${h.title}${h.courseCode ? ` (${h.courseCode})` : ''}, ${h.location}:\n${h.text}`);
+    return { hits: top, chunks };
+  };
+
+  const ask = async (text?: string) => {
     const q = (text ?? input).trim();
-    if (!q) return;
-    const hits = searchSources(q, { lectures, materials }, { courseId: courseId ?? undefined, materialId: material?.id }, state.preferences.aiAnswerStyle === 'concise' ? 2 : 4);
-    const reply: Msg = hits.length
-      ? { role: 'zuri', text: `Here’s what your ${hits.length === 1 ? 'source says' : 'sources say'} about that:`, sources: hits }
-      : {
-          role: 'zuri',
-          text:
-            sourceCount === 0
-              ? 'There’s nothing to search yet. Record a lecture or upload notes, and I’ll answer from them.'
-              : `I couldn’t find that in ${scopeLabel}. Try other words${courseId || material ? ', or widen the search to everything' : ''}.`,
-        };
-    const turn: Msg[] = [{ role: 'user', text: q }, reply];
-    setMsgs((m) => [...m, ...turn]);
+    if (!q || thinking) return;
+    const userMsg: Msg = { role: 'user', text: q };
+    const history = msgs.map((m) => ({ role: m.role, content: m.text }));
+    setMsgs((m) => [...m, userMsg]);
+    setInput('');
+    setThinking(true);
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
+
+    const { hits, chunks } = await gatherSources(q);
+    let reply: Msg;
+    try {
+      const answer = await askZuri(q, chunks, history, convId);
+      reply = { role: 'zuri', text: answer, sources: hits.length ? hits : undefined };
+    } catch (e) {
+      const why = e instanceof Error ? e.message : 'Zuri’s AI isn’t available right now.';
+      reply = hits.length
+        ? { role: 'zuri', text: `${why}\n\nHere’s what your ${hits.length === 1 ? 'source says' : 'sources say'} meanwhile:`, sources: hits }
+        : { role: 'zuri', text: why };
+    }
+
+    const turn: Msg[] = [userMsg, reply];
+    setMsgs((m) => [...m, reply]);
+    setThinking(false);
     // Every chat is kept in history; star it to save it.
     if (convId) convs.append(convId, turn);
     else setConvId(convs.start({ courseId: courseId ?? undefined, materialId: material?.id }, turn));
-    setInput('');
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
   };
 
@@ -151,8 +215,7 @@ export default function AskScreen() {
               </View>
               <Text style={styles.introTitle}>Ask about {scopeLabel}</Text>
               <Text style={styles.introText}>
-                Answers are quotes from your own {material ? 'document' : 'lectures and notes'}, each linked to the exact moment
-                or page.{' '}
+                Zuri answers using your own {material ? 'document' : 'lectures and notes'}, and shows the passages it used.{' '}
                 {!material && `${sourceCount} ${sourceCount === 1 ? 'source' : 'sources'} available.`}
               </Text>
             </View>
@@ -160,7 +223,11 @@ export default function AskScreen() {
 
           {msgs.map((m, i) => (
             <View key={i} style={[styles.bubble, m.role === 'user' ? styles.user : styles.zuri]}>
-              <Text style={[styles.bubbleText, m.role === 'user' && { color: '#fff' }]}>{m.text}</Text>
+              {m.role === 'zuri' ? (
+                <MarkdownText text={m.text} style={styles.bubbleText} />
+              ) : (
+                <Text style={[styles.bubbleText, { color: lightColors['on-primary'] }]}>{m.text}</Text>
+              )}
               {m.sources && (
                 <View style={{ gap: 8, marginTop: 10 }}>
                   {m.sources.map((s, idx) => (
@@ -170,9 +237,15 @@ export default function AskScreen() {
               )}
             </View>
           ))}
+          {thinking && (
+            <View style={[styles.bubble, styles.zuri, { flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
+              <ActivityIndicator size="small" color={UI.ink} />
+              <Text style={styles.bubbleText}>Zuri is thinking…</Text>
+            </View>
+          )}
         </ScrollView>
 
-        {suggestions.length > 0 && (
+        {suggestions.length > 0 && msgs.length === 0 && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.suggest} style={{ flexGrow: 0 }}>
             {suggestions.map((s) => (
               <Pressable key={s} style={styles.suggestChip} onPress={() => ask(s)}>
@@ -196,7 +269,7 @@ export default function AskScreen() {
             <Ionicons name="arrow-up" size={20} color="#fff" />
           </Pressable>
         </View>
-        <Text style={styles.footnote}>Searches your sources directly. AI-written answers arrive when the backend is connected.</Text>
+        <Text style={styles.footnote}>Zuri answers from your lectures and notes, and uses general knowledge when they don’t cover it. Check important facts.</Text>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

@@ -22,6 +22,7 @@ import { useFeed } from '@/context/feed-context';
 import { useMaterials } from '@/context/materials-context';
 import { describeDue, daysUntil } from '@/utils/planner';
 import { kindMeta } from '@/components/planner/assessment-card';
+import { TodayFromZuri } from '@/components/academic/from-zuri';
 
 export default function AcademicHomeScreen() {
   const router = useRouter();
@@ -191,6 +192,9 @@ export default function AcademicHomeScreen() {
             )}
           </Pressable>
         )}
+
+        {/* Today's cards from Zuri's academic service (hidden when there are none) */}
+        <TodayFromZuri />
 
         {/* New student: getting started */}
         {showStart && (

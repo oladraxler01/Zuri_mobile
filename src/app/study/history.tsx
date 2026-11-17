@@ -10,6 +10,7 @@ import { ScreenShell, Panel, Grid, StatTile, BarChart } from '@/components/dashb
 import { ActivityList, activityFor } from '@/components/course/course-topics';
 import { localDateKey } from '@/utils/planner';
 import { formatDuration } from '@/utils/time';
+import { AccountStatsPanel } from '@/components/progress/account-progress';
 
 /** Study history: minutes per day this week, streak, answers, and everything you did. */
 export default function StudyHistoryScreen() {
@@ -58,6 +59,8 @@ export default function StudyHistoryScreen() {
         <StatTile label="Questions answered" value={`${answers.length}`} icon="help-circle-outline" />
         <StatTile label="Accuracy" value={answers.length ? `${Math.round((correct / answers.length) * 100)}%` : '—'} icon="checkmark-circle-outline" />
       </Grid>
+
+      <AccountStatsPanel />
 
       <Panel title="Study sessions" subtitle="Minutes per day, last 7 days · tap a bar">
         <BarChart data={days.map((d) => ({ label: d.label, value: d.minutes }))} format={(v) => `${v} min`} label="Study minutes per day, last 7 days" />

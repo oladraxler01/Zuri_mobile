@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet, StatusBar } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -15,6 +15,11 @@ import { courseMastery, LEVEL_LABEL, type MasteryLevel } from '@/utils/mastery';
 import { searchTranscript } from '@/utils/transcript-search';
 import { formatClock } from '@/utils/time';
 import { StateView } from '@/components/states/state-view';
+import { MarkdownText } from '@/components/markdown-text';
+import { askZuri } from '@/services/ai-api';
+import { sendStudySession } from '@/services/progress-api';
+import { currentUser } from '@/services/api-client';
+import { lightColors, radius, space } from '@/theme';
 
 type Answer = { item: SessionItem; correct: boolean };
 
@@ -103,6 +108,16 @@ export default function StudySessionScreen() {
       minutes,
       label: params.concept ? `Review: ${params.concept}` : params.mode === 'weak' ? 'Weak-topic review' : `${items.length}-item session`,
     });
+    // Also count it in the account's study stats and streak (POST /analytics/study-sessions).
+    if (currentUser()) {
+      const all = [...answers];
+      sendStudySession({
+        minutes,
+        quizzesCompleted: all.some((a) => a.item.kind === 'question') ? 1 : 0,
+        flashcardsReviewed: all.filter((a) => a.item.kind === 'card').length,
+        materialsReviewed: new Set(all.filter((a) => a.item.source.kind === 'material').map((a) => a.item.source.id)).size,
+      }).catch((e) => console.warn('[study] session not sent to the server', e));
+    }
     setDone(true);
   };
 
@@ -175,7 +190,7 @@ export default function StudySessionScreen() {
                     <Text style={styles.explainText}>Explain it</Text>
                   </Pressable>
                 )}
-                {explain && <Tutor item={item} lectures={lectures} />}
+                {explain && <Tutor item={item} lectures={lectures} chosen={selected ?? undefined} />}
               </View>
             )}
           </>
@@ -236,10 +251,44 @@ export default function StudySessionScreen() {
 }
 
 /** Step-by-step help after a wrong answer: the explanation + where it was taught in the lecture. */
-function Tutor({ item, lectures }: { item: Extract<SessionItem, { kind: 'question' }>; lectures: ReturnType<typeof useLectures>['lectures'] }) {
+function Tutor({
+  item,
+  lectures,
+  chosen,
+}: {
+  item: Extract<SessionItem, { kind: 'question' }>;
+  lectures: ReturnType<typeof useLectures>['lectures'];
+  chosen?: number;
+}) {
   const lecture = item.source.kind === 'lecture' ? lectures.find((l) => l.id === item.source.id) : undefined;
   const moments = lecture?.analysis ? searchTranscript(lecture.analysis.transcript, item.concept ?? item.q.question, 2) : [];
   const concept = lecture?.analysis?.concepts.find((c) => c.title === item.concept);
+  const [ai, setAi] = useState<{ busy: boolean; text: string; error: string }>({ busy: false, text: '', error: '' });
+
+  // Zuri's AI explains the mistake, grounded in the concept and lecture moments above (chat.generate).
+  const explainWithAI = async () => {
+    setAi({ busy: true, text: '', error: '' });
+    const right = item.q.options[item.q.correctIndex];
+    const picked = chosen !== undefined ? item.q.options[chosen] : undefined;
+    const context = [
+      concept ? `${concept.title}: ${concept.summary}` : '',
+      item.q.explanation ? `Explanation given with the question: ${item.q.explanation}` : '',
+      ...moments.map((m) => `Lecture at ${formatClock(m.start)}: ${m.text}`),
+    ].filter(Boolean);
+    const query =
+      `I'm revising and got this question wrong.\nQuestion: ${item.q.question}\n` +
+      (picked ? `My answer: ${picked}\n` : '') +
+      `Correct answer: ${right}\n` +
+      'Explain simply why the correct answer is right' +
+      (picked ? ' and why mine is wrong' : '') +
+      ', with one short real-world example. Keep it under 150 words.';
+    try {
+      setAi({ busy: false, text: await askZuri(query, context, []), error: '' });
+    } catch (e) {
+      setAi({ busy: false, text: '', error: e instanceof Error ? e.message : 'Zuri couldn’t explain this right now.' });
+    }
+  };
+
   return (
     <View style={styles.tutor}>
       <Text style={styles.tutorStep}>1. The right answer is “{item.q.options[item.q.correctIndex]}”.</Text>
@@ -260,6 +309,22 @@ function Tutor({ item, lectures }: { item: Extract<SessionItem, { kind: 'questio
           </Text>
         </Pressable>
       ))}
+      {ai.text ? (
+        <View style={styles.aiBox}>
+          <MarkdownText text={ai.text} style={styles.tutorStep} />
+        </View>
+      ) : ai.busy ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <ActivityIndicator size="small" color={UI.ink} />
+          <Text style={styles.tutorStep}>Zuri is explaining…</Text>
+        </View>
+      ) : (
+        <Pressable onPress={explainWithAI} style={styles.aiBtn} accessibilityRole="button">
+          <Ionicons name="sparkles-outline" size={15} color={UI.ink} />
+          <Text style={styles.aiBtnText}>{ai.error ? 'Try again' : 'Explain it with Zuri'}</Text>
+        </Pressable>
+      )}
+      {!!ai.error && <Text style={styles.aiError}>{ai.error}</Text>}
       <Pressable onPress={() => router.push({ pathname: '/ask', params: { courseId: item.source.courseId ?? '', q: item.concept ?? item.q.question } } as any)}>
         <Text style={styles.askMore}>Ask more about this →</Text>
       </Pressable>
@@ -360,6 +425,10 @@ function Completion({
 }
 
 const styles = StyleSheet.create({
+  aiBox: { backgroundColor: lightColors['surface-raised'], borderRadius: radius.md, padding: space[3] },
+  aiBtn: { flexDirection: 'row', alignItems: 'center', gap: space[2], alignSelf: 'flex-start', backgroundColor: lightColors['surface-raised'], borderRadius: radius.md, paddingHorizontal: space[3], minHeight: 48 },
+  aiBtnText: { fontFamily: ZuriFonts.bodyMedium, fontSize: 13, color: UI.ink },
+  aiError: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.error },
   container: { flex: 1, backgroundColor: UI.bg },
   topBar: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 },
   timer: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.ink, fontVariant: ['tabular-nums'] },
