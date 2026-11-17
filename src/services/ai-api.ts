@@ -202,3 +202,68 @@ export async function askZuri(query: string, contextChunks: string[], history: C
   }
   return text;
 }
+
+// ─── Saving practice to the server (content + analytics services) ─────────
+
+/**
+ * POST /quizzes { title, material_id, questions[] } → { data: { id, questions: [{ id, order_index }] } }
+ * Multiple-choice options are sent as [{ text, is_correct, order_index }].
+ */
+export async function saveQuizToServer(
+  title: string,
+  materialId: string,
+  questions: PracticeQuestion[]
+): Promise<{ id: string; questionIds: string[] }> {
+  const res = await apiRequest<{ data: { id: string; questions?: { id: string; order_index?: number }[] } }>('/quizzes', {
+    method: 'POST',
+    body: {
+      title: title.slice(0, 255),
+      material_id: materialId,
+      questions: questions.map((q, i) => ({
+        question_text: q.question,
+        question_type: 'multiple_choice',
+        options: q.options.map((text, k) => ({ text, is_correct: k === q.correctIndex, order_index: k })),
+        correct_answer: q.options[q.correctIndex],
+        explanation: q.explanation,
+        points: 1,
+        order_index: i,
+      })),
+    },
+  });
+  const qs = [...(res.data.questions ?? [])].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
+  return { id: res.data.id, questionIds: qs.map((q) => q.id) };
+}
+
+/** POST /flashcard-decks { title, material_id, cards: [{ front_text, back_text, order_index }] } → { data: { id } } */
+export async function saveDeckToServer(title: string, materialId: string, cards: StudyFlashcard[]): Promise<string> {
+  const res = await apiRequest<{ data: { id: string } }>('/flashcard-decks', {
+    method: 'POST',
+    body: {
+      title: title.slice(0, 255),
+      material_id: materialId,
+      cards: cards.map((c, i) => ({ front_text: c.front, back_text: c.back, order_index: i })),
+    },
+  });
+  return res.data.id;
+}
+
+export interface GradedAttempt {
+  score: number;
+  max_score: number;
+  percentage: number;
+}
+
+/**
+ * POST /quizzes/:id/submit { answers: [{ question_id, answer, time_taken_seconds }] }
+ * → { data: attempt } graded on the server; feeds study stats and topic mastery.
+ */
+export async function submitQuizAttempt(
+  quizId: string,
+  answers: { question_id: string; answer: string; time_taken_seconds?: number }[]
+): Promise<GradedAttempt> {
+  const res = await apiRequest<{ data: GradedAttempt }>(`/quizzes/${quizId}/submit`, {
+    method: 'POST',
+    body: { answers: answers.map((a) => ({ ...a, time_taken_seconds: a.time_taken_seconds ?? 0 })) },
+  });
+  return res.data;
+}

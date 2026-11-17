@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ZuriFonts } from '@/constants/zuri-theme';
@@ -10,6 +10,9 @@ import {
   generateMaterialExamQuestions,
   generateMaterialFlashcards,
   generateMaterialQuiz,
+  saveDeckToServer,
+  saveQuizToServer,
+  submitQuizAttempt,
 } from '@/services/ai-api';
 import type { LectureQuestion } from '@/types/lecture';
 import type { MaterialAnalysis } from '@/types/material';
@@ -54,7 +57,41 @@ export function PracticeTab({ analysis, serverId, onSave, onAnswer, onCard }: Pr
   const [mode, setMode] = useState<Mode>('quiz');
   const [busy, setBusy] = useState<Mode | null>(null);
   const [error, setError] = useState<Partial<Record<Mode, string>>>({});
+  const [result, setResult] = useState('');
+  const chosen = useRef(new Map<string, number>()); // question id → chosen option index
   const info = MODES.find((m) => m.key === mode)!;
+  const title = analysis.title || 'Practice';
+
+  /** Make sure the quiz exists on the server (older quizzes were only on the phone). */
+  const ensureServerQuiz = async () => {
+    if (analysis.serverQuiz || !serverId) return analysis.serverQuiz;
+    const saved = await saveQuizToServer(`${title} – quiz`, serverId, analysis.questions);
+    onSave({ serverQuiz: saved });
+    return saved;
+  };
+
+  /** Quiz finished: the server grades it (POST /quizzes/:id/submit) and records it in your progress. */
+  const finishQuiz = async () => {
+    setResult('');
+    try {
+      const sq = await ensureServerQuiz();
+      if (!sq || sq.questionIds.length !== analysis.questions.length) return;
+      const answers = analysis.questions
+        .map((q, i) => ({ q, i, pick: chosen.current.get(q.id) }))
+        .filter((x) => x.pick !== undefined)
+        .map((x) => ({ question_id: sq.questionIds[x.i], answer: x.q.options[x.pick!] }));
+      if (!answers.length) return;
+      const graded = await submitQuizAttempt(sq.id, answers);
+      onSave({
+        lastAttempt: { score: graded.score, maxScore: graded.max_score, percentage: graded.percentage, at: new Date().toISOString() },
+      });
+      setResult(`Saved to your progress: ${graded.score}/${graded.max_score} (${Math.round(graded.percentage)}%).`);
+    } catch (e) {
+      setResult(`Your score wasn’t saved to your account (${e instanceof Error ? e.message : 'try again later'}).`);
+    } finally {
+      chosen.current.clear();
+    }
+  };
 
   const has =
     mode === 'quiz'
@@ -68,8 +105,21 @@ export function PracticeTab({ analysis, serverId, onSave, onAnswer, onCard }: Pr
     setBusy(which);
     setError((e) => ({ ...e, [which]: '' }));
     try {
-      if (which === 'quiz') onSave({ questions: await generateMaterialQuiz(serverId) });
-      if (which === 'flashcards') onSave({ flashcards: await generateMaterialFlashcards(serverId) });
+      if (which === 'quiz') {
+        const questions = await generateMaterialQuiz(serverId);
+        onSave({ questions, serverQuiz: undefined, lastAttempt: undefined });
+        // Also keep it in the account, so it's graded there and counts towards progress.
+        saveQuizToServer(`${title} – quiz`, serverId, questions)
+          .then((serverQuiz) => onSave({ questions, serverQuiz }))
+          .catch((e) => console.warn('[practice] quiz not saved to the server', e));
+      }
+      if (which === 'flashcards') {
+        const flashcards = await generateMaterialFlashcards(serverId);
+        onSave({ flashcards });
+        saveDeckToServer(`${title} – flashcards`, serverId, flashcards)
+          .then((serverDeckId) => onSave({ flashcards, serverDeckId }))
+          .catch((e) => console.warn('[practice] deck not saved to the server', e));
+      }
       if (which === 'exam') onSave({ examQuestions: await generateMaterialExamQuestions(serverId) });
     } catch (e) {
       setError((prev) => ({ ...prev, [which]: e instanceof Error ? e.message : 'Something went wrong. Please try again.' }));
@@ -102,7 +152,18 @@ export function PracticeTab({ analysis, serverId, onSave, onAnswer, onCard }: Pr
           <StateView compact icon="help-circle-outline" title="Not available" message="Upload this file again so Zuri can write practice from it." />
         )
       ) : mode === 'quiz' ? (
-        <QuizTab questions={analysis.questions} onFinish={() => {}} onAnswer={onAnswer} />
+        <View>
+          <QuizTab
+            questions={analysis.questions}
+            best={analysis.lastAttempt ? { score: analysis.lastAttempt.score, total: analysis.lastAttempt.maxScore } : undefined}
+            onFinish={finishQuiz}
+            onAnswer={(q, correct, pick) => {
+              chosen.current.set(q.id, pick);
+              onAnswer(q, correct);
+            }}
+          />
+          {!!result && <Text style={[styles.body, { paddingHorizontal: 20, marginTop: 8 }]}>{result}</Text>}
+        </View>
       ) : mode === 'flashcards' ? (
         <FlashcardDeck cards={analysis.flashcards!} onCard={onCard} />
       ) : (

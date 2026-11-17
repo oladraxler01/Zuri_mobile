@@ -30,6 +30,12 @@ export interface MaterialAnalysis {
   concepts: LectureConcept[];
   questions: LectureQuestion[];
   passages: MaterialPassage[];
+  /** The quiz saved on the server (POST /quizzes) and its question ids, in order. */
+  serverQuiz?: { id: string; questionIds: string[] };
+  /** The flashcard deck saved on the server (POST /flashcard-decks). */
+  serverDeckId?: string;
+  /** Last server-graded attempt of the quiz (POST /quizzes/:id/submit). */
+  lastAttempt?: { score: number; maxScore: number; percentage: number; at: string };
   /** Made on request by Zuri's AI (study.flashcards.generate). */
   flashcards?: { front: string; back: string; topic?: string }[];
   /** Exam-style theory and applied questions with model answers (study.quiz.generate). */

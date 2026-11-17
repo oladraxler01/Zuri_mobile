@@ -249,3 +249,8 @@ Part 2 — institution:
 - Rename: material page → Summary → NAME → Save → `PUT /materials/:id {title}`.
 - Delete also runs `DELETE /materials/:id`; if offline, the id is remembered (`zuri.materials.pending-deletes.v1`) and sent later, and a sync never brings a deleted one back.
 - Opening the file of a material from another device explains that the file isn't on this phone.
+
+### Study: AI "Explain it", practice saved to the account, server-graded quizzes (2026-11-17)
+- Study session → wrong answer → "Explain it" → **Explain it with Zuri**: `chat.generate` explains why the right answer is right (and the chosen one wrong) with a short example, grounded in the concept summary and the lecture moments.
+- Practice tab: a generated quiz is also saved with `POST /quizzes` (options as `{text, is_correct}`), flashcards with `POST /flashcard-decks`. Finishing a quiz sends the picked answers to `POST /quizzes/:id/submit`; the server grades it, it counts towards study stats and topic mastery, and the score shows as "Your best". Quizzes made before this are saved to the server the first time they're finished.
+- `QuizTab.onAnswer` now also reports the chosen option index.
