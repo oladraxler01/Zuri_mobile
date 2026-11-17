@@ -243,3 +243,9 @@ Part 2 — institution:
 - Sign out now calls `POST /auth/logout` with no body (the server revokes the token it was called with).
 - Profile → Academic profile also saves name, school, department, level and timezone to the account (`PUT /users/me`). Matric number, faculty and semester stay on the phone (no server fields yet).
 - Friendlier messages for 429 (too many tries) and deactivated accounts.
+
+### Materials synced with the server: list, rename, delete (2026-11-17)
+- `materials-context` syncs on launch and on every sign-in: `GET /materials` (all pages) brings in materials uploaded from another device (`srv_<id>`, no local file; summary on request with "Create summary" → `reading.analyse`). Ones still processing keep being checked.
+- Rename: material page → Summary → NAME → Save → `PUT /materials/:id {title}`.
+- Delete also runs `DELETE /materials/:id`; if offline, the id is remembered (`zuri.materials.pending-deletes.v1`) and sent later, and a sync never brings a deleted one back.
+- Opening the file of a material from another device explains that the file isn't on this phone.

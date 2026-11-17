@@ -90,6 +90,37 @@ async function putFile(url: string, input: UploadInput): Promise<void> {
   }
 }
 
+// ─── The user's materials on the server ──────────────────────────
+
+/** GET /materials?limit&offset → { data: ServerMaterial[] } (all pages, up to `max`). */
+export async function listServerMaterials(max = 300): Promise<ServerMaterial[]> {
+  const out: ServerMaterial[] = [];
+  for (let offset = 0; offset < max; offset += 100) {
+    const page = await apiRequest<{ data?: ServerMaterial[] | null }>('/materials', {
+      query: { limit: '100', offset: String(offset) },
+    });
+    const items = page.data ?? [];
+    out.push(...items);
+    if (items.length < 100) break;
+  }
+  return out;
+}
+
+/** PUT /materials/{id} { title } */
+export async function renameServerMaterial(id: string, title: string): Promise<void> {
+  await apiRequest(`/materials/${id}`, { method: 'PUT', body: { title: title.slice(0, 255) } });
+}
+
+/** DELETE /materials/{id} → 204. A 404 means it's already gone, which is fine. */
+export async function deleteServerMaterial(id: string): Promise<void> {
+  try {
+    await apiRequest(`/materials/${id}`, { method: 'DELETE' });
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 404) return;
+    throw e;
+  }
+}
+
 /** Why processing failed, in words a student understands. */
 function failureMessage(mimeType: string): string {
   if (mimeType.startsWith('audio/')) {
