@@ -10,6 +10,7 @@ import { useMaterials } from '@/context/materials-context';
 import { ScreenShell, Panel, Grid, HBarList, BarChart, ListRow, Divider, SampleBanner, StatusBadge } from '@/components/dashboard';
 import { SourceCard } from '@/components/source-card';
 import { COMMON_DIFFICULTIES, FACULTIES, INTERVENTIONS, SHARED_CONCEPTS, WEEKLY_ACTIVE, allCourses } from '@/data/sample-institution';
+import { AICostsPanel } from '@/components/admin/ai-costs-panel';
 import { searchSources } from '@/utils/source-search';
 
 /** University-wide intelligence: trends, shared difficulties, comparisons, knowledge search. */
@@ -23,6 +24,7 @@ export default function UniversityIntelligenceScreen() {
 
   return (
     <ScreenShell back eyebrow="UNIVERSITY-WIDE" title="Academic intelligence" edges={['top', 'bottom']}>
+      <AICostsPanel />
       <Panel title="Institutional research" subtitle="Papers published by your university, from OpenAlex" action={{ label: 'Open', onPress: () => router.push('/admin/research' as Href) }}>
         <Text style={styles.muted}>Search and browse the research output of your staff and students, most cited first.</Text>
       </Panel>

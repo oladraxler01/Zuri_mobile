@@ -279,3 +279,7 @@ Part 2 — institution:
 - Research project → Ask your sources: each question is answered by `chat.generate` from the best 5 matching passages (abstracts, saved evidence, notes), citing author-year, saying where sources disagree; the passages are listed under "Sources used". The last 2 turns are sent as history.
 - Synthesis: "Overview with Zuri" writes a short overview from the evidence, theme by theme (top 5 themes), with citations, gaps and what to read next; it can be shared. Marked as a study aid, not finished prose.
 - Paper search stays on OpenAlex directly (no backend needed). Projects still live on the phone only (no research routes on the server, BACKEND_REQUESTS #20).
+
+### Admin: AI usage and cost (2026-11-17)
+- Admin → Academic intelligence: "AI usage and cost" panel from `GET /ai/analytics/costs` (scoped with `institution_id` from `/users/me` when the account has one): requests, estimated cost, tokens, cache hit rate and tokens saved.
+- **Backend security bug reported** (BACKEND_REQUESTS #0): this route has no role check, so any signed-in user can read AI spend. Admin sign-in in the app is still local (no admin accounts on the server yet).
