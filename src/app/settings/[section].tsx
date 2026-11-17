@@ -401,10 +401,10 @@ function Account() {
 
 const FAQ = [
   { q: 'How do I record a lecture?', a: 'Tap Start Recording on Home, or Record on a course. Keep your phone face-up near the lecturer. When you stop, tap Save & process.' },
-  { q: 'Why do my results say “sample”?', a: 'The transcription and document servers aren’t connected yet, so lectures and PDFs get example content. Text files are analysed on your phone for real.' },
+  { q: 'Which files can Zuri read?', a: 'PDFs with selectable text and plain text files. Word, PowerPoint, photos and lecture recordings can’t be read yet; recordings stay saved on your phone until they can.' },
   { q: 'Does Zuri work offline?', a: 'Yes. Recordings, notes, quizzes and saved papers work offline. Uploads wait and resume automatically when you’re back online.' },
   { q: 'How are mastery levels worked out?', a: 'From your recent quiz answers and flashcard ratings on each topic. Newer answers count more. Topics stay “Not tested yet” until you practise them.' },
-  { q: 'Where is my data stored?', a: 'On this phone. You can export it or delete it anytime in Privacy & data.' },
+  { q: 'Where is my data stored?', a: 'On this phone, and in your Zuri account when you’re signed in: uploads, practice quizzes, study progress, goals and notification settings. You can export or delete what’s on this phone in Privacy & data.' },
 ];
 
 function Help() {

@@ -1,5 +1,4 @@
 import type { IoniconName, LectureAnalysis, TranscriptSegment } from '@/types/lecture';
-import { buildSampleAnalysis } from '@/data/sample-lecture-analysis';
 import { API_BASE, isBackendConfigured } from '@/services/api-config';
 import { ApiError, errorForStatus, type ApiErrorKind } from '@/services/api-client';
 import { uploadToZuri } from '@/services/upload-api';
@@ -12,8 +11,8 @@ export type { ApiErrorKind };
  *
  * With the live API on (see api-config.ts) the recording is sent to Zuri as an
  * audio material (see upload-api.ts) and the finished record is mapped onto
- * the Lecture Intelligence screen. Otherwise a local stand-in simulates the
- * upload and returns clearly labelled sample results.
+ * the Lecture Intelligence screen. There is no on-phone stand-in: if the
+ * server can't process it, the lecture shows why and the recording stays saved.
  */
 
 export type ProcessingStage = 'uploading' | 'processing';
@@ -36,10 +35,11 @@ export async function processLecture(
   input: ProcessLectureInput,
   onProgress: ProgressCallback
 ): Promise<LectureAnalysis> {
-  if (isBackendConfigured) {
-    return uploadToBackend(input, onProgress);
+  if (!isBackendConfigured) {
+    // No made-up results: lectures are only processed by Zuri's server.
+    throw new ApiError('server', 'Lecture processing needs Zuri’s server, which is switched off in this build.');
   }
-  return simulateProcessing(input, onProgress);
+  return uploadToBackend(input, onProgress);
 }
 
 // ─── Real backend ─────────────────────────────────────────────────
@@ -113,23 +113,4 @@ export function mapServerResponse(json: any, input: ProcessLectureInput): Lectur
     flashcards: data.flashcards ?? [],
     notes: data.notes ?? [],
   };
-}
-
-// ─── Local stand-in ───────────────────────────────────────────────
-
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-async function simulateProcessing(
-  input: ProcessLectureInput,
-  onProgress: ProgressCallback
-): Promise<LectureAnalysis> {
-  for (let i = 0; i <= 10; i++) {
-    onProgress('uploading', i / 10);
-    await wait(180);
-  }
-  for (let i = 0; i <= 10; i++) {
-    onProgress('processing', i / 10);
-    await wait(340);
-  }
-  return buildSampleAnalysis(input);
 }

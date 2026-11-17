@@ -120,7 +120,7 @@ export function ProcessingView({ lecture }: { lecture: Lecture }) {
 
       {!isBackendConfigured && (
         <Text style={styles.note}>
-          The transcription server isn't connected yet, so this lecture will get sample results.
+          Lecture processing is switched off in this build, so this recording is only saved on your phone.
         </Text>
       )}
     </ScrollView>

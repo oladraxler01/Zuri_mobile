@@ -175,11 +175,18 @@ interface AcademicContextType {
   }) => Promise<void>;
 }
 
+/**
+ * The demo courses and timetable that earlier versions showed every new student.
+ * New installs start empty (courses come from onboarding or the server). These
+ * are kept only so that saved demo entries from older installs aren't uploaded
+ * to the server as the student's own (see the load step below). They're not
+ * deleted automatically: a student may have kept one as a real course.
+ */
 const DEFAULT_COURSES: CourseItem[] = [
-  { id: '1', code: 'CSC 201', title: 'Data Structures & Algorithms', units: 3, lecturer: 'Dr. Adeyemi', color: '#2c3930' },
-  { id: '2', code: 'CSC 205', title: 'Operating Systems Architecture', units: 3, lecturer: 'Prof. Okafor', color: '#735c00' },
-  { id: '3', code: 'MTH 201', title: 'Mathematical Methods & Linear Algebra', units: 3, lecturer: 'Dr. Bello', color: '#17231b' },
-  { id: '4', code: 'GET 203', title: 'Engineering Mathematics II', units: 2, lecturer: 'Engr. Nnamdi', color: '#546257' },
+  { id: '1', code: 'CSC 201', title: 'Data Structures & Algorithms', units: 3 },
+  { id: '2', code: 'CSC 205', title: 'Operating Systems Architecture', units: 3 },
+  { id: '3', code: 'MTH 201', title: 'Mathematical Methods & Linear Algebra', units: 3 },
+  { id: '4', code: 'GET 203', title: 'Engineering Mathematics II', units: 2 },
 ];
 
 const DEFAULT_TIMETABLE: TimetableSlot[] = [
@@ -201,8 +208,8 @@ const initialState: StudentAcademicState = {
   department: 'Computer Science',
   level: '200L',
   semester: 'First Semester',
-  courses: DEFAULT_COURSES,
-  timetable: DEFAULT_TIMETABLE,
+  courses: [],
+  timetable: [],
   preferences: {
     targetGpa: '4.50+ (First Class)',
     sessionSize: 8,

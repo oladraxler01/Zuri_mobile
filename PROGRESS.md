@@ -289,3 +289,10 @@ Part 2 — institution:
 - New `src/theme/index.ts` with `useTheme()` → `{ colors, space, radius, size, type }`. `DARK_MODE_ENABLED = false` until every student screen is on tokens, so migrated and old screens look the same.
 - On tokens (no hex, type styles, 4-pt spacing, the five radii, 48px touch targets, accessibility roles/labels): forgot password, change password, signed-in devices, Practice tab, Markdown answers, "Today from Zuri" / weak topics, account progress panels, AI cost panel. Hex literals added today inside older screens now use theme tokens.
 - Older screens still use `UI` / `ZuriColors`; migrate them area by area (design system `reference/migration.md`).
+
+### No more made-up content (2026-11-17)
+- Lectures: the simulated processing with sample results is gone. With the server on, recordings upload and fail honestly ("Zuri can't transcribe recordings yet", recording kept). With live mode off, processing says it needs the server.
+- Materials: no sample results for PDFs/other files. Text files are still analysed on the phone from their real text; other files need the server.
+- New installs no longer start with four demo courses and a demo timetable; courses come from onboarding or the server. Existing installs keep what they have (a demo course may be in real use).
+- Help FAQ updated (which files Zuri can read; where data is stored).
+- Still sample data, by design, in the deferred lecturer/institution areas (no backend for them yet).

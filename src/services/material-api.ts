@@ -4,7 +4,7 @@ import type { MaterialAnalysis, MaterialCategory, MaterialPassage } from '@/type
 import { isBackendConfigured } from '@/services/api-config';
 import { uploadToZuri } from '@/services/upload-api';
 import { summariseMaterial } from '@/services/ai-api';
-import { buildSampleAnalysis } from '@/data/sample-lecture-analysis';
+import { ApiError } from '@/services/api-client';
 
 /**
  * Material upload + processing.
@@ -14,10 +14,9 @@ import { buildSampleAnalysis } from '@/data/sample-lecture-analysis';
  * summary, key points and key terms. Practice questions and quotable passages
  * come in a later step.
  *
- * With the live API off:
- * - plain text / Markdown files get a basic analysis done on the phone
- *   (summary + passages taken from the real text);
- * - other files (PDF, Word, images) get clearly labelled sample results.
+ * With the live API off (EXPO_PUBLIC_USE_LIVE_API=false), plain text and
+ * Markdown files get a basic analysis on the phone from their real text;
+ * other files fail with a clear message. Nothing is made up.
  */
 
 export interface ProcessMaterialInput {
@@ -123,26 +122,8 @@ async function processLocally(input: ProcessMaterialInput, onProgress: Progress)
     return analyseText(text, input);
   }
 
-  await wait(1600);
-  onProgress('processing', 1);
-  // Sample results reuse the lecture sample so concepts/questions match.
-  const sample = buildSampleAnalysis({
-    courseCode: input.courseCode ?? '',
-    courseTitle: input.courseTitle ?? '',
-    durationSeconds: 60,
-  });
-  return {
-    source: 'sample',
-    title: titleFromName(input.name),
-    summary: sample.summary,
-    concepts: sample.concepts,
-    questions: sample.questions.slice(0, 3),
-    passages: sample.transcript.slice(1, 9).map((seg, i) => ({
-      id: `p${i}`,
-      location: `p. ${i + 2}`,
-      text: seg.text,
-    })),
-  };
+  // No made-up results for PDFs and other files: they need Zuri's server.
+  throw new ApiError('server', 'Reading this file needs Zuri’s server, which is switched off in this build.');
 }
 
 /** Basic, honest analysis of a text file: its own headings, opening and paragraphs. */
