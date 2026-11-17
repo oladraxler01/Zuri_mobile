@@ -9,6 +9,10 @@ export interface ChatMessage {
   role: 'user' | 'zuri';
   text: string;
   sources?: SourceHit[];
+  /** Flashcards / quiz / concept card from the course study partner. */
+  widget?: { type: string; data: Record<string, any> };
+  /** Citations the study partner gave (course material references). */
+  citations?: string[];
 }
 
 export interface Conversation {

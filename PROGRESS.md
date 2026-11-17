@@ -321,3 +321,9 @@ Part 2 — institution:
 - `academic-api`: `getContextGaps()` (`GET /academic/context-gaps`), `resolveContextGap()` (`POST …/:id/resolve {response_value}`).
 - Home: new `components/academic/missing-info.tsx` shows up to 2 open prompts (theme `Card`, `Chip`, `Button`, `Text`). Missing venue → type it → resolve. Missing class time → pick day + start time (+ venue) → adds the class with the normal timetable flow (syncs to the server for catalogue courses); the gap isn't resolved on the server because its resolver writes a fixed Monday 9–11 class (BACKEND_REQUESTS #22). "Later" hides a prompt.
 - Only catalogue courses get prompts, so most students won't see this until the catalogue is seeded.
+
+### Course study partner in Ask Zuri (2026-11-17)
+- Ask Zuri with a **catalogue** course selected now talks to that course's study partner (`POST /academic/courses/:id/partner/chat {message, session_id, history}`), which knows the syllabus and the student's weak topics. The session id is kept per chat, so it remembers the conversation. If it fails (e.g. a custom course), the general assistant answers instead.
+- Partner extras are shown under the answer by new `components/partner-widget.tsx` (theme components): flashcards (tap to reveal), a short quiz (pick an option → right/wrong with icon + words, explanation) and concept cards (definition, formula, example, takeaway). Course citations shown as "From your course: …".
+- `ChatMessage` gains `widget` and `citations`, so they're kept in chat history.
+- Partner chats aren't counted in the daily AI allowance on the server (BACKEND_REQUESTS #15c).

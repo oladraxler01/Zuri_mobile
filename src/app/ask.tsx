@@ -25,6 +25,8 @@ import { Chip } from '@/components/ui/chip';
 import { SourceCard } from '@/components/source-card';
 import { queryTerms, searchSources, type SourceHit } from '@/utils/source-search';
 import { askZuriStream, searchMaterial } from '@/services/ai-api';
+import { chatWithCoursePartner } from '@/services/academic-api';
+import { PartnerWidget } from '@/components/partner-widget';
 import { MarkdownText } from '@/components/markdown-text';
 import { AIQuotaNote } from '@/components/ai-quota-note';
 import { lightColors, radius, space } from '@/theme';
@@ -79,6 +81,8 @@ export default function AskScreen() {
   }, [lectures, materials, courseId, material]);
 
   const [thinking, setThinking] = useState(false);
+  /** The course study partner's session, so it remembers this conversation. */
+  const partnerSession = useRef<string | undefined>(undefined);
   /** The answer so far while it streams in. */
   const [liveText, setLiveText] = useState('');
 
@@ -141,8 +145,32 @@ export default function AskScreen() {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
 
     const { hits, chunks } = await gatherSources(q);
-    let reply: Msg;
-    try {
+    let reply: Msg | null = null;
+
+    // A catalogue course has a study partner on the server that knows its syllabus,
+    // your weak topics and past chats, and can reply with flashcards, a quiz or a concept card.
+    const partnerCourse = !material && courseId ? state.courses.find((c) => c.id === courseId && c.catalogue && c.serverId) : undefined;
+    if (partnerCourse) {
+      try {
+        const res = await chatWithCoursePartner(partnerCourse.serverId!, {
+          message: q,
+          session_id: partnerSession.current,
+          history: history.slice(-6).map((h) => ({ role: h.role === 'zuri' ? 'assistant' : 'user', content: h.content })),
+        });
+        partnerSession.current = res.session_id;
+        reply = {
+          role: 'zuri',
+          text: res.message,
+          sources: hits.length ? hits : undefined,
+          widget: res.widget_type && res.widget_data ? { type: res.widget_type, data: res.widget_data } : undefined,
+          citations: res.provenance_citations?.length ? res.provenance_citations : undefined,
+        };
+      } catch {
+        // Fall back to the general assistant below.
+      }
+    }
+
+    if (!reply) try {
       const answer = await askZuriStream(
         q,
         chunks,
@@ -161,8 +189,9 @@ export default function AskScreen() {
         : { role: 'zuri', text: why };
     }
 
-    const turn: Msg[] = [userMsg, reply];
-    setMsgs((m) => [...m, reply]);
+    const final: Msg = reply ?? { role: 'zuri', text: 'Zuri’s AI isn’t available right now. Please try again.' };
+    const turn: Msg[] = [userMsg, final];
+    setMsgs((m) => [...m, final]);
     setThinking(false);
     setLiveText('');
     // Every chat is kept in history; star it to save it.
@@ -179,6 +208,7 @@ export default function AskScreen() {
   const newChat = () => {
     setMsgs([]);
     setConvId(undefined);
+    partnerSession.current = undefined;
   };
 
   return (
@@ -240,6 +270,10 @@ export default function AskScreen() {
                 <MarkdownText text={m.text} style={styles.bubbleText} />
               ) : (
                 <Text style={[styles.bubbleText, { color: lightColors['on-primary'] }]}>{m.text}</Text>
+              )}
+              {m.widget && <PartnerWidget widget={m.widget} />}
+              {m.citations && (
+                <Text style={[styles.footnote, { textAlign: 'left', paddingVertical: 4 }]}>From your course: {m.citations.slice(0, 3).join(' · ')}</Text>
               )}
               {m.sources && (
                 <View style={{ gap: 8, marginTop: 10 }}>
