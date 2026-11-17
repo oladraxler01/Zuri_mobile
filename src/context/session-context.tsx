@@ -4,6 +4,7 @@ import { loadJSON, saveJSON, removeKey, STORAGE_KEYS } from '@/utils/storage';
 import { onReset } from '@/utils/reset';
 import { loadAuth, onAuthChange, currentUser, type AuthUser } from '@/services/api-client';
 import { logout } from '@/services/auth-api';
+import { registerThisDevice, unregisterThisDevice } from '@/services/notification-api';
 
 /**
  * The three products. Each role gets its own navigation tree:
@@ -40,6 +41,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => onAuthChange(setUser), []);
 
+  // Signed in: register this phone for Zuri's server notifications (no-op without permission).
+  useEffect(() => {
+    if (user) registerThisDevice();
+  }, [user?.id]);
+
   // "Delete all my data" empties this store.
   useEffect(() => onReset(() => setRoleState(null)), []);
 
@@ -59,7 +65,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const signOut = () => {
     setRoleState(null);
     removeKey(STORAGE_KEYS.session);
-    logout();
+    // Stop server pushes to this phone first (needs the token), then sign out.
+    unregisterThisDevice().finally(() => logout());
   };
 
   return (

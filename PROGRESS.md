@@ -261,3 +261,10 @@ Part 2 — institution:
 - Study history: new "In your account" panel (`/analytics/study-streak`, `/analytics/study-stats`).
 - Concept mastery: new "Mastery in your account" panel from server-graded quizzes (`/analytics/topic-mastery`) plus topics due for review (`/analytics/topics-for-review`).
 - Profile → Goals: semester goals sync with `/analytics/goals` (pulled on open, offline-made ones pushed; ticking one off → `/complete`, removing → `DELETE`). The account can't un-complete a goal, so unticking stays on the phone.
+
+### Notifications: phone registration, account settings, history (2026-11-17)
+- New `services/notification-api.ts` (notification service; responses not wrapped in `{data}`).
+- This phone registers for server pushes (`POST /notifications/devices/register {device_token, device_type}`, native FCM/APNs token) when signed in with permission, and right after permission is granted; it unregisters (`DELETE /notifications/devices/:token`) before sign-out. Needs a development/production build (no device token in Expo Go).
+- Settings → Notifications: new "From Zuri" panel with the account's settings (`GET/PUT /notifications/preferences`: push, email, document ready, study reminders, quiz results, streaks, goals).
+- Notification centre: "From Zuri" section with `GET /notifications/history`; its settings link now opens Settings → Notifications.
+- Class and deadline reminders stay on the phone (work offline, no duplicates). Server pushes don't arrive yet: the backend's sender is a stub (BACKEND_REQUESTS #3).

@@ -3,6 +3,7 @@ import * as Notifications from 'expo-notifications';
 import type { CourseItem, TimetableSlot } from '@/context/academic-context';
 import type { Assessment } from '@/types/planner';
 import { parseTimeOfDay } from '@/utils/time';
+import { registerThisDevice } from '@/services/notification-api';
 
 /**
  * Local lecture reminders, scheduled on the phone from the timetable.
@@ -51,7 +52,11 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   if (!notificationsSupported) return 'unsupported';
   try {
     const perm = await Notifications.requestPermissionsAsync();
-    if (perm.granted) return 'granted';
+    if (perm.granted) {
+      // Also let Zuri's server reach this phone (no-op when signed out).
+      registerThisDevice();
+      return 'granted';
+    }
     return perm.canAskAgain ? 'undetermined' : 'denied';
   } catch {
     return 'unsupported';

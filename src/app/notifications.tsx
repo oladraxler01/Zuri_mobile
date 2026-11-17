@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -9,6 +9,8 @@ import { UI } from '@/constants/zuri-ui';
 import { useFeed } from '@/context/feed-context';
 import { EmptyState } from '@/components/states/state-view';
 import { relativeTime, type FeedItem } from '@/utils/recommendations';
+import { useSession } from '@/context/session-context';
+import { getHistory, type ServerNotification } from '@/services/notification-api';
 
 const GROUPS: { title: string; kinds: FeedItem['kind'][] }[] = [
   { title: 'NEEDS ATTENTION', kinds: ['class-soon', 'deadline', 'exam', 'lecture-waiting'] },
@@ -19,6 +21,15 @@ const GROUPS: { title: string; kinds: FeedItem['kind'][] }[] = [
 /** Notification centre: everything that needs you, built from your own data. */
 export default function NotificationCenterScreen() {
   const { items, isRead, markRead, markAllRead, dismiss, unread } = useFeed();
+  const { user } = useSession();
+  // Notifications Zuri's server has sent this account (GET /notifications/history).
+  const [fromZuri, setFromZuri] = useState<ServerNotification[]>([]);
+  useEffect(() => {
+    if (!user) return;
+    getHistory(30)
+      .then(setFromZuri)
+      .catch((e) => console.warn('[notifications] history not loaded', e));
+  }, [user]);
 
   const open = (i: FeedItem) => {
     markRead(i.id);
@@ -39,7 +50,30 @@ export default function NotificationCenterScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        {items.length === 0 ? (
+        {fromZuri.length > 0 && (
+          <View style={{ marginBottom: 20 }}>
+            <Text style={styles.group}>From Zuri</Text>
+            <View style={styles.card}>
+              {fromZuri.map((n, idx) => (
+                <View key={n.id} style={[styles.row, idx > 0 && styles.rowBorder]}>
+                  <View style={styles.icon}>
+                    <Ionicons name={n.channel === 'email' ? 'mail-outline' : 'notifications-outline'} size={18} color={UI.ink} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.title} numberOfLines={2}>
+                      {n.title}
+                    </Text>
+                    <Text style={styles.body} numberOfLines={3}>
+                      {n.body}
+                    </Text>
+                    <Text style={styles.time}>{relativeTime(n.sent_at)}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+        {items.length === 0 && fromZuri.length === 0 ? (
           <EmptyState
             icon="notifications-outline"
             title="You’re all caught up"
@@ -89,7 +123,7 @@ export default function NotificationCenterScreen() {
             );
           })
         )}
-        <Pressable style={styles.settings} onPress={() => router.push('/(tabs)/you' as Href)}>
+        <Pressable style={styles.settings} onPress={() => router.push('/settings/notifications' as Href)}>
           <Ionicons name="options-outline" size={16} color={UI.inkSoft} />
           <Text style={styles.settingsText}>Notification settings</Text>
         </Pressable>
