@@ -35,6 +35,9 @@ function friendly(e: unknown, fallback: string): ApiError {
   if (/already (exists|registered|in use)|duplicate/i.test(msg) || (e.status === 409 && /email|user|account/i.test(msg)))
     return fix('An account with this email already exists. Sign in instead.');
   if (/invalid credentials/i.test(msg)) return fix('That email and password don’t match. Please try again.');
+  if (/deactivated/i.test(msg)) return fix('This account has been deactivated. Contact support@zurilearn.com.');
+  if (e.status === 429 || /please wait before requesting/i.test(msg))
+    return fix('Too many tries. Please wait a few minutes and try again.');
   if (/invalid|expired/i.test(msg) && /code|otp|verification/i.test(msg))
     return fix('That code is wrong or has expired. Check the email or ask for a new code.');
   return e;
@@ -129,14 +132,135 @@ export async function fetchMe(): Promise<AuthUser> {
   return json.data;
 }
 
-/** Sign out on this device. Tells the server too when it can, but never blocks on it. */
+/**
+ * Sign out on this device. POST /auth/logout (no body: the server revokes the
+ * access token it was called with). Never blocks on the server: local tokens
+ * are cleared whatever happens, so a bad connection can't leave you signed in.
+ */
 export async function logout(): Promise<void> {
-  const refreshToken = getRefreshToken();
-  if (refreshToken) {
-    await apiRequest('/auth/logout', { method: 'POST', body: { refresh_token: refreshToken }, timeoutMs: 5000 }).catch(
-      () => {}
-    );
+  if (getRefreshToken()) {
+    await apiRequest('/auth/logout', { method: 'POST', timeoutMs: 5000 }).catch(() => {});
   }
   pending = null;
   await clearSession();
+}
+
+/** Sign out on every device (POST /auth/logout-all), then here. */
+export async function logoutEverywhere(): Promise<void> {
+  try {
+    await apiRequest('/auth/logout-all', { method: 'POST', timeoutMs: 10000 });
+  } catch (e) {
+    throw friendly(e, 'We couldn’t sign out your other devices. Check your connection and try again.');
+  }
+  pending = null;
+  await clearSession();
+}
+
+// ─── Passwords ───────────────────────────────────────────────────
+
+/**
+ * POST /auth/forgot-password { email } → always 200 (the server never says whether
+ * the email has an account). Emails a reset code; 429 if asked again too soon.
+ */
+export async function requestPasswordReset(email: string): Promise<void> {
+  try {
+    await apiRequest('/auth/forgot-password', { method: 'POST', auth: false, body: { email: email.trim().toLowerCase() } });
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 429) {
+      throw new ApiError('server', 'We just sent you a code. Please wait a few minutes before asking for another.', { status: 429 });
+    }
+    throw friendly(e, 'We couldn’t send the reset email. Please try again.');
+  }
+}
+
+/**
+ * POST /auth/reset-password { token, new_password }. The token is the code from
+ * the reset email (currently a long code; a 6-digit one is requested from the backend).
+ */
+export async function resetPassword(code: string, newPassword: string): Promise<void> {
+  try {
+    await apiRequest('/auth/reset-password', {
+      method: 'POST',
+      auth: false,
+      body: { token: code.replace(/\s+/g, ''), new_password: newPassword },
+    });
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 400 && /token|reset/i.test(e.message)) {
+      throw new ApiError('server', 'That reset code is wrong or has expired. Ask for a new one.', { status: 400 });
+    }
+    if (e instanceof ApiError && /'NewPassword' failed on the 'min'/.test(e.message)) {
+      throw new ApiError('server', `Your new password needs at least ${MIN_PASSWORD_LENGTH} characters.`, { status: 400 });
+    }
+    throw friendly(e, 'We couldn’t reset your password. Please try again.');
+  }
+}
+
+/** POST /users/me/change-password { current_password, new_password } (signed in). */
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  try {
+    await apiRequest('/users/me/change-password', {
+      method: 'POST',
+      body: { current_password: currentPassword, new_password: newPassword },
+    });
+  } catch (e) {
+    if (e instanceof ApiError && /current password is incorrect/i.test(e.message)) {
+      throw new ApiError('server', 'Your current password is wrong.', { status: e.status });
+    }
+    if (e instanceof ApiError && /'NewPassword' failed on the 'min'/.test(e.message)) {
+      throw new ApiError('server', `Your new password needs at least ${MIN_PASSWORD_LENGTH} characters.`, { status: 400 });
+    }
+    throw friendly(e, 'We couldn’t change your password. Please try again.');
+  }
+}
+
+// ─── Devices (sessions) ──────────────────────────────────────────
+
+export interface DeviceSession {
+  id: string;
+  device_name: string;
+  device_type: string;
+  os: string;
+  browser: string;
+  ip_address: string;
+  location?: string;
+  last_active_at: string;
+  created_at: string;
+  is_current: boolean;
+}
+
+/** GET /users/me/sessions → { data: DeviceSession[] } */
+export async function listSessions(): Promise<DeviceSession[]> {
+  const json = await apiRequest<{ data: DeviceSession[] | null }>('/users/me/sessions');
+  return json.data ?? [];
+}
+
+/** DELETE /users/me/sessions/:id signs that device out. */
+export async function revokeSession(id: string): Promise<void> {
+  try {
+    await apiRequest(`/users/me/sessions/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  } catch (e) {
+    throw friendly(e, 'We couldn’t sign that device out. Please try again.');
+  }
+}
+
+// ─── Profile ─────────────────────────────────────────────────────
+
+export interface ProfileUpdate {
+  first_name?: string;
+  last_name?: string;
+  school?: string;
+  department?: string;
+  academic_level?: string;
+  timezone?: string;
+}
+
+/** PUT /users/me with the fields that changed → { data: user } */
+export async function updateProfile(patch: ProfileUpdate): Promise<AuthUser> {
+  const body = Object.fromEntries(Object.entries(patch).filter(([, v]) => typeof v === 'string' && v.trim() !== ''));
+  try {
+    const json = await apiRequest<{ data: AuthUser }>('/users/me', { method: 'PUT', body });
+    return json.data;
+  } catch (e) {
+    throw friendly(e, 'We couldn’t save your profile. Please try again.');
+  }
 }

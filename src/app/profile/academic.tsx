@@ -9,6 +9,8 @@ import { ScreenShell, Panel, StatusBadge } from '@/components/dashboard';
 import { Chip } from '@/components/ui/chip';
 import { FACULTY_OPTIONS } from '@/constants/course-catalogue';
 import { looksLikeMatric } from '@/utils/validation';
+import { useSession } from '@/context/session-context';
+import { updateProfile } from '@/services/auth-api';
 
 const LEVELS = ['100L', '200L', '300L', '400L', '500L'];
 
@@ -22,8 +24,11 @@ export default function AcademicProfileScreen() {
   const [level, setLevel] = useState(state.level);
   const [semester, setSemester] = useState(state.semester);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const { user } = useSession();
 
-  const save = () => {
+  const save = async () => {
+    if (saving) return;
     if (!name.trim()) return setError('Enter your name.');
     if (matric.trim() && !looksLikeMatric(matric)) return setError('That doesn’t look like a matric number.');
     const matricChanged = matric.trim() !== state.matricNumber;
@@ -36,6 +41,30 @@ export default function AcademicProfileScreen() {
       level,
       semester,
     });
+
+    // Also save to the Zuri account (PUT /users/me). Matric number, faculty and
+    // semester have no server field yet (BACKEND_REQUESTS #13), so they stay on the phone.
+    if (user) {
+      setSaving(true);
+      setError('');
+      const [first, ...rest] = name.trim().split(/\s+/);
+      try {
+        await updateProfile({
+          first_name: first,
+          last_name: rest.join(' '),
+          school: state.university,
+          department: department.trim(),
+          academic_level: level,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        });
+      } catch (e) {
+        setSaving(false);
+        return setError(
+          `Saved on this phone, but not to your account: ${e instanceof Error ? e.message : 'please try again.'}`
+        );
+      }
+      setSaving(false);
+    }
     router.back();
   };
 
@@ -79,9 +108,9 @@ export default function AcademicProfileScreen() {
       </Panel>
 
       {!!error && <Text style={styles.error}>{error}</Text>}
-      <Pressable style={styles.primary} onPress={save}>
-        <Ionicons name="checkmark" size={18} color="#fff" />
-        <Text style={styles.primaryText}>Save changes</Text>
+      <Pressable style={[styles.primary, saving && { opacity: 0.7 }]} onPress={save} disabled={saving}>
+        <Ionicons name={saving ? 'sync' : 'checkmark'} size={18} color="#fff" />
+        <Text style={styles.primaryText}>{saving ? 'Saving…' : 'Save changes'}</Text>
       </Pressable>
     </ScreenShell>
   );

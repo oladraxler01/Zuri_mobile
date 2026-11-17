@@ -236,3 +236,10 @@ Part 2 — institution:
 - New `components/markdown-text.tsx` renders the AI's headings, bullets and bold.
 - Not used yet: the course study partner (`/academic/courses/:id/partner/chat`) only works for catalogue courses, and the live catalogue is empty.
 - **Backend security bug reported** (BACKEND_REQUESTS #0): `retrieval.*` isn't limited to the user's own documents. The app only calls it with a material id the user owns.
+
+### Account: passwords, devices, sign out everywhere, profile sync (2026-11-17)
+- Forgot password (sign-in → "Forgot Password?" → `onboarding/forgot-password`): email → `POST /auth/forgot-password` → paste the code from the email + new password → `POST /auth/reset-password {token, new_password}`. The emailed code is currently a long token (6-digit code requested, BACKEND_REQUESTS #9).
+- Settings → Account: **Change password** (`account/password`, `POST /users/me/change-password`) and **Signed-in devices** (`account/devices`, `GET/DELETE /users/me/sessions`, "Sign out of all devices" → `POST /auth/logout-all`).
+- Sign out now calls `POST /auth/logout` with no body (the server revokes the token it was called with).
+- Profile → Academic profile also saves name, school, department, level and timezone to the account (`PUT /users/me`). Matric number, faculty and semester stay on the phone (no server fields yet).
+- Friendlier messages for 429 (too many tries) and deactivated accounts.

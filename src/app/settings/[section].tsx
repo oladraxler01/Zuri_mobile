@@ -303,15 +303,27 @@ function Privacy() {
 
 function Account() {
   const { state } = useAcademic();
-  const { signOut } = useSession();
+  const { signOut, user } = useSession();
   return (
     <>
       <Panel>
         <ListRow icon="person-outline" title={state.studentName || 'Name not set'} subtitle="Name" onPress={() => router.push('/profile/academic' as Href)} />
         <Divider />
-        <ListRow icon="mail-outline" title={state.email || 'Not set'} subtitle="Email" />
+        <ListRow icon="mail-outline" title={user?.email || state.email || 'Not set'} subtitle="Email" />
         <Divider />
-        <ListRow icon="key-outline" title="Change password" subtitle={isBackendConfigured ? 'Send a reset link to your email' : 'Available once accounts are connected to the server'} />
+        <ListRow
+          icon="key-outline"
+          title="Change password"
+          subtitle={user ? 'Needs your current password' : 'Sign in first'}
+          onPress={user ? () => router.push('/account/password' as Href) : undefined}
+        />
+        <Divider />
+        <ListRow
+          icon="phone-portrait-outline"
+          title="Signed-in devices"
+          subtitle="See where you’re signed in, or sign out everywhere"
+          onPress={user ? () => router.push('/account/devices' as Href) : undefined}
+        />
       </Panel>
       <Panel>
         <ListRow
