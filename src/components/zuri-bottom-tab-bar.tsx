@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
+import { View, Text, Pressable, Platform } from 'react-native';
 import type { BottomTabBarProps } from 'expo-router/tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriColors, ZuriFonts } from '@/constants/zuri-theme';
+import { makeStyles, useTheme } from '@/theme';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -18,6 +18,8 @@ interface ZuriBottomTabBarProps extends BottomTabBarProps {
 }
 
 export function ZuriBottomTabBar({ state, descriptors, emitter, navigateToTab, icons }: ZuriBottomTabBarProps) {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
   const getTabConfig = (routeName: string, title?: string) => {
@@ -115,7 +117,7 @@ export function ZuriBottomTabBar({ state, descriptors, emitter, navigateToTab, i
                   <Ionicons
                     name={config.iconFilled}
                     size={20}
-                    color="#5c3400"
+                    color={colors['on-tint']}
                   />
                   <Text style={styles.activeLabel}>{config.label}</Text>
                 </View>
@@ -124,7 +126,7 @@ export function ZuriBottomTabBar({ state, descriptors, emitter, navigateToTab, i
                   <Ionicons
                     name={config.iconOutline}
                     size={21}
-                    color="#46483d"
+                    color={colors['text-muted']}
                   />
                   <Text style={styles.inactiveLabel}>{config.label}</Text>
                 </View>
@@ -137,24 +139,18 @@ export function ZuriBottomTabBar({ state, descriptors, emitter, navigateToTab, i
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
-    backgroundColor: '#f0eee9', // surface-container from Stitch design
+    backgroundColor: t.colors['surface-sunken'], // surface-container from Stitch design
     borderTopWidth: 1,
-    borderTopColor: 'rgba(199, 199, 185, 0.35)', // ghost-border
+    borderTopColor: t.colors.border, // ghost-border
     paddingTop: 8,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.04,
-        shadowRadius: 3,
-      },
+        },
       android: {
-        elevation: 6,
-      },
-    }),
-  },
+        },
+    }), boxShadow: t.shadows.card,},
   tabRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -168,19 +164,15 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   activePill: {
-    backgroundColor: '#ffb559', // secondary-container warm amber pill
-    borderRadius: 14,
+    backgroundColor: t.colors.tint, // design system: tint pill behind the active icon
+    borderRadius: t.radius.md,
     paddingHorizontal: 16,
     paddingVertical: 4,
     alignItems: 'center',
     justifyContent: 'center',
     minWidth: 64,
   },
-  activeLabel: {
-    fontFamily: ZuriFonts.bodyMedium,
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#5c3400', // on-secondary-container
+  activeLabel: { ...t.type.caption, color: t.colors['on-tint'],
     marginTop: 1,
   },
   inactiveItem: {
@@ -189,11 +181,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 12,
   },
-  inactiveLabel: {
-    fontFamily: ZuriFonts.bodyRegular,
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#46483d', // on-surface-variant
+  inactiveLabel: { ...t.type.caption, color: t.colors['text-muted'], // on-surface-variant
     marginTop: 2,
   },
-});
+}));
