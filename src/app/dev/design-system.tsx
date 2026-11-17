@@ -60,7 +60,7 @@ function Gallery() {
           <Text variant="display">Know what to revise.</Text>
           <Text variant="title-2">CSC 301 · Data Structures</Text>
           <Text variant="headline">Your next class starts in 18 min</Text>
-          <Text variant="body">Zuri recorded today's lecture and filed it under CSC 301.</Text>
+          <Text variant="body">Zuri recorded today’s lecture and filed it under CSC 301.</Text>
           <Text variant="callout" color="text-muted">
             Merge sort splits the list in half, sorts each half, then merges.
           </Text>
@@ -171,7 +171,7 @@ function Gallery() {
         secondary={{ label: 'Ask questions without recording', onPress: () => setSheet(false) }}
       >
         <Text variant="callout" color="text-muted">
-          Only you can hear the recording. It's kept for 90 days, and the transcript and notes stay after that.
+          Only you can hear the recording. It’s kept for 90 days, and the transcript and notes stay after that.
         </Text>
       </BottomSheet>
     </View>

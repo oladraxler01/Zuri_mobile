@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   AccessibilityInfo,
   Animated,
@@ -53,10 +53,19 @@ export function BottomSheet({
 }: BottomSheetProps) {
   const { colors, radius, space, shadows } = useTheme();
   const insets = useSafeAreaInsets();
-  const [mounted, setMounted] = useState(visible);
   const [reduceMotion, setReduceMotion] = useState(false);
-  const progress = useRef(new Animated.Value(0)).current; // 0 hidden → 1 shown
-  const drag = useRef(new Animated.Value(0)).current;
+  // Animated values live in state (created once) rather than refs, so render never reads a ref.
+  const [progress] = useState(() => new Animated.Value(visible ? 1 : 0)); // 0 hidden → 1 shown
+  const [drag] = useState(() => new Animated.Value(0));
+
+  // Stay mounted while the closing animation runs. Track the previous `visible`
+  // during render (React's "adjusting state when a prop changes" pattern).
+  const [mounted, setMounted] = useState(visible);
+  const [prevVisible, setPrevVisible] = useState(visible);
+  if (visible !== prevVisible) {
+    setPrevVisible(visible);
+    if (visible) setMounted(true);
+  }
 
   useEffect(() => {
     AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion).catch(() => {});
@@ -66,7 +75,6 @@ export function BottomSheet({
 
   useEffect(() => {
     if (visible) {
-      setMounted(true);
       drag.setValue(0);
       Animated.timing(progress, {
         toValue: 1,
@@ -74,34 +82,33 @@ export function BottomSheet({
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start();
-    } else if (mounted) {
+    } else {
       Animated.timing(progress, {
         toValue: 0,
         duration: 220,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
-      }).start(({ finished }) => finished && setMounted(false));
+      }).start(({ finished }) => {
+        if (finished) setMounted(false);
+      });
     }
-  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [visible, drag, progress]);
 
-  const dismissibleRef = useRef(dismissible);
-  dismissibleRef.current = dismissible;
-  const onDismissRef = useRef(onDismiss);
-  onDismissRef.current = onDismiss;
-
-  const pan = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => dismissibleRef.current && g.dy > 6 && Math.abs(g.dy) > Math.abs(g.dx),
-      onPanResponderMove: (_, g) => drag.setValue(Math.max(0, g.dy)),
-      onPanResponderRelease: (_, g) => {
-        if (g.dy > DISMISS_DISTANCE || g.vy > 1.2) {
-          onDismissRef.current();
-        } else {
-          Animated.spring(drag, { toValue: 0, useNativeDriver: true }).start();
-        }
-      },
-    }),
-  ).current;
+  const pan = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, g) => dismissible && g.dy > 6 && Math.abs(g.dy) > Math.abs(g.dx),
+        onPanResponderMove: (_, g) => drag.setValue(Math.max(0, g.dy)),
+        onPanResponderRelease: (_, g) => {
+          if (g.dy > DISMISS_DISTANCE || g.vy > 1.2) {
+            onDismiss();
+          } else {
+            Animated.spring(drag, { toValue: 0, useNativeDriver: true }).start();
+          }
+        },
+      }),
+    [dismissible, onDismiss, drag],
+  );
 
   if (!mounted) return null;
 
