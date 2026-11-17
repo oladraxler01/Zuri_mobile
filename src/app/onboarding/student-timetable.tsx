@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   Pressable,
   ScrollView,
   StatusBar,
@@ -15,13 +14,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic, TimetableSlot } from '@/context/academic-context';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import { parseTimetableText, normaliseCode } from '@/utils/timetable-import';
+import { makeStyles, useTheme } from '@/theme';
 
 const DAYS: ('Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat')[] = [
   'Mon',
@@ -42,6 +41,8 @@ const POPULAR_TIMES = [
 ];
 
 export default function StudentTimetableScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const router = useRouter();
   const [fontsLoaded] = useZuriFonts();
   const { state, addTimetableSlot, removeTimetableSlot, setTimetableSlots, addCourse } = useAcademic();
@@ -165,7 +166,7 @@ export default function StudentTimetableScreen() {
           accessibilityLabel="Go back"
           hitSlop={12}
         >
-          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
 
         <View style={styles.headerCenter}>
@@ -200,7 +201,7 @@ export default function StudentTimetableScreen() {
             <Ionicons
               name="calendar-outline"
               size={18}
-              color={activeTab === 'manual' ? ZuriColors.primaryContainer : ZuriColors.secondary}
+              color={activeTab === 'manual' ? colors.text : colors['text-muted']}
             />
             <Text
               style={[
@@ -219,7 +220,7 @@ export default function StudentTimetableScreen() {
             <Ionicons
               name="cloud-upload-outline"
               size={18}
-              color={activeTab === 'upload' ? ZuriColors.primaryContainer : ZuriColors.secondary}
+              color={activeTab === 'upload' ? colors.text : colors['text-muted']}
             />
             <Text
               style={[
@@ -237,7 +238,7 @@ export default function StudentTimetableScreen() {
           <View style={styles.uploadContainer}>
             <View style={styles.uploadDropZone}>
               <View style={styles.uploadIconCircle}>
-                <Ionicons name="document-text-outline" size={32} color={ZuriColors.primaryContainer} />
+                <Ionicons name="document-text-outline" size={32} color={colors.text} />
               </View>
               <Text style={styles.uploadHeading}>Upload Departmental Timetable</Text>
               <Text style={styles.uploadSubtext}>
@@ -246,14 +247,14 @@ export default function StudentTimetableScreen() {
 
               {uploadedFileName ? (
                 <View style={styles.filePill}>
-                  <Ionicons name="checkmark-circle" size={18} color="#2c3930" />
+                  <Ionicons name="checkmark-circle" size={18} color={colors.text} />
                   <Text style={styles.filePillText} numberOfLines={1}>{uploadedFileName}</Text>
                 </View>
               ) : null}
 
               {scanning ? (
                 <View style={styles.scanningBox}>
-                  <ActivityIndicator size="small" color={ZuriColors.primaryContainer} />
+                  <ActivityIndicator size="small" color={colors.text} />
                   <Text style={styles.scanningText}>Reading your timetable…</Text>
                 </View>
               ) : (
@@ -264,7 +265,7 @@ export default function StudentTimetableScreen() {
                   ]}
                   onPress={handleSimulateUpload}
                 >
-                  <Ionicons name="cloud-upload" size={18} color="#ffffff" />
+                  <Ionicons name="cloud-upload" size={18} color={colors['on-primary']} />
                   <Text style={styles.uploadActionBtnText}>
                     {uploadedFileName ? 'Import another file' : 'Choose timetable file'}
                   </Text>
@@ -273,7 +274,7 @@ export default function StudentTimetableScreen() {
             </View>
 
             <View style={styles.infoCallout}>
-              <Ionicons name={importMsg ? (importMsg.ok ? 'checkmark-circle' : 'alert-circle') : 'information-circle-outline'} size={16} color={importMsg && !importMsg.ok ? '#ba1a1a' : ZuriColors.tertiary} />
+              <Ionicons name={importMsg ? (importMsg.ok ? 'checkmark-circle' : 'alert-circle') : 'information-circle-outline'} size={16} color={importMsg && !importMsg.ok ? colors.danger : colors['accent-text']} />
               <Text style={styles.infoCalloutText}>
                 {importMsg?.text ??
                   'Columns can be in any order and separated by commas, semicolons or tabs. Times like 9-11, 2:00 PM or 14:00 all work. Courses not in your list are added for you.'}
@@ -336,7 +337,7 @@ export default function StudentTimetableScreen() {
                 ]}
                 onPress={() => setModalVisible(true)}
               >
-                <Ionicons name="add" size={18} color="#ffffff" />
+                <Ionicons name="add" size={18} color={colors['on-primary']} />
                 <Text style={styles.addClassBtnText}>Add Class</Text>
               </Pressable>
             </View>
@@ -344,7 +345,7 @@ export default function StudentTimetableScreen() {
             {/* Classes List */}
             {daySlots.length === 0 ? (
               <View style={styles.emptyDayBox}>
-                <Ionicons name="calendar-clear-outline" size={32} color={ZuriColors.outline} />
+                <Ionicons name="calendar-clear-outline" size={32} color={colors['text-subtle']} />
                 <Text style={styles.emptyDayTitle}>No lectures on {selectedDay}</Text>
                 <Text style={styles.emptyDaySubtitle}>
                   Free day or no lectures scheduled. Tap "+ Add Class" to schedule a lecture or lab.
@@ -366,7 +367,7 @@ export default function StudentTimetableScreen() {
                         <View style={styles.slotCodeRow}>
                           <Text style={styles.slotCourseCode}>{slot.courseCode}</Text>
                           <View style={styles.venueBadge}>
-                            <Ionicons name="location-outline" size={12} color={ZuriColors.primaryContainer} />
+                            <Ionicons name="location-outline" size={12} color={colors.text} />
                             <Text style={styles.venueText}>{slot.venue}</Text>
                           </View>
                         </View>
@@ -384,7 +385,7 @@ export default function StudentTimetableScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={`Remove slot for ${slot.courseCode}`}
                       >
-                        <Ionicons name="close-circle-outline" size={20} color={ZuriColors.outline} />
+                        <Ionicons name="close-circle-outline" size={20} color={colors['text-subtle']} />
                       </Pressable>
                     </View>
                   );
@@ -394,7 +395,7 @@ export default function StudentTimetableScreen() {
 
             {/* Sudden Changes Note */}
             <View style={styles.noticeCard}>
-              <Ionicons name="notifications-outline" size={18} color={ZuriColors.primaryContainer} />
+              <Ionicons name="notifications-outline" size={18} color={colors.text} />
               <Text style={styles.noticeText}>
                 Sudden lecture hall or time changes? You can modify any class slot directly from your dashboard schedule tab at any time.
               </Text>
@@ -415,7 +416,7 @@ export default function StudentTimetableScreen() {
           accessibilityLabel="Proceed to Reminders"
         >
           <Text style={styles.proceedButtonText}>PROCEED TO REMINDERS</Text>
-          <Ionicons name="arrow-forward" size={18} color="#ffffff" />
+          <Ionicons name="arrow-forward" size={18} color={colors['on-primary']} />
         </Pressable>
       </View>
 
@@ -431,7 +432,7 @@ export default function StudentTimetableScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add Class ({selectedDay})</Text>
               <Pressable onPress={() => setModalVisible(false)} hitSlop={8}>
-                <Ionicons name="close" size={24} color={ZuriColors.primary} />
+                <Ionicons name="close" size={24} color={colors.text} />
               </Pressable>
             </View>
 
@@ -514,7 +515,7 @@ export default function StudentTimetableScreen() {
                     value={startTime}
                     onChangeText={setStartTime}
                     placeholder="09:00 AM"
-                    placeholderTextColor={ZuriColors.outline}
+                    placeholderTextColor={colors['text-subtle']}
                   />
                 </View>
                 <View style={[styles.fieldBlock, { flex: 1 }]}>
@@ -524,7 +525,7 @@ export default function StudentTimetableScreen() {
                     value={endTime}
                     onChangeText={setEndTime}
                     placeholder="11:00 AM"
-                    placeholderTextColor={ZuriColors.outline}
+                    placeholderTextColor={colors['text-subtle']}
                   />
                 </View>
               </View>
@@ -537,7 +538,7 @@ export default function StudentTimetableScreen() {
                   value={venue}
                   onChangeText={setVenue}
                   placeholder="e.g. Lecture Theatre B, Lab 2"
-                  placeholderTextColor={ZuriColors.outline}
+                  placeholderTextColor={colors['text-subtle']}
                 />
               </View>
 
@@ -552,22 +553,22 @@ export default function StudentTimetableScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
-    backgroundColor: ZuriColors.background,
+    backgroundColor: t.colors.surface,
   },
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
   },
   backButton: {
     padding: 6,
     marginLeft: -6,
-    borderRadius: 8,
+    borderRadius: t.radius.md,
   },
   backButtonPressed: {
     opacity: 0.7,
@@ -577,31 +578,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
   },
-  headerTitle: {
-    fontFamily: ZuriFonts.headlineLgMobile,
-    fontSize: 22,
-    color: ZuriColors.primary,
-    fontWeight: '700',
-  },
+  headerTitle: { ...t.type['title-2'], color: t.colors.text,
+    },
   stepBadge: {
-    backgroundColor: ZuriColors.surfaceContainerLow,
+    backgroundColor: t.colors['surface-sunken'],
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 10,
+    borderRadius: t.radius.md,
     borderWidth: 1,
     borderColor: 'rgba(203, 167, 47, 0.3)',
   },
-  stepBadgeText: {
-    fontFamily: ZuriFonts.labelSm,
-    fontSize: 11,
-    color: ZuriColors.tertiary,
-    fontWeight: '600',
-  },
+  stepBadgeText: { ...t.type.caption, color: t.colors['accent-text'],
+    },
   headerSpacer: {
     width: 32,
   },
   scrollContent: {
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
     paddingTop: 16,
     paddingBottom: 24,
     maxWidth: 420,
@@ -612,22 +605,14 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 20,
   },
-  headline: {
-    fontFamily: ZuriFonts.headlineLgMobile,
-    fontSize: 26,
-    lineHeight: 32,
-    color: ZuriColors.primary,
+  headline: { ...t.type['title-1'], color: t.colors.text,
   },
-  subtitle: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 14,
-    lineHeight: 20,
-    color: ZuriColors.onSurfaceVariant,
+  subtitle: { ...t.type.callout, color: t.colors['text-muted'],
   },
   modeToggleRow: {
     flexDirection: 'row',
-    backgroundColor: '#F5F3EF',
-    borderRadius: 12,
+    backgroundColor: t.colors['surface-sunken'],
+    borderRadius: t.radius.md,
     padding: 4,
     marginBottom: 20,
   },
@@ -638,23 +623,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: t.radius.md,
   },
   modeTabSelected: {
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  modeTabText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 13,
-    color: ZuriColors.secondary,
+    backgroundColor: t.colors['surface-raised'], boxShadow: t.shadows.card,},
+  modeTabText: { ...t.type.subhead, color: t.colors['text-muted'],
   },
   modeTabTextSelected: {
-    color: ZuriColors.primaryContainer,
+    color: t.colors.text,
   },
   // Upload
   uploadContainer: {
@@ -664,49 +640,39 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(115, 120, 115, 0.3)',
     borderStyle: 'dashed',
-    borderRadius: 18,
+    borderRadius: t.radius.lg,
     padding: 24,
     alignItems: 'center',
-    backgroundColor: '#F5F3EF',
+    backgroundColor: t.colors['surface-sunken'],
   },
   uploadIconCircle: {
     width: 56,
     height: 56,
-    borderRadius: 28,
-    backgroundColor: '#ffffff',
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors['surface-raised'],
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
   },
-  uploadHeading: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 17,
-    color: ZuriColors.primary,
+  uploadHeading: { ...t.type['title-2'], color: t.colors.text,
     marginBottom: 6,
     textAlign: 'center',
   },
-  uploadSubtext: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 13,
-    color: ZuriColors.onSurfaceVariant,
+  uploadSubtext: { ...t.type.footnote, color: t.colors['text-muted'],
     textAlign: 'center',
-    lineHeight: 18,
     marginBottom: 16,
   },
   filePill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: ZuriColors.primaryFixed,
+    backgroundColor: t.colors.tint,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: t.radius.md,
     marginBottom: 16,
   },
-  filePillText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 12,
-    color: ZuriColors.primaryContainer,
+  filePillText: { ...t.type.caption, color: t.colors.text,
   },
   scanningBox: {
     flexDirection: 'row',
@@ -714,44 +680,34 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 8,
   },
-  scanningText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 13,
-    color: ZuriColors.primaryContainer,
+  scanningText: { ...t.type.footnote, color: t.colors.text,
   },
   uploadActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: ZuriColors.primaryContainer,
+    backgroundColor: t.colors.primary,
     paddingHorizontal: 18,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: t.radius.md,
   },
   uploadActionBtnPressed: {
     opacity: 0.9,
   },
-  uploadActionBtnText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 13,
-    color: '#ffffff',
+  uploadActionBtnText: { ...t.type.subhead, color: t.colors['on-primary'],
   },
   infoCallout: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: ZuriColors.surfaceContainerLow,
+    backgroundColor: t.colors['surface-sunken'],
     padding: 14,
-    borderRadius: 12,
+    borderRadius: t.radius.md,
     borderWidth: 1,
     borderColor: 'rgba(203, 167, 47, 0.25)',
   },
-  infoCalloutText: {
-    flex: 1,
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 12,
-    lineHeight: 17,
-    color: ZuriColors.onSurfaceVariant,
+  infoCalloutText: { ...t.type.caption, flex: 1,
+    color: t.colors['text-muted'],
   },
   // Manual
   manualContainer: {
@@ -765,42 +721,36 @@ const styles = StyleSheet.create({
   dayButton: {
     flex: 1,
     paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: '#F5F3EF',
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors['surface-sunken'],
     borderWidth: 1,
-    borderColor: '#E5E3DF',
+    borderColor: t.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 48,
   },
   dayButtonSelected: {
-    backgroundColor: ZuriColors.primaryContainer,
-    borderColor: ZuriColors.primaryContainer,
+    backgroundColor: t.colors.primary,
+    borderColor: t.colors.primary,
   },
-  dayButtonText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 12,
-    color: ZuriColors.onSurface,
+  dayButtonText: { ...t.type.caption, color: t.colors.text,
   },
   dayButtonTextSelected: {
-    color: '#ffffff',
+    color: t.colors['on-primary'],
   },
   dayCountDot: {
-    backgroundColor: ZuriColors.surfaceContainerLowest,
+    backgroundColor: t.colors['surface-raised'],
     paddingHorizontal: 4,
-    borderRadius: 6,
+    borderRadius: t.radius.sm,
     marginTop: 2,
   },
   dayCountDotSelected: {
     backgroundColor: 'rgba(255, 255, 255, 0.25)',
   },
-  dayCountText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 9,
-    color: ZuriColors.primary,
+  dayCountText: { ...t.type.caption, color: t.colors.text,
   },
   dayCountTextSelected: {
-    color: '#ffffff',
+    color: t.colors['on-primary'],
   },
   dayHeaderRow: {
     flexDirection: 'row',
@@ -808,50 +758,36 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 4,
   },
-  daySectionTitle: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 18,
-    color: ZuriColors.primary,
-    fontWeight: '600',
-  },
+  daySectionTitle: { ...t.type['title-2'], color: t.colors.text,
+    },
   addClassBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: ZuriColors.primaryContainer,
+    backgroundColor: t.colors.primary,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: t.radius.md,
   },
   addClassBtnPressed: {
     opacity: 0.88,
   },
-  addClassBtnText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 12,
-    color: '#ffffff',
+  addClassBtnText: { ...t.type.caption, color: t.colors['on-primary'],
   },
   emptyDayBox: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 32,
     paddingHorizontal: 20,
-    backgroundColor: '#F5F3EF',
-    borderRadius: 14,
+    backgroundColor: t.colors['surface-sunken'],
+    borderRadius: t.radius.md,
     gap: 6,
     borderWidth: 1,
-    borderColor: '#E5E3DF',
+    borderColor: t.colors.border,
   },
-  emptyDayTitle: {
-    fontFamily: ZuriFonts.bodyLg,
-    fontSize: 15,
-    fontWeight: '600',
-    color: ZuriColors.primary,
+  emptyDayTitle: { ...t.type.callout, color: t.colors.text,
   },
-  emptyDaySubtitle: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 12,
-    color: ZuriColors.onSurfaceVariant,
+  emptyDaySubtitle: { ...t.type.caption, color: t.colors['text-muted'],
     textAlign: 'center',
   },
   slotsList: {
@@ -860,39 +796,27 @@ const styles = StyleSheet.create({
   slotCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
+    backgroundColor: t.colors['surface-raised'],
+    borderRadius: t.radius.full,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#E5E3DF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
-  },
+    borderColor: t.colors.border, boxShadow: t.shadows.card,},
   slotTimeColumn: {
     alignItems: 'center',
     width: 68,
     paddingRight: 10,
     borderRightWidth: 1,
-    borderRightColor: ZuriColors.surfaceContainerHigh,
+    borderRightColor: t.colors.border,
   },
-  slotTimeStart: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 11,
-    color: ZuriColors.primary,
+  slotTimeStart: { ...t.type.caption, color: t.colors.text,
   },
   timeLineBar: {
     width: 2,
     height: 12,
-    backgroundColor: ZuriColors.tertiaryFixedDim,
+    backgroundColor: t.colors.accent,
     marginVertical: 2,
   },
-  slotTimeEnd: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 11,
-    color: ZuriColors.onSurfaceVariant,
+  slotTimeEnd: { ...t.type.caption, color: t.colors['text-muted'],
   },
   slotInfoColumn: {
     flex: 1,
@@ -904,29 +828,20 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 4,
   },
-  slotCourseCode: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 14,
-    color: ZuriColors.primary,
+  slotCourseCode: { ...t.type.subhead, color: t.colors.text,
   },
   venueBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: '#F5F3EF',
+    backgroundColor: t.colors['surface-sunken'],
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: t.radius.sm,
   },
-  venueText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 11,
-    color: ZuriColors.primaryContainer,
+  venueText: { ...t.type.caption, color: t.colors.text,
   },
-  slotCourseTitle: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 12,
-    color: ZuriColors.onSurfaceVariant,
+  slotCourseTitle: { ...t.type.caption, color: t.colors['text-muted'],
   },
   deleteSlotBtn: {
     padding: 6,
@@ -935,25 +850,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
-    backgroundColor: '#F5F3EF',
+    backgroundColor: t.colors['surface-sunken'],
     padding: 14,
-    borderRadius: 12,
+    borderRadius: t.radius.md,
     borderWidth: 1,
-    borderColor: '#E5E3DF',
+    borderColor: t.colors.border,
     marginTop: 6,
   },
-  noticeText: {
-    flex: 1,
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 12,
-    lineHeight: 17,
-    color: ZuriColors.onSurfaceVariant,
+  noticeText: { ...t.type.caption, flex: 1,
+    color: t.colors['text-muted'],
   },
   footer: {
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
     paddingTop: 12,
     paddingBottom: 20,
-    backgroundColor: ZuriColors.background,
+    backgroundColor: t.colors.surface,
     maxWidth: 420,
     width: '100%',
     alignSelf: 'center',
@@ -964,25 +875,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: ZuriColors.primaryContainer,
-    borderRadius: 14,
-    shadowColor: ZuriColors.primaryContainer,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-  },
+    backgroundColor: t.colors.primary,
+    borderRadius: t.radius.full, boxShadow: t.shadows.card,},
   proceedButtonPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.985 }],
   },
-  proceedButtonText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 14,
-    color: ZuriColors.onPrimary,
+  proceedButtonText: { ...t.type.subhead, color: t.colors['on-primary'],
     letterSpacing: 1,
-    fontWeight: '700',
-  },
+    },
   // Modal
   modalBackdrop: {
     flex: 1,
@@ -994,39 +895,26 @@ const styles = StyleSheet.create({
   modalSheet: {
     width: '100%',
     maxWidth: 380,
-    backgroundColor: ZuriColors.background,
-    borderRadius: 20,
+    backgroundColor: t.colors.surface,
+    borderRadius: t.radius.full,
     padding: 20,
     borderWidth: 1,
-    borderColor: ZuriColors.outlineVariant,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
-  },
+    borderColor: t.colors.border, boxShadow: t.shadows.raised,},
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
   },
-  modalTitle: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 18,
-    color: ZuriColors.primary,
-    fontWeight: '600',
-  },
+  modalTitle: { ...t.type['title-2'], color: t.colors.text,
+    },
   modalForm: {
     gap: 14,
   },
   fieldBlock: {
     gap: 6,
   },
-  fieldLabel: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 12,
-    color: ZuriColors.primary,
+  fieldLabel: { ...t.type.caption, color: t.colors.text,
   },
   courseSelectRow: {
     gap: 8,
@@ -1034,22 +922,19 @@ const styles = StyleSheet.create({
   courseChip: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: '#F5F3EF',
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors['surface-sunken'],
     borderWidth: 1,
-    borderColor: '#E5E3DF',
+    borderColor: t.colors.border,
   },
   courseChipSelected: {
-    backgroundColor: ZuriColors.primaryContainer,
-    borderColor: ZuriColors.primaryContainer,
+    backgroundColor: t.colors.primary,
+    borderColor: t.colors.primary,
   },
-  courseChipText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 13,
-    color: ZuriColors.onSurface,
+  courseChipText: { ...t.type.subhead, color: t.colors.text,
   },
   courseChipTextSelected: {
-    color: '#ffffff',
+    color: t.colors['on-primary'],
   },
   popularTimesRow: {
     gap: 8,
@@ -1057,51 +942,41 @@ const styles = StyleSheet.create({
   timeChip: {
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: '#F5F3EF',
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors['surface-sunken'],
     borderWidth: 1,
-    borderColor: '#E5E3DF',
+    borderColor: t.colors.border,
   },
   timeChipSelected: {
-    backgroundColor: ZuriColors.primaryContainer,
-    borderColor: ZuriColors.primaryContainer,
+    backgroundColor: t.colors.primary,
+    borderColor: t.colors.primary,
   },
-  timeChipText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 12,
-    color: ZuriColors.onSurface,
+  timeChipText: { ...t.type.caption, color: t.colors.text,
   },
   timeChipTextSelected: {
-    color: '#ffffff',
+    color: t.colors['on-primary'],
     fontWeight: '600',
   },
   twoColRow: {
     flexDirection: 'row',
     gap: 12,
   },
-  input: {
-    height: 46,
-    backgroundColor: ZuriColors.surfaceContainerLowest,
+  input: { ...t.type.footnote, height: 46,
+    backgroundColor: t.colors['surface-raised'],
     borderWidth: 1,
-    borderColor: ZuriColors.outlineVariant,
-    borderRadius: 10,
+    borderColor: t.colors.border,
+    borderRadius: t.radius.md,
     paddingHorizontal: 12,
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 13,
-    color: ZuriColors.onSurface,
+    color: t.colors.text,
   },
   saveSlotBtn: {
     height: 48,
-    backgroundColor: ZuriColors.primaryContainer,
-    borderRadius: 12,
+    backgroundColor: t.colors.primary,
+    borderRadius: t.radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
   },
-  saveSlotBtnText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 14,
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-});
+  saveSlotBtnText: { ...t.type.subhead, color: t.colors['on-primary'],
+    },
+}));

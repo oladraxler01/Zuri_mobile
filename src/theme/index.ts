@@ -33,6 +33,7 @@ export {
   type ColorScheme,
 } from './theme-provider';
 export { Text, MAX_FONT_SCALE, type TextProps } from './text';
+export { makeStyles } from './make-styles';
 export { haptics } from './haptics';
 
 export { Button, type ButtonProps, type ButtonVariant } from './components/button';

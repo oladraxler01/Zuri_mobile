@@ -1,13 +1,14 @@
 import { Stack } from 'expo-router';
-import { ZuriColors } from '@/constants/zuri-theme';
+import { useTheme } from '@/theme';
 
 export default function OnboardingLayout() {
+  const { colors } = useTheme();
   return (
     <Stack
       screenOptions={{
         headerShown: false,
         animation: 'slide_from_right',
-        contentStyle: { backgroundColor: ZuriColors.background },
+        contentStyle: { backgroundColor: colors.surface },
       }}
     >
       <Stack.Screen name="index" options={{ animation: 'fade' }} />

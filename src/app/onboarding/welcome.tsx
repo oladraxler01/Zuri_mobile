@@ -19,10 +19,11 @@ import Animated, {
   withDelay,
   Easing,
 } from 'react-native-reanimated';
-import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
+import { makeStyles } from '@/theme';
 
 export default function WelcomeScreen() {
+  const styles = useStyles();
   const router = useRouter();
   const [fontsLoaded] = useZuriFonts();
 
@@ -163,15 +164,15 @@ export default function WelcomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
-    backgroundColor: ZuriColors.background,
+    backgroundColor: t.colors.surface,
   },
   innerWrapper: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
+    paddingHorizontal: t.space[5],
     maxWidth: 420,
     width: '100%',
     alignSelf: 'center',
@@ -186,20 +187,14 @@ const styles = StyleSheet.create({
   heroCard: {
     width: '100%',
     aspectRatio: 4 / 3,
-    borderRadius: 20,
+    borderRadius: t.radius.full,
     overflow: 'hidden',
     backgroundColor: 'rgba(251, 249, 248, 0.85)',
     borderWidth: 1,
     borderColor: 'rgba(115, 120, 115, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
-    elevation: 2,
-    marginBottom: 28,
-  },
+    marginBottom: 28, boxShadow: t.shadows.raised,},
   heroImage: {
     width: '100%',
     height: '100%',
@@ -213,18 +208,10 @@ const styles = StyleSheet.create({
   textBlock: {
     gap: 12,
   },
-  headline: {
-    fontFamily: ZuriFonts.headlineLgMobile,
-    fontSize: 32,
-    lineHeight: 38,
-    color: ZuriColors.primary,
+  headline: { ...t.type.display, color: t.colors.text,
     letterSpacing: -0.5,
   },
-  bodyText: {
-    fontFamily: ZuriFonts.bodyLg,
-    fontSize: 16,
-    lineHeight: 25,
-    color: ZuriColors.onSurfaceVariant,
+  bodyText: { ...t.type.body, color: t.colors['text-muted'],
     maxWidth: 290,
   },
 
@@ -240,43 +227,31 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     minHeight: 56,
-    borderRadius: 14,
-    backgroundColor: ZuriColors.primaryContainer,
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors.primary,
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: ZuriColors.primaryContainer,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.14,
-    shadowRadius: 8,
-    elevation: 3,
-  },
+    justifyContent: 'center', boxShadow: t.shadows.card,},
   primaryButtonPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.985 }],
   },
-  primaryButtonText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 15,
-    color: ZuriColors.onPrimary,
+  primaryButtonText: { ...t.type.subhead, color: t.colors['on-primary'],
     letterSpacing: 0.2,
   },
   secondaryButton: {
     minHeight: 56,
-    borderRadius: 14,
+    borderRadius: t.radius.md,
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: ZuriColors.primaryContainer,
+    borderColor: t.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   secondaryButtonPressed: {
-    backgroundColor: ZuriColors.surfaceContainerLow,
+    backgroundColor: t.colors['surface-sunken'],
     transform: [{ scale: 0.985 }],
   },
-  secondaryButtonText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 15,
-    color: ZuriColors.primaryContainer,
+  secondaryButtonText: { ...t.type.subhead, color: t.colors.text,
     letterSpacing: 0.2,
   },
 
@@ -286,16 +261,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 8,
   },
-  legalText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 12,
-    lineHeight: 18,
-    color: 'rgba(67, 72, 68, 0.75)',
+  legalText: { ...t.type.caption, color: 'rgba(67, 72, 68, 0.75)',
     textAlign: 'center',
   },
   legalLink: {
     textDecorationLine: 'underline',
-    color: ZuriColors.primary,
-    fontFamily: ZuriFonts.bodyMdMedium,
+    color: t.colors.text,
+    fontFamily: t.type.subhead.fontFamily,
   },
-});
+}));

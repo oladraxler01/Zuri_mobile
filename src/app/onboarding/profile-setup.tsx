@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriFonts } from '@/constants/zuri-theme';
-import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { FACULTY_OPTIONS } from '@/constants/course-catalogue';
 import { looksLikeMatric } from '@/utils/validation';
+import { makeStyles, useTheme } from '@/theme';
 
 /**
  * Student profile setup: name, matric number (student verification) and faculty.
  * Comes after choosing the Student role, before courses.
  */
 export default function ProfileSetupScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const { state, setAcademicInfo } = useAcademic();
   const [name, setName] = useState(state.studentName);
   const [matric, setMatric] = useState(state.matricNumber);
@@ -41,7 +42,7 @@ export default function ProfileSetupScreen() {
       <StatusBar barStyle="dark-content" />
       <View style={styles.topBar}>
         <Pressable onPress={() => router.back()} hitSlop={10} accessibilityLabel="Back">
-          <Ionicons name="arrow-back" size={24} color={UI.ink} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
         <Text style={styles.step}>Your profile</Text>
         <View style={{ width: 24 }} />
@@ -64,7 +65,7 @@ export default function ProfileSetupScreen() {
               setError('');
             }}
             placeholder="e.g. Marvellous Okoro"
-            placeholderTextColor={UI.muted}
+            placeholderTextColor={colors['text-subtle']}
             autoComplete="name"
           />
 
@@ -78,7 +79,7 @@ export default function ProfileSetupScreen() {
                 setError('');
               }}
               placeholder="e.g. VUG/CSC/21/1234"
-              placeholderTextColor={UI.muted}
+              placeholderTextColor={colors['text-subtle']}
               autoCapitalize="characters"
               autoCorrect={false}
             />
@@ -86,7 +87,7 @@ export default function ProfileSetupScreen() {
               <Ionicons
                 name={matricOk ? 'checkmark-circle' : 'alert-circle'}
                 size={20}
-                color={matricOk ? UI.success : UI.amber}
+                color={matricOk ? colors.success : colors.warning}
                 style={styles.inputIcon}
               />
             )}
@@ -106,7 +107,7 @@ export default function ProfileSetupScreen() {
                 accessibilityState={{ checked: faculty === f }}
               >
                 <Text style={styles.optionText}>{f}</Text>
-                <Ionicons name={faculty === f ? 'radio-button-on' : 'radio-button-off'} size={20} color={faculty === f ? UI.ink : UI.muted} />
+                <Ionicons name={faculty === f ? 'radio-button-on' : 'radio-button-off'} size={20} color={faculty === f ? colors.text : colors['text-subtle']} />
               </Pressable>
             ))}
           </View>
@@ -114,7 +115,7 @@ export default function ProfileSetupScreen() {
           {!!error && <Text style={styles.error}>{error}</Text>}
           <Pressable style={({ pressed }) => [styles.primary, pressed && { opacity: 0.88 }]} onPress={next}>
             <Text style={styles.primaryText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={18} color="#fff" />
+            <Ionicons name="arrow-forward" size={18} color={colors['on-primary']} />
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -122,62 +123,59 @@ export default function ProfileSetupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: UI.bg },
+const useStyles = makeStyles((t) => ({
+  container: { flex: 1, backgroundColor: t.colors.surface },
   topBar: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 },
-  step: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.muted },
+  step: { ...t.type.subhead, color: t.colors['text-subtle'] },
   scroll: { padding: 20, paddingBottom: 48, maxWidth: 520, width: '100%', alignSelf: 'center' },
   avatar: {
     width: 72,
     height: 72,
-    borderRadius: 36,
-    backgroundColor: UI.amberSoft,
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors['warning-container'],
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
     marginBottom: 14,
   },
-  initials: { fontFamily: ZuriFonts.headlineMd, fontSize: 26, color: UI.ink },
-  h1: { fontFamily: ZuriFonts.headlineLg, fontSize: 28, color: UI.ink, textAlign: 'center' },
-  lead: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, color: UI.muted, textAlign: 'center', marginTop: 4 },
-  label: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginTop: 22, marginBottom: 8 },
-  input: {
-    height: 50,
-    borderRadius: 12,
+  initials: { ...t.type['title-1'], color: t.colors.text },
+  h1: { ...t.type['title-1'], color: t.colors.text, textAlign: 'center' },
+  lead: { ...t.type.callout, color: t.colors['text-subtle'], textAlign: 'center', marginTop: 4 },
+  label: { ...t.type.eyebrow, color: t.colors['text-subtle'], marginTop: 22, marginBottom: 8 },
+  input: { ...t.type.callout, height: 50,
+    borderRadius: t.radius.md,
     borderWidth: 1,
-    borderColor: UI.border,
-    backgroundColor: UI.card,
+    borderColor: t.colors.border,
+    backgroundColor: t.colors['surface-raised'],
     paddingHorizontal: 14,
-    fontFamily: ZuriFonts.bodyRegular,
-    fontSize: 15,
-    color: UI.ink,
+    color: t.colors.text,
   },
   inputIcon: { position: 'absolute', right: 14, top: 15 },
-  hint: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 6 },
+  hint: { ...t.type.caption, color: t.colors['text-subtle'], marginTop: 6 },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 10,
-    backgroundColor: UI.card,
-    borderRadius: 12,
+    backgroundColor: t.colors['surface-raised'],
+    borderRadius: t.radius.md,
     borderWidth: 1.5,
-    borderColor: UI.border,
+    borderColor: t.colors.border,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
-  optionOn: { borderColor: UI.ink },
-  optionText: { flex: 1, fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink },
-  error: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.error, marginTop: 14 },
+  optionOn: { borderColor: t.colors.primary },
+  optionText: { ...t.type.subhead, flex: 1, color: t.colors.text },
+  error: { ...t.type.subhead, color: t.colors.danger, marginTop: 14 },
   primary: {
     height: 54,
-    borderRadius: 27,
-    backgroundColor: UI.ink,
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     marginTop: 28,
   },
-  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
-});
+  primaryText: { ...t.type.subhead, color: t.colors['on-primary'] },
+}));

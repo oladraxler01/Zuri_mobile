@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withDelay, withTiming } from 'react-native-reanimated';
 import { getRecordingPermissionsAsync } from 'expo-audio';
-import { ZuriFonts } from '@/constants/zuri-theme';
-import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { getNotificationPermission } from '@/services/notifications';
 import type { IoniconName } from '@/types/lecture';
+import { makeStyles, useTheme } from '@/theme';
 
 /** End of student onboarding: what's set up, then into the app. */
 export default function OnboardingCompleteScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const { state } = useAcademic();
   const [mic, setMic] = useState<boolean | null>(null);
   const [notif, setNotif] = useState<boolean | null>(null);
@@ -54,7 +55,7 @@ export default function OnboardingCompleteScreen() {
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Animated.View style={[styles.badge, popStyle]}>
-          <Ionicons name="checkmark" size={36} color={UI.success} />
+          <Ionicons name="checkmark" size={36} color={colors.success} />
         </Animated.View>
         <Animated.View style={riseStyle}>
           <Text style={styles.h1}>You’re all set{first ? `, ${first}` : ''}</Text>
@@ -63,19 +64,19 @@ export default function OnboardingCompleteScreen() {
           <View style={styles.card}>
             {items.map((it, i) => (
               <View key={it.label} style={[styles.row, i > 0 && styles.rowBorder]}>
-                <Ionicons name={it.icon} size={20} color={UI.inkSoft} />
+                <Ionicons name={it.icon} size={20} color={colors['text-muted']} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.label}>{it.label}</Text>
                   <Text style={styles.value}>{it.value}</Text>
                 </View>
-                <Ionicons name={it.ok ? 'checkmark-circle' : 'ellipse-outline'} size={20} color={it.ok ? UI.success : UI.muted} />
+                <Ionicons name={it.ok ? 'checkmark-circle' : 'ellipse-outline'} size={20} color={it.ok ? colors.success : colors['text-subtle']} />
               </View>
             ))}
           </View>
 
           <Pressable style={({ pressed }) => [styles.primary, pressed && { opacity: 0.88 }]} onPress={() => router.replace('/(tabs)' as Href)}>
             <Text style={styles.primaryText}>Go to Home</Text>
-            <Ionicons name="arrow-forward" size={18} color="#fff" />
+            <Ionicons name="arrow-forward" size={18} color={colors['on-primary']} />
           </Pressable>
           <Text style={styles.hint}>Tip: record your next lecture from the Home screen.</Text>
         </Animated.View>
@@ -84,36 +85,36 @@ export default function OnboardingCompleteScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: UI.bg },
+const useStyles = makeStyles((t) => ({
+  container: { flex: 1, backgroundColor: t.colors.surface },
   scroll: { padding: 24, paddingTop: 48, maxWidth: 520, width: '100%', alignSelf: 'center' },
   badge: {
     width: 80,
     height: 80,
-    borderRadius: 40,
-    backgroundColor: UI.successSoft,
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors['success-container'],
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
     marginBottom: 18,
   },
-  h1: { fontFamily: ZuriFonts.headlineLg, fontSize: 30, color: UI.ink, textAlign: 'center' },
-  lead: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, color: UI.muted, textAlign: 'center', marginTop: 4, marginBottom: 22 },
-  card: { backgroundColor: UI.card, borderRadius: 18, borderWidth: 1, borderColor: UI.border, paddingHorizontal: 16 },
+  h1: { ...t.type['title-1'], color: t.colors.text, textAlign: 'center' },
+  lead: { ...t.type.callout, color: t.colors['text-subtle'], textAlign: 'center', marginTop: 4, marginBottom: 22 },
+  card: { backgroundColor: t.colors['surface-raised'], borderRadius: t.radius.lg, borderWidth: 1, borderColor: t.colors.border, paddingHorizontal: 16 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14 },
-  rowBorder: { borderTopWidth: 1, borderTopColor: UI.borderSoft },
-  label: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.ink },
-  value: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.muted, marginTop: 2 },
+  rowBorder: { borderTopWidth: 1, borderTopColor: t.colors.border },
+  label: { ...t.type.subhead, color: t.colors.text },
+  value: { ...t.type.footnote, color: t.colors['text-subtle'], marginTop: 2 },
   primary: {
     height: 54,
-    borderRadius: 27,
-    backgroundColor: UI.ink,
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     marginTop: 24,
   },
-  primaryText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
-  hint: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, textAlign: 'center', marginTop: 12 },
-});
+  primaryText: { ...t.type.subhead, color: t.colors['on-primary'] },
+  hint: { ...t.type.caption, color: t.colors['text-subtle'], textAlign: 'center', marginTop: 12 },
+}));
