@@ -26,6 +26,7 @@ import { SourceCard } from '@/components/source-card';
 import { queryTerms, searchSources, type SourceHit } from '@/utils/source-search';
 import { askZuri, searchMaterial } from '@/services/ai-api';
 import { MarkdownText } from '@/components/markdown-text';
+import { lightColors, radius, space } from '@/theme';
 import { useConversations } from '@/context/conversations-context';
 
 type Msg = import('@/context/conversations-context').ChatMessage;
@@ -225,7 +226,7 @@ export default function AskScreen() {
               {m.role === 'zuri' ? (
                 <MarkdownText text={m.text} style={styles.bubbleText} />
               ) : (
-                <Text style={[styles.bubbleText, { color: '#fff' }]}>{m.text}</Text>
+                <Text style={[styles.bubbleText, { color: lightColors['on-primary'] }]}>{m.text}</Text>
               )}
               {m.sources && (
                 <View style={{ gap: 8, marginTop: 10 }}>

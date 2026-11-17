@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
-import { ZuriFonts } from '@/constants/zuri-theme';
-import { UI } from '@/constants/zuri-ui';
+import { useTheme } from '@/theme';
 import { ScreenShell, Panel } from '@/components/dashboard';
 import { changePassword, MIN_PASSWORD_LENGTH } from '@/services/auth-api';
 import { useSession } from '@/context/session-context';
 
 /** Settings → Account → Change password (POST /users/me/change-password). */
 export default function ChangePasswordScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const { user } = useSession();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
@@ -49,23 +50,24 @@ export default function ChangePasswordScreen() {
         <Panel>
           <Text style={styles.title}>Password changed</Text>
           <Text style={styles.body}>Use your new password the next time you sign in.</Text>
-          <Pressable style={styles.button} onPress={() => router.back()}>
+          <Pressable style={styles.button} onPress={() => router.back()} accessibilityRole="button">
             <Text style={styles.buttonText}>Done</Text>
           </Pressable>
         </Panel>
       ) : (
         <Panel>
-          <View style={{ gap: 14 }}>
+          <View style={styles.form}>
             <Field label="Current password" value={current} onChange={setCurrent} />
             <Field label="New password" value={next} onChange={setNext} placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`} />
             <Field label="Confirm new password" value={confirm} onChange={setConfirm} onSubmit={save} />
             {!!error && <Text style={styles.error}>{error}</Text>}
             <Pressable style={[styles.button, busy && { opacity: 0.7 }]} onPress={save} disabled={busy} accessibilityRole="button">
-              {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Change password</Text>}
+              {busy ? <ActivityIndicator color={colors['on-primary']} /> : <Text style={styles.buttonText}>Change password</Text>}
             </Pressable>
             <Pressable
               onPress={() => router.push({ pathname: '/onboarding/forgot-password', params: { email: user.email } } as Href)}
-              style={{ alignSelf: 'center' }}
+              style={styles.linkWrap}
+              accessibilityRole="link"
             >
               <Text style={styles.link}>Forgot your current password?</Text>
             </Pressable>
@@ -89,15 +91,17 @@ function Field({
   placeholder?: string;
   onSubmit?: () => void;
 }) {
+  const styles = useStyles();
+  const { colors } = useTheme();
   return (
-    <View style={{ gap: 6 }}>
+    <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         style={styles.input}
         value={value}
         onChangeText={onChange}
         placeholder={placeholder}
-        placeholderTextColor={UI.muted}
+        placeholderTextColor={colors['text-subtle']}
         secureTextEntry
         autoCapitalize="none"
         autoCorrect={false}
@@ -107,23 +111,39 @@ function Field({
   );
 }
 
-const styles = StyleSheet.create({
-  title: { fontFamily: ZuriFonts.headlineMd, fontSize: 18, color: UI.ink, marginBottom: 6 },
-  body: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
-  label: { fontFamily: ZuriFonts.labelSm, fontSize: 13, color: UI.muted },
-  input: {
-    height: 50,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: UI.border,
-    backgroundColor: UI.cardMuted,
-    paddingHorizontal: 14,
-    fontFamily: ZuriFonts.bodyRegular,
-    fontSize: 15,
-    color: UI.ink,
-  },
-  error: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.error },
-  button: { height: 50, borderRadius: 25, backgroundColor: UI.ink, alignItems: 'center', justifyContent: 'center', marginTop: 6 },
-  buttonText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: '#fff' },
-  link: { fontFamily: ZuriFonts.labelSm, fontSize: 13, color: UI.ink, textDecorationLine: 'underline' },
-});
+function useStyles() {
+  const { colors, space, radius, size, type } = useTheme();
+  return useMemo(
+    () =>
+      StyleSheet.create({
+        form: { gap: space[4] },
+        field: { gap: space[2] },
+        title: { ...type['title-2'], color: colors.text, marginBottom: space[2] },
+        body: { ...type.callout, color: colors['text-muted'] },
+        label: { ...type.subhead, color: colors['text-muted'] },
+        input: {
+          height: size['control-height'],
+          borderRadius: radius.md,
+          borderWidth: 1,
+          borderColor: colors['border-strong'],
+          backgroundColor: colors['surface-sunken'],
+          paddingHorizontal: space[4],
+          ...type.body,
+          color: colors.text,
+        },
+        error: { ...type.footnote, color: colors.danger },
+        button: {
+          height: size['control-height'],
+          borderRadius: radius.md,
+          backgroundColor: colors.primary,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginTop: space[2],
+        },
+        buttonText: { ...type.headline, color: colors['on-primary'] },
+        linkWrap: { alignSelf: 'center', minHeight: size['touch-target'], justifyContent: 'center' },
+        link: { ...type.subhead, color: colors['accent-text'], textDecorationLine: 'underline' },
+      }),
+    [colors]
+  );
+}

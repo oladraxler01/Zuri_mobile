@@ -20,6 +20,7 @@ import { conceptForQuestion } from '@/utils/mastery';
 import { MATERIAL_CATEGORIES, type Material } from '@/types/material';
 import { formatLectureDate } from '@/utils/time';
 import { summariseMaterial } from '@/services/ai-api';
+import { lightColors, radius, space } from '@/theme';
 
 type Tab = 'summary' | 'concepts' | 'questions' | 'passages';
 
@@ -402,7 +403,7 @@ function Settings({
         />
         {changed && (
           <Pressable style={styles.titleSave} onPress={saveTitle} disabled={renaming} accessibilityLabel="Save the new name">
-            {renaming ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.titleSaveText}>Save</Text>}
+            {renaming ? <ActivityIndicator size="small" color={lightColors['on-primary']} /> : <Text style={styles.titleSaveText}>Save</Text>}
           </Pressable>
         )}
       </View>
@@ -443,7 +444,7 @@ const styles = StyleSheet.create({
     color: UI.ink,
   },
   titleSave: { height: 44, paddingHorizontal: 16, borderRadius: 22, backgroundColor: UI.ink, alignItems: 'center', justifyContent: 'center' },
-  titleSaveText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: '#fff' },
+  titleSaveText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: lightColors['on-primary'] },
   container: { flex: 1, backgroundColor: UI.bg },
   topBar: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 },
   topActions: { flexDirection: 'row', gap: 20 },

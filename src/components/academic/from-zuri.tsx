@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriFonts } from '@/constants/zuri-theme';
-import { UI } from '@/constants/zuri-ui';
+import { useTheme } from '@/theme';
 import { useAcademic, type CourseItem } from '@/context/academic-context';
 import { getWeakTopics, type TimelineCardDTO, type WeakTopicDTO } from '@/services/academic-api';
 
@@ -45,6 +44,8 @@ function routeFor(card: TimelineCardDTO, courses: CourseItem[]): Href | null {
  * Renders nothing when the server has no cards (e.g. signed out, or no catalogue courses).
  */
 export function TodayFromZuri() {
+  const styles = useStyles();
+  const { colors, size } = useTheme();
   const { todayTimeline, actOnTimelineCard, dismissTimelineCard, state } = useAcademic();
   const cards = (todayTimeline?.cards ?? [])
     .filter((c) => !c.is_dismissed && !c.is_acted_upon)
@@ -71,7 +72,7 @@ export function TodayFromZuri() {
             accessibilityLabel={`${c.title}. ${c.subtitle ?? ''}`}
           >
             <View style={styles.icon}>
-              <Ionicons name={CARD_ICON[c.card_type] ?? 'sparkles-outline'} size={18} color={UI.ink} />
+              <Ionicons name={CARD_ICON[c.card_type] ?? 'sparkles-outline'} size={size['icon-md']} color={colors.text} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.title} numberOfLines={2}>
@@ -86,8 +87,13 @@ export function TodayFromZuri() {
                 {[c.course_code, c.estimated_minutes ? `${c.estimated_minutes} min` : ''].filter(Boolean).join(' · ')}
               </Text>
             </View>
-            <Pressable onPress={() => dismissTimelineCard(c.id).catch(() => {})} hitSlop={10} accessibilityLabel="Dismiss">
-              <Ionicons name="close" size={16} color={UI.muted} />
+            <Pressable
+              onPress={() => dismissTimelineCard(c.id).catch(() => {})}
+              hitSlop={16}
+              accessibilityRole="button"
+              accessibilityLabel={`Dismiss ${c.title}`}
+            >
+              <Ionicons name="close" size={size['icon-sm']} color={colors['text-subtle']} />
             </Pressable>
           </Pressable>
         ))}
@@ -101,6 +107,8 @@ export function TodayFromZuri() {
  * (GET /academic/courses/:id/weak-topics). Only catalogue courses have server mastery.
  */
 export function WeakTopicsFromZuri({ course }: { course: CourseItem }) {
+  const styles = useStyles();
+  const { colors, space, size } = useTheme();
   const [topics, setTopics] = useState<WeakTopicDTO[] | null>(null);
   const enabled = !!course.serverId && !!course.catalogue;
 
@@ -112,7 +120,7 @@ export function WeakTopicsFromZuri({ course }: { course: CourseItem }) {
   }, [enabled, course.serverId]);
 
   if (!enabled) return null;
-  if (topics === null) return <ActivityIndicator color={UI.ink} style={{ marginVertical: 12 }} />;
+  if (topics === null) return <ActivityIndicator color={colors.text} style={{ marginVertical: space[3] }} />;
   if (!topics.length) return null;
 
   return (
@@ -127,7 +135,7 @@ export function WeakTopicsFromZuri({ course }: { course: CourseItem }) {
             accessibilityRole="button"
           >
             <View style={styles.icon}>
-              <Ionicons name="flag-outline" size={18} color={UI.ink} />
+              <Ionicons name="flag-outline" size={size['icon-md']} color={colors.text} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>{t.subtopic || t.topic}</Text>
@@ -136,7 +144,7 @@ export function WeakTopicsFromZuri({ course }: { course: CourseItem }) {
               </Text>
               <Text style={styles.meta}>Mastery {Math.round((t.mastery_score <= 1 ? t.mastery_score * 100 : t.mastery_score))}% · tap to practise</Text>
             </View>
-            <Ionicons name="chevron-forward" size={16} color={UI.muted} />
+            <Ionicons name="chevron-forward" size={size['icon-sm']} color={colors['text-subtle']} />
           </Pressable>
         ))}
       </View>
@@ -144,14 +152,26 @@ export function WeakTopicsFromZuri({ course }: { course: CourseItem }) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { marginVertical: 12 },
-  heading: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, letterSpacing: 1, color: UI.muted, marginBottom: 8, textTransform: 'uppercase' },
-  card: { backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
-  border: { borderTopWidth: 1, borderTopColor: UI.borderSoft },
-  icon: { width: 36, height: 36, borderRadius: 18, backgroundColor: UI.amberSoft, alignItems: 'center', justifyContent: 'center' },
-  title: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink },
-  sub: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.inkSoft, marginTop: 2 },
-  meta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 11, color: UI.muted, marginTop: 4 },
-});
+function useStyles() {
+  const { colors, space, radius, size, type } = useTheme();
+  return useMemo(
+    () =>
+      StyleSheet.create({
+        wrap: { marginVertical: space[3] },
+        heading: { ...type.eyebrow, color: colors['text-subtle'], marginBottom: space[2] },
+        card: {
+          backgroundColor: colors['surface-raised'],
+          borderRadius: radius.lg,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: colors.border,
+        },
+        row: { flexDirection: 'row', alignItems: 'center', gap: space[3], padding: space[4], minHeight: size['touch-target'] },
+        border: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+        icon: { width: size['control-height-sm'], height: size['control-height-sm'], borderRadius: radius.full, backgroundColor: colors.tint, alignItems: 'center', justifyContent: 'center' },
+        title: { ...type.subhead, color: colors.text },
+        sub: { ...type.footnote, color: colors['text-muted'], marginTop: space[1] },
+        meta: { ...type.caption, color: colors['text-subtle'], marginTop: space[1] },
+      }),
+    [colors]
+  );
+}

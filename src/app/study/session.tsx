@@ -19,6 +19,7 @@ import { MarkdownText } from '@/components/markdown-text';
 import { askZuri } from '@/services/ai-api';
 import { sendStudySession } from '@/services/progress-api';
 import { currentUser } from '@/services/api-client';
+import { lightColors, radius, space } from '@/theme';
 
 type Answer = { item: SessionItem; correct: boolean };
 
@@ -424,8 +425,8 @@ function Completion({
 }
 
 const styles = StyleSheet.create({
-  aiBox: { backgroundColor: '#fff', borderRadius: 12, padding: 12 },
-  aiBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: '#fff', borderRadius: 18, paddingHorizontal: 12, paddingVertical: 7 },
+  aiBox: { backgroundColor: lightColors['surface-raised'], borderRadius: radius.md, padding: space[3] },
+  aiBtn: { flexDirection: 'row', alignItems: 'center', gap: space[2], alignSelf: 'flex-start', backgroundColor: lightColors['surface-raised'], borderRadius: radius.md, paddingHorizontal: space[3], minHeight: 48 },
   aiBtnText: { fontFamily: ZuriFonts.bodyMedium, fontSize: 13, color: UI.ink },
   aiError: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.error },
   container: { flex: 1, backgroundColor: UI.bg },

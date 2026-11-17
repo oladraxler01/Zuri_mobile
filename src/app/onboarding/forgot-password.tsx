@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
+import { useTheme } from '@/theme';
 import { MIN_PASSWORD_LENGTH, requestPasswordReset, resetPassword } from '@/services/auth-api';
 import { isValidEmail } from '@/utils/validation';
 
@@ -26,6 +26,8 @@ import { isValidEmail } from '@/utils/validation';
  */
 export default function ForgotPasswordScreen() {
   const router = useRouter();
+  const styles = useStyles();
+  const { colors, size } = useTheme();
   const params = useLocalSearchParams<{ email?: string }>();
   const [step, setStep] = useState<'email' | 'reset' | 'done'>('email');
   const [email, setEmail] = useState(params.email ?? '');
@@ -77,11 +79,11 @@ export default function ForgotPasswordScreen() {
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.header}>
-        <Pressable onPress={back} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back">
-          <Ionicons name="arrow-back" size={24} color={ZuriColors.primary} />
+        <Pressable onPress={back} style={styles.back} accessibilityRole="button" accessibilityLabel="Go back">
+          <Ionicons name="arrow-back" size={size['icon-lg']} color={colors.text} />
         </Pressable>
         <Text style={styles.headerTitle}>Zuri</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: size['touch-target'] }} />
       </View>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -90,7 +92,7 @@ export default function ForgotPasswordScreen() {
             <>
               <Text style={styles.headline}>Password changed.</Text>
               <Text style={styles.subtitle}>You can now sign in with your new password.</Text>
-              <Pressable style={styles.button} onPress={() => router.replace('/onboarding/sign-in' as Href)}>
+              <Pressable style={styles.button} onPress={() => router.replace('/onboarding/sign-in' as Href)} accessibilityRole="button">
                 <Text style={styles.buttonText}>Go to sign in</Text>
               </Pressable>
             </>
@@ -107,7 +109,7 @@ export default function ForgotPasswordScreen() {
                   <TextInput
                     style={styles.input}
                     placeholder="name@example.com"
-                    placeholderTextColor={ZuriColors.onSurfaceVariant}
+                    placeholderTextColor={colors['text-subtle']}
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
@@ -124,7 +126,7 @@ export default function ForgotPasswordScreen() {
                     <TextInput
                       style={styles.input}
                       placeholder="Paste the code here"
-                      placeholderTextColor={ZuriColors.onSurfaceVariant}
+                      placeholderTextColor={colors['text-subtle']}
                       value={code}
                       onChangeText={setCode}
                       autoCapitalize="none"
@@ -136,16 +138,16 @@ export default function ForgotPasswordScreen() {
                     <Text style={styles.label}>New password</Text>
                     <View>
                       <TextInput
-                        style={[styles.input, { paddingRight: 48 }]}
+                        style={[styles.input, styles.inputWithIcon]}
                         placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
-                        placeholderTextColor={ZuriColors.onSurfaceVariant}
+                        placeholderTextColor={colors['text-subtle']}
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry={!show}
                         autoCapitalize="none"
                       />
-                      <Pressable style={styles.eye} onPress={() => setShow((s) => !s)} hitSlop={8} accessibilityLabel="Show or hide password">
-                        <Ionicons name={show ? 'eye-off-outline' : 'eye-outline'} size={20} color={ZuriColors.onSurfaceVariant} />
+                      <Pressable style={styles.eye} onPress={() => setShow((s) => !s)} hitSlop={12} accessibilityRole="button" accessibilityLabel={show ? 'Hide password' : 'Show password'}>
+                        <Ionicons name={show ? 'eye-off-outline' : 'eye-outline'} size={size['icon-md']} color={colors['text-muted']} />
                       </Pressable>
                     </View>
                   </View>
@@ -154,7 +156,7 @@ export default function ForgotPasswordScreen() {
                     <TextInput
                       style={styles.input}
                       placeholder="Type it again"
-                      placeholderTextColor={ZuriColors.onSurfaceVariant}
+                      placeholderTextColor={colors['text-subtle']}
                       value={confirm}
                       onChangeText={setConfirm}
                       secureTextEntry={!show}
@@ -175,14 +177,14 @@ export default function ForgotPasswordScreen() {
                 accessibilityRole="button"
               >
                 {busy ? (
-                  <ActivityIndicator color={ZuriColors.onPrimary} />
+                  <ActivityIndicator color={colors['on-primary']} />
                 ) : (
                   <Text style={styles.buttonText}>{step === 'email' ? 'Send reset code' : 'Change password'}</Text>
                 )}
               </Pressable>
 
               {step === 'reset' && (
-                <Pressable onPress={() => { setStep('email'); setError(''); }} style={{ alignSelf: 'center', marginTop: 16 }}>
+                <Pressable onPress={() => { setStep('email'); setError(''); }} style={styles.linkWrap} accessibilityRole="button">
                   <Text style={styles.link}>Didn’t get it? Send another code</Text>
                 </Pressable>
               )}
@@ -194,51 +196,68 @@ export default function ForgotPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: ZuriColors.background },
-  header: {
-    height: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
-  },
-  headerTitle: { fontFamily: ZuriFonts.headlineMd, fontSize: 22, color: ZuriColors.primary },
-  content: {
-    paddingHorizontal: ZuriSpacing.containerPaddingH,
-    paddingTop: 24,
-    paddingBottom: 32,
-    gap: 18,
-    maxWidth: 420,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  headline: { fontFamily: ZuriFonts.headlineLgMobile, fontSize: 28, lineHeight: 34, color: ZuriColors.primary },
-  subtitle: { fontFamily: ZuriFonts.bodyMd, fontSize: 14, lineHeight: 20, color: ZuriColors.onSurfaceVariant, marginTop: -8 },
-  field: { gap: 6 },
-  label: { fontFamily: ZuriFonts.labelSm, fontSize: 13, color: '#8A8A8A', marginLeft: 4 },
-  hint: { fontFamily: ZuriFonts.bodyMd, fontSize: 12, color: ZuriColors.onSurfaceVariant, marginLeft: 4 },
-  input: {
-    height: 52,
-    backgroundColor: '#F5F3EF',
-    borderWidth: 1,
-    borderColor: '#E5E3DF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 15,
-    color: ZuriColors.onSurface,
-  },
-  eye: { position: 'absolute', right: 14, top: 16 },
-  error: { fontFamily: ZuriFonts.bodyMd, fontSize: 13, color: '#ba1a1a' },
-  button: {
-    height: 56,
-    backgroundColor: ZuriColors.primaryContainer,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  buttonText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: ZuriColors.onPrimary },
-  link: { fontFamily: ZuriFonts.labelSm, fontSize: 13, color: ZuriColors.primary, textDecorationLine: 'underline' },
-});
+function useStyles() {
+  const { colors, space, radius, size, type } = useTheme();
+  return useMemo(
+    () =>
+      StyleSheet.create({
+        container: { flex: 1, backgroundColor: colors.surface },
+        header: {
+          height: 56,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: space[4],
+        },
+        back: { width: size['touch-target'], height: size['touch-target'], justifyContent: 'center' },
+        headerTitle: { ...type['title-2'], color: colors.text },
+        content: {
+          paddingHorizontal: space[5],
+          paddingTop: space[6],
+          paddingBottom: space[8],
+          gap: space[4],
+          maxWidth: 420,
+          width: '100%',
+          alignSelf: 'center',
+        },
+        headline: { ...type['title-1'], color: colors.text },
+        subtitle: { ...type.callout, color: colors['text-muted'] },
+        field: { gap: space[2] },
+        label: { ...type.subhead, color: colors['text-muted'] },
+        hint: { ...type.caption, color: colors['text-subtle'] },
+        input: {
+          height: size['control-height'],
+          backgroundColor: colors['surface-sunken'],
+          borderWidth: 1,
+          borderColor: colors['border-strong'],
+          borderRadius: radius.md,
+          paddingHorizontal: space[4],
+          ...type.body,
+          color: colors.text,
+        },
+        inputWithIcon: { paddingRight: size['touch-target'] + space[2] },
+        eye: {
+          position: 'absolute',
+          right: 0,
+          top: 0,
+          width: size['touch-target'],
+          height: size['control-height'],
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        error: { ...type.footnote, color: colors.danger },
+        button: {
+          height: size['control-height'],
+          backgroundColor: colors.primary,
+          borderRadius: radius.md,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginTop: space[2],
+        },
+        buttonText: { ...type.headline, color: colors['on-primary'] },
+        linkWrap: { alignSelf: 'center', minHeight: size['touch-target'], justifyContent: 'center', marginTop: space[2] },
+        link: { ...type.subhead, color: colors['accent-text'], textDecorationLine: 'underline' },
+      }),
+    [colors]
+  );
+}

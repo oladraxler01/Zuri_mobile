@@ -11,6 +11,7 @@ import { FACULTY_OPTIONS } from '@/constants/course-catalogue';
 import { looksLikeMatric } from '@/utils/validation';
 import { useSession } from '@/context/session-context';
 import { updateProfile } from '@/services/auth-api';
+import { lightColors, radius, space } from '@/theme';
 
 const LEVELS = ['100L', '200L', '300L', '400L', '500L'];
 
@@ -109,7 +110,7 @@ export default function AcademicProfileScreen() {
 
       {!!error && <Text style={styles.error}>{error}</Text>}
       <Pressable style={[styles.primary, saving && { opacity: 0.7 }]} onPress={save} disabled={saving}>
-        <Ionicons name={saving ? 'sync' : 'checkmark'} size={18} color="#fff" />
+        <Ionicons name={saving ? 'sync' : 'checkmark'} size={18} color={lightColors['on-primary']} />
         <Text style={styles.primaryText}>{saving ? 'Saving…' : 'Save changes'}</Text>
       </Pressable>
     </ScreenShell>

@@ -1,8 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriFonts } from '@/constants/zuri-theme';
-import { UI } from '@/constants/zuri-ui';
+import { useTheme } from '@/theme';
 import { QuizTab } from '@/components/lecture/quiz-tab';
 import { Segmented } from '@/components/ui/chip';
 import { StateView } from '@/components/states/state-view';
@@ -54,6 +53,8 @@ interface Props {
 }
 
 export function PracticeTab({ analysis, serverId, onSave, onAnswer, onCard }: Props) {
+  const styles = useStyles();
+  const { colors, space } = useTheme();
   const [mode, setMode] = useState<Mode>('quiz');
   const [busy, setBusy] = useState<Mode | null>(null);
   const [error, setError] = useState<Partial<Record<Mode, string>>>({});
@@ -130,13 +131,13 @@ export function PracticeTab({ analysis, serverId, onSave, onAnswer, onCard }: Pr
 
   return (
     <View>
-      <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
+      <View style={{ paddingHorizontal: space[5], marginBottom: space[3] }}>
         <Segmented<Mode> options={MODES.map((m) => ({ key: m.key, label: m.label }))} value={mode} onChange={setMode} />
       </View>
 
       {busy === mode ? (
         <View style={styles.busy}>
-          <ActivityIndicator color={UI.ink} />
+          <ActivityIndicator color={colors.text} />
           <Text style={styles.body}>Zuri is writing your {info.title.toLowerCase()} from this document…</Text>
         </View>
       ) : !has ? (
@@ -162,7 +163,7 @@ export function PracticeTab({ analysis, serverId, onSave, onAnswer, onCard }: Pr
               onAnswer(q, correct);
             }}
           />
-          {!!result && <Text style={[styles.body, { paddingHorizontal: 20, marginTop: 8 }]}>{result}</Text>}
+          {!!result && <Text style={[styles.body, { paddingHorizontal: space[5], marginTop: space[2] }]}>{result}</Text>}
         </View>
       ) : mode === 'flashcards' ? (
         <FlashcardDeck cards={analysis.flashcards!} onCard={onCard} />
@@ -174,6 +175,8 @@ export function PracticeTab({ analysis, serverId, onSave, onAnswer, onCard }: Pr
 }
 
 function FlashcardDeck({ cards, onCard }: { cards: NonNullable<MaterialAnalysis['flashcards']>; onCard: Props['onCard'] }) {
+  const styles = useStyles();
+  const { colors, space } = useTheme();
   const [i, setI] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [known, setKnown] = useState(0);
@@ -200,7 +203,7 @@ function FlashcardDeck({ cards, onCard }: { cards: NonNullable<MaterialAnalysis[
   };
 
   return (
-    <View style={{ paddingHorizontal: 20 }}>
+    <View style={{ paddingHorizontal: space[5] }}>
       <Text style={styles.counter}>
         Card {i + 1} of {cards.length}
         {card.topic ? ` · ${card.topic}` : ''}
@@ -230,6 +233,8 @@ function FlashcardDeck({ cards, onCard }: { cards: NonNullable<MaterialAnalysis[
 }
 
 function ExamList({ questions }: { questions: NonNullable<MaterialAnalysis['examQuestions']> }) {
+  const styles = useStyles();
+  const { colors, space } = useTheme();
   const [open, setOpen] = useState<Set<number>>(new Set());
   const toggle = (n: number) =>
     setOpen((prev) => {
@@ -239,7 +244,7 @@ function ExamList({ questions }: { questions: NonNullable<MaterialAnalysis['exam
     });
 
   return (
-    <View style={{ paddingHorizontal: 20, gap: 12 }}>
+    <View style={{ paddingHorizontal: space[5], gap: space[3] }}>
       <Text style={styles.body}>Write your answer on paper first, then compare it with the model answer.</Text>
       {questions.map((q, n) => (
         <View key={n} style={styles.examCard}>
@@ -250,11 +255,11 @@ function ExamList({ questions }: { questions: NonNullable<MaterialAnalysis['exam
           <Text style={styles.examQ}>{q.question}</Text>
           {q.topic && <Text style={styles.topic}>{q.topic}</Text>}
           <Pressable onPress={() => toggle(n)} style={styles.reveal} accessibilityRole="button">
-            <Ionicons name={open.has(n) ? 'chevron-up' : 'chevron-down'} size={16} color={UI.ink} />
+            <Ionicons name={open.has(n) ? 'chevron-up' : 'chevron-down'} size={16} color={colors.text} />
             <Text style={styles.revealText}>{open.has(n) ? 'Hide model answer' : 'Show model answer'}</Text>
           </Pressable>
           {open.has(n) && (
-            <View style={{ gap: 8 }}>
+            <View style={{ gap: space[2] }}>
               <Text style={styles.body}>{q.modelAnswer || 'No model answer was given.'}</Text>
               {q.markingGuide.length > 0 && (
                 <View style={styles.guide}>
@@ -272,38 +277,53 @@ function ExamList({ questions }: { questions: NonNullable<MaterialAnalysis['exam
   );
 }
 
-const styles = StyleSheet.create({
-  busy: { alignItems: 'center', paddingVertical: 32, gap: 10, paddingHorizontal: 20 },
-  body: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
-  counter: { fontFamily: ZuriFonts.labelSm, fontSize: 12, color: UI.muted, marginBottom: 8 },
-  card: {
-    minHeight: 200,
-    borderRadius: 18,
-    backgroundColor: UI.card,
-    borderWidth: 1,
-    borderColor: UI.border,
-    padding: 20,
-    justifyContent: 'center',
-    gap: 10,
-  },
-  cardBack: { backgroundColor: UI.cardMuted },
-  cardKicker: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1, color: UI.muted },
-  cardText: { fontFamily: ZuriFonts.headlineMd, fontSize: 19, lineHeight: 26, color: UI.ink },
-  hint: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted },
-  row: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  btn: { flex: 1, borderRadius: 24, paddingVertical: 12, alignItems: 'center' },
-  btnSoft: { backgroundColor: UI.cardMuted, borderWidth: 1, borderColor: UI.border },
-  btnSoftText: { fontFamily: ZuriFonts.bodyMedium, color: UI.ink },
-  btnInk: { backgroundColor: UI.ink },
-  btnInkText: { fontFamily: ZuriFonts.bodyMedium, color: '#fff' },
-  examCard: { backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border, padding: 16, gap: 8 },
-  examHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  examNum: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.muted },
-  marks: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.amber },
-  examQ: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, lineHeight: 22, color: UI.ink },
-  topic: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted },
-  reveal: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingVertical: 4 },
-  revealText: { fontFamily: ZuriFonts.bodyMedium, fontSize: 13, color: UI.ink },
-  guide: { backgroundColor: UI.cardMuted, borderRadius: 12, padding: 12, gap: 4 },
-  guideTitle: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: UI.ink },
-});
+/** Styles from the design system tokens (theme-aware). */
+function useStyles() {
+  const { colors, space, radius, size, type } = useTheme();
+  return useMemo(
+    () =>
+      StyleSheet.create({
+        busy: { alignItems: 'center', paddingVertical: space[8], gap: space[3], paddingHorizontal: space[5] },
+        body: { ...type.subhead, fontFamily: type.callout.fontFamily, color: colors['text-muted'] },
+        counter: { ...type.caption, color: colors['text-subtle'], marginBottom: space[2] },
+        card: {
+          minHeight: 200,
+          borderRadius: radius.lg,
+          backgroundColor: colors['surface-raised'],
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: colors.border,
+          padding: space[5],
+          justifyContent: 'center',
+          gap: space[3],
+        },
+        cardBack: { backgroundColor: colors.tint },
+        cardKicker: { ...type.eyebrow, color: colors['accent-text'] },
+        cardText: { ...type['title-2'], color: colors.text },
+        hint: { ...type.caption, color: colors['text-subtle'] },
+        row: { flexDirection: 'row', gap: space[3], marginTop: space[3] },
+        btn: { flex: 1, minHeight: size['control-height'], borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+        btnSoft: { backgroundColor: colors['surface-raised'], borderWidth: 1, borderColor: colors['border-strong'] },
+        btnSoftText: { ...type.headline, color: colors.text },
+        btnInk: { backgroundColor: colors.primary },
+        btnInkText: { ...type.headline, color: colors['on-primary'] },
+        examCard: {
+          backgroundColor: colors['surface-raised'],
+          borderRadius: radius.lg,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: colors.border,
+          padding: space[4],
+          gap: space[2],
+        },
+        examHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+        examNum: { ...type.eyebrow, color: colors['text-subtle'] },
+        marks: { ...type.caption, color: colors['accent-text'] },
+        examQ: { ...type.callout, fontFamily: type.subhead.fontFamily, color: colors.text },
+        topic: { ...type.caption, color: colors['text-subtle'] },
+        reveal: { flexDirection: 'row', alignItems: 'center', gap: space[2], alignSelf: 'flex-start', minHeight: size['touch-target'] },
+        revealText: { ...type.subhead, color: colors.text },
+        guide: { backgroundColor: colors['surface-sunken'], borderRadius: radius.md, padding: space[3], gap: space[1] },
+        guideTitle: { ...type.caption, color: colors.text },
+      }),
+    [colors]
+  );
+}

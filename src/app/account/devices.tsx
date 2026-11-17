@@ -1,10 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriFonts } from '@/constants/zuri-theme';
-import { UI } from '@/constants/zuri-ui';
+import { useTheme } from '@/theme';
 import { ScreenShell, Panel, Divider, StatusBadge } from '@/components/dashboard';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
 import { listSessions, logoutEverywhere, revokeSession, type DeviceSession } from '@/services/auth-api';
@@ -12,6 +11,8 @@ import { useSession } from '@/context/session-context';
 
 /** Settings → Account → Signed-in devices (GET/DELETE /users/me/sessions, POST /auth/logout-all). */
 export default function DevicesScreen() {
+  const styles = useStyles();
+  const { colors, space, size } = useTheme();
   const { user, signOut } = useSession();
   const [sessions, setSessions] = useState<DeviceSession[] | null>(null);
   const [error, setError] = useState('');
@@ -74,7 +75,7 @@ export default function DevicesScreen() {
         <>
           <Panel subtitle="Phones and browsers where your Zuri account is signed in. Sign out any you don’t recognise.">
             {sessions === null ? (
-              <ActivityIndicator color={UI.ink} style={{ paddingVertical: 20 }} />
+              <ActivityIndicator color={colors.text} style={{ paddingVertical: space[5] }} />
             ) : sessions.length === 0 ? (
               <Text style={styles.body}>{error || 'No devices found.'}</Text>
             ) : (
@@ -84,10 +85,10 @@ export default function DevicesScreen() {
                   <View style={styles.row}>
                     <Ionicons
                       name={/mobile|phone|android|ios/i.test(`${s.device_type} ${s.os}`) ? 'phone-portrait-outline' : 'laptop-outline'}
-                      size={22}
-                      color={UI.ink}
+                      size={size['icon-lg']}
+                      color={colors.text}
                     />
-                    <View style={{ flex: 1, gap: 2 }}>
+                    <View style={styles.rowText}>
                       <Text style={styles.title}>{describe(s)}</Text>
                       <Text style={styles.meta}>
                         {[s.location, s.ip_address, `Active ${when(s.last_active_at)}`].filter(Boolean).join(' · ')}
@@ -96,8 +97,15 @@ export default function DevicesScreen() {
                     {s.is_current ? (
                       <StatusBadge status="good" label="This phone" />
                     ) : (
-                      <Pressable onPress={() => remove(s)} disabled={!!busyId} hitSlop={8} accessibilityLabel="Sign this device out">
-                        {busyId === s.id ? <ActivityIndicator size="small" color={UI.ink} /> : <Text style={styles.action}>Sign out</Text>}
+                      <Pressable
+                        onPress={() => remove(s)}
+                        disabled={!!busyId}
+                        hitSlop={12}
+                        style={styles.actionWrap}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Sign out ${describe(s)}`}
+                      >
+                        {busyId === s.id ? <ActivityIndicator size="small" color={colors.text} /> : <Text style={styles.action}>Sign out</Text>}
                       </Pressable>
                     )}
                   </View>
@@ -109,9 +117,9 @@ export default function DevicesScreen() {
 
           <Panel>
             <Pressable style={styles.danger} onPress={() => setConfirmAll(true)} disabled={!!busyId} accessibilityRole="button">
-              {busyId === 'all' ? <ActivityIndicator color={UI.error} /> : <Text style={styles.dangerText}>Sign out of all devices</Text>}
+              {busyId === 'all' ? <ActivityIndicator color={colors.danger} /> : <Text style={styles.dangerText}>Sign out of all devices</Text>}
             </Pressable>
-            <Text style={[styles.meta, { textAlign: 'center', marginTop: 8 }]}>Including this phone. You’ll need to sign in again everywhere.</Text>
+            <Text style={[styles.meta, styles.centerNote]}>Including this phone. You’ll need to sign in again everywhere.</Text>
           </Panel>
         </>
       )}
@@ -147,13 +155,30 @@ function when(iso: string) {
   return new Date(iso).toLocaleDateString();
 }
 
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
-  title: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink },
-  meta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted },
-  body: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.inkSoft },
-  action: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.error },
-  error: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.error, marginTop: 8 },
-  danger: { height: 48, borderRadius: 24, borderWidth: 1, borderColor: UI.error, alignItems: 'center', justifyContent: 'center' },
-  dangerText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.error },
-});
+function useStyles() {
+  const { colors, space, radius, size, type } = useTheme();
+  return useMemo(
+    () =>
+      StyleSheet.create({
+        row: { flexDirection: 'row', alignItems: 'center', gap: space[3], paddingVertical: space[3], minHeight: size['touch-target'] },
+        rowText: { flex: 1, gap: space[1] },
+        title: { ...type.subhead, color: colors.text },
+        meta: { ...type.caption, color: colors['text-subtle'] },
+        centerNote: { textAlign: 'center', marginTop: space[2] },
+        body: { ...type.callout, color: colors['text-muted'] },
+        actionWrap: { minHeight: size['touch-target'], justifyContent: 'center' },
+        action: { ...type.subhead, color: colors.danger },
+        error: { ...type.footnote, color: colors.danger, marginTop: space[2] },
+        danger: {
+          height: size['control-height'],
+          borderRadius: radius.md,
+          borderWidth: 1,
+          borderColor: colors.danger,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        dangerText: { ...type.headline, color: colors.danger },
+      }),
+    [colors]
+  );
+}

@@ -283,3 +283,9 @@ Part 2 — institution:
 ### Admin: AI usage and cost (2026-11-17)
 - Admin → Academic intelligence: "AI usage and cost" panel from `GET /ai/analytics/costs` (scoped with `institution_id` from `/users/me` when the account has one): requests, estimated cost, tokens, cache hit rate and tokens saved.
 - **Backend security bug reported** (BACKEND_REQUESTS #0): this route has no role check, so any signed-in user can read AI spend. Admin sign-in in the app is still local (no admin accounts on the server yet).
+
+### Design system: theme tokens, and today's new screens moved onto them (2026-11-17)
+- New `src/theme/tokens.ts`, generated from `.claude/skills/zuri-design-system/tokens.json` by `scripts/generate-theme-tokens.py` (never edit by hand): light/dark semantic colours, brand primitives, spacing, radii, sizes and type styles.
+- New `src/theme/index.ts` with `useTheme()` → `{ colors, space, radius, size, type }`. `DARK_MODE_ENABLED = false` until every student screen is on tokens, so migrated and old screens look the same.
+- On tokens (no hex, type styles, 4-pt spacing, the five radii, 48px touch targets, accessibility roles/labels): forgot password, change password, signed-in devices, Practice tab, Markdown answers, "Today from Zuri" / weak topics, account progress panels, AI cost panel. Hex literals added today inside older screens now use theme tokens.
+- Older screens still use `UI` / `ZuriColors`; migrate them area by area (design system `reference/migration.md`).

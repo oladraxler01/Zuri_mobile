@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { ZuriFonts } from '@/constants/zuri-theme';
-import { UI } from '@/constants/zuri-ui';
+import { useTheme, lightColors, type } from '@/theme';
 import { Panel, Grid, StatTile, HBarList } from '@/components/dashboard';
 import { useSession } from '@/context/session-context';
 import {
@@ -17,6 +16,7 @@ import {
 /** Streak and totals from the account (GET /analytics/study-streak, /analytics/study-stats). */
 export function AccountStatsPanel() {
   const { user } = useSession();
+  const { colors } = useTheme();
   const [data, setData] = useState<{ streak: number; stats: ServerStudyStats | null } | null>(null);
   const [error, setError] = useState('');
 
@@ -31,9 +31,9 @@ export function AccountStatsPanel() {
   return (
     <Panel title="In your account" subtitle="Counted on Zuri’s server across all your devices">
       {error ? (
-        <Text style={styles.muted}>{error}</Text>
+        <Text style={[styles.muted, { color: colors['text-subtle'] }]}>{error}</Text>
       ) : !data ? (
-        <ActivityIndicator color={UI.ink} />
+        <ActivityIndicator color={colors.text} />
       ) : (
         <Grid min={140}>
           <StatTile label="Day streak" value={`${data.streak}`} icon="flame-outline" />
@@ -49,6 +49,7 @@ export function AccountStatsPanel() {
 /** Topic mastery from server-graded quizzes (GET /analytics/topic-mastery, /analytics/topics-for-review). */
 export function AccountMasteryPanel() {
   const { user } = useSession();
+  const { colors, space } = useTheme();
   const [topics, setTopics] = useState<ServerTopicMastery[] | null>(null);
   const [due, setDue] = useState<ServerTopicMastery[]>([]);
   const [error, setError] = useState('');
@@ -67,11 +68,11 @@ export function AccountMasteryPanel() {
   return (
     <Panel title="Mastery in your account" subtitle="From quizzes graded by Zuri’s server">
       {error ? (
-        <Text style={styles.muted}>{error}</Text>
+        <Text style={[styles.muted, { color: colors['text-subtle'] }]}>{error}</Text>
       ) : !topics ? (
-        <ActivityIndicator color={UI.ink} />
+        <ActivityIndicator color={colors.text} />
       ) : topics.length === 0 ? (
-        <Text style={styles.muted}>Finish a practice quiz on one of your materials to see topics here.</Text>
+        <Text style={[styles.muted, { color: colors['text-subtle'] }]}>Finish a practice quiz on one of your materials to see topics here.</Text>
       ) : (
         <>
           <HBarList
@@ -87,7 +88,7 @@ export function AccountMasteryPanel() {
             warnBelow={50}
           />
           {due.length > 0 && (
-            <Text style={[styles.muted, { marginTop: 12 }]}>
+            <Text style={[styles.muted, { color: colors['text-subtle'], marginTop: space[3] }]}>
               Due for review: {due.slice(0, 5).map((t) => t.topic).join(', ')}
             </Text>
           )}
@@ -98,5 +99,6 @@ export function AccountMasteryPanel() {
 }
 
 const styles = StyleSheet.create({
-  muted: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.muted },
+  // colour comes from the theme at render time
+  muted: { ...type.footnote, color: lightColors['text-subtle'] },
 });
