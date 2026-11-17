@@ -296,3 +296,8 @@ Part 2 — institution:
 - New installs no longer start with four demo courses and a demo timetable; courses come from onboarding or the server. Existing installs keep what they have (a demo course may be in real use).
 - Help FAQ updated (which files Zuri can read; where data is stored).
 - Still sample data, by design, in the deferred lecturer/institution areas (no backend for them yet).
+
+### AI requests left today, and AI usage in the account (2026-11-17)
+- The gateway sends `X-Quota-Limit` / `X-Quota-Remaining` on every `/ai/*` answer (50 per user per UTC day). `api-client` reads them into `services/ai-quota.ts` (saved, resets at UTC midnight); a 429 "daily AI quota exceeded" now says when it resets and that notes, quizzes and flashcards still work.
+- New `components/ai-quota-note.tsx` ("37 of 50 AI requests left today", warning icon + words at ≤ 5) in Ask Zuri and the Practice tab.
+- Every AI call (chat, summary, quiz, flashcards) is recorded with `POST /analytics/ai-interactions` (tokens, latency, success, model; fire-and-forget), so `/analytics/ai-usage` reflects real use.

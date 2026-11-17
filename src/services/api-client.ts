@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE } from '@/services/api-config';
 import { onReset } from '@/utils/reset';
+import { noteQuotaExhausted, noteQuotaHeaders, QUOTA_EXHAUSTED_MESSAGE } from '@/services/ai-quota';
 
 /**
  * One place for every call to the Zuri API gateway.
@@ -54,6 +55,11 @@ export function errorForStatus(status: number, serverMessage?: string, body?: an
   if (status === 401) return new ApiError('session-expired', 'Your session has expired. Please sign in again.', extra);
   if (status === 426) return new ApiError('update-required', 'A newer version of the app is required.', extra);
   if (status === 503) return new ApiError('maintenance', 'The service is down for maintenance.', extra);
+  if (status === 429 && /quota/i.test(serverMessage ?? '')) {
+    noteQuotaExhausted();
+    return new ApiError('server', QUOTA_EXHAUSTED_MESSAGE(), extra);
+  }
+  if (status === 429) return new ApiError('server', 'Too many requests at once. Wait a minute and try again.', extra);
   return new ApiError('server', serverMessage || `The server had a problem (${status}). Please try again.`, extra);
 }
 
@@ -242,6 +248,8 @@ async function rawFetch(path: string, opts: RequestOptions, token?: string | nul
       body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
       signal: controller.signal,
     });
+    // The gateway reports the daily AI allowance on every /ai/* answer.
+    noteQuotaHeaders(res.headers);
     const text = await res.text();
     let json: any = null;
     try {

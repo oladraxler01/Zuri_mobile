@@ -5,6 +5,7 @@ import { useTheme } from '@/theme';
 import { QuizTab } from '@/components/lecture/quiz-tab';
 import { Segmented } from '@/components/ui/chip';
 import { StateView } from '@/components/states/state-view';
+import { AIQuotaNote } from '@/components/ai-quota-note';
 import {
   generateMaterialExamQuestions,
   generateMaterialFlashcards,
@@ -133,6 +134,7 @@ export function PracticeTab({ analysis, serverId, onSave, onAnswer, onCard }: Pr
     <View>
       <View style={{ paddingHorizontal: space[5], marginBottom: space[3] }}>
         <Segmented<Mode> options={MODES.map((m) => ({ key: m.key, label: m.label }))} value={mode} onChange={setMode} />
+        <AIQuotaNote align="left" />
       </View>
 
       {busy === mode ? (

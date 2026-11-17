@@ -18,6 +18,60 @@ interface AIEnvelope<T> {
   status: string;
   result?: T | null;
   error?: { code?: string; message?: string } | null;
+  usage?: { input_tokens?: number; output_tokens?: number; total_tokens?: number } | null;
+  source?: { model?: string | null } | null;
+}
+
+/** analytics interaction_type for an operation; null = not tracked (e.g. retrieval). */
+function interactionType(operation: string): 'chat' | 'summary' | 'quiz_generation' | 'flashcard' | null {
+  if (operation.startsWith('chat.')) return 'chat';
+  if (operation.startsWith('reading.')) return 'summary';
+  if (operation.startsWith('study.quiz')) return 'quiz_generation';
+  if (operation.startsWith('study.flashcards')) return 'flashcard';
+  return null;
+}
+
+/**
+ * Record an AI call in the account's usage stats (POST /analytics/ai-interactions).
+ * Fire-and-forget: never delays or breaks the feature itself.
+ */
+function trackAI(operation: string, startedAt: number, env: AIEnvelope<unknown> | null, error?: string, materialId?: unknown) {
+  const kind = interactionType(operation);
+  if (!kind) return;
+  apiRequest('/analytics/ai-interactions', {
+    method: 'POST',
+    timeoutMs: 10_000,
+    body: {
+      interaction_type: kind,
+      ...(typeof materialId === 'string' && materialId ? { material_id: materialId } : {}),
+      prompt_tokens: env?.usage?.input_tokens ?? 0,
+      completion_tokens: env?.usage?.output_tokens ?? 0,
+      total_tokens: env?.usage?.total_tokens ?? 0,
+      latency_ms: Date.now() - startedAt,
+      success: !error && env?.status === 'COMPLETED',
+      ...(error ? { error_message: error.slice(0, 500) } : {}),
+      ...(env?.source?.model ? { model: env.source.model } : {}),
+    },
+  }).catch(() => {});
+}
+
+/** POST /ai/execute, with usage tracking. Throws ApiError with a readable message on failure. */
+async function runAI<T>(operation: string, body: Record<string, unknown>, timeoutMs: number): Promise<AIEnvelope<T>> {
+  const startedAt = Date.now();
+  const materialId = (body.input as Record<string, unknown> | undefined)?.material_id;
+  let env: AIEnvelope<T>;
+  try {
+    env = await apiRequest<AIEnvelope<T>>('/ai/execute', {
+      method: 'POST',
+      body: { operation, ...body, client: { platform: 'mobile' } },
+      timeoutMs,
+    });
+  } catch (e) {
+    trackAI(operation, startedAt, null, e instanceof Error ? e.message : 'request failed', materialId);
+    throw e;
+  }
+  trackAI(operation, startedAt, env, env.status === 'COMPLETED' ? undefined : env.error?.message || env.status, materialId);
+  return env;
 }
 
 export async function executeAI<T = Record<string, any>>(
@@ -26,11 +80,7 @@ export async function executeAI<T = Record<string, any>>(
   parameters: Record<string, unknown> = {},
   timeoutMs = 90_000
 ): Promise<T> {
-  const env = await apiRequest<AIEnvelope<T>>('/ai/execute', {
-    method: 'POST',
-    body: { operation, input, parameters, client: { platform: 'mobile' } },
-    timeoutMs,
-  });
+  const env = await runAI<T>(operation, { input, parameters }, timeoutMs);
   if (env.status !== 'COMPLETED' || !env.result) {
     throw new ApiError('server', env.error?.message || 'Zuri’s AI couldn’t answer that right now. Please try again.');
   }
@@ -182,20 +232,18 @@ export interface ChatTurn {
  *   → { response (markdown), session_id, sources[] }
  */
 export async function askZuri(query: string, contextChunks: string[], history: ChatTurn[], sessionId?: string): Promise<string> {
-  const env = await apiRequest<AIEnvelope<{ response?: string }>>('/ai/execute', {
-    method: 'POST',
-    body: {
-      operation: 'chat.generate',
+  const env = await runAI<{ response?: string }>(
+    'chat.generate',
+    {
       session_id: sessionId,
       input: {
         query,
         context_chunks: contextChunks.slice(0, 5),
         history: history.slice(-4).map((h) => ({ role: h.role === 'zuri' ? 'assistant' : 'user', content: h.content })),
       },
-      client: { platform: 'mobile' },
     },
-    timeoutMs: 90_000,
-  });
+    90_000
+  );
   const text = env.status === 'COMPLETED' ? env.result?.response?.trim() : '';
   if (!text) {
     throw new ApiError('server', env.error?.message || 'Zuri’s AI couldn’t answer that right now. Please try again.');

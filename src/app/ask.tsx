@@ -26,6 +26,7 @@ import { SourceCard } from '@/components/source-card';
 import { queryTerms, searchSources, type SourceHit } from '@/utils/source-search';
 import { askZuri, searchMaterial } from '@/services/ai-api';
 import { MarkdownText } from '@/components/markdown-text';
+import { AIQuotaNote } from '@/components/ai-quota-note';
 import { lightColors, radius, space } from '@/theme';
 import { useConversations } from '@/context/conversations-context';
 
@@ -270,6 +271,7 @@ export default function AskScreen() {
           </Pressable>
         </View>
         <Text style={styles.footnote}>Zuri answers from your lectures and notes, and uses general knowledge when they don’t cover it. Check important facts.</Text>
+        <AIQuotaNote />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
