@@ -351,6 +351,34 @@ export function ingestLectureTranscript(
   );
 }
 
+// ─── Missing information prompts ("context gaps") ────────────────
+
+export interface ContextGapDTO {
+  id: string;
+  user_id: string;
+  course_id: string;
+  /** "missing_class_time" | "missing_venue" */
+  gap_type: string;
+  prompt_question: string;
+  field_target: string;
+  is_resolved: boolean;
+}
+
+/** GET /academic/context-gaps → open prompts about missing class times and venues. */
+export function getContextGaps(): Promise<ContextGapDTO[]> {
+  return apiRequest<ContextGapDTO[]>('/academic/context-gaps');
+}
+
+/**
+ * POST /academic/context-gaps/:id/resolve { response_value }.
+ * Only used for venues: the server ignores the answer for missing class times
+ * (it always creates Monday 09:00–11:00), so those are answered by adding the
+ * real class instead (BACKEND_REQUESTS #22).
+ */
+export async function resolveContextGap(id: string, responseValue: string): Promise<void> {
+  await apiRequest(`/academic/context-gaps/${enc(id)}/resolve`, { method: 'POST', body: { response_value: responseValue } });
+}
+
 // ─── Analytics and notifications ─────────────────────────────────
 
 export async function getStudyStats(): Promise<StudyStatsDTO | null> {

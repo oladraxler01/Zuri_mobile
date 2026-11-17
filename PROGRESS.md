@@ -316,3 +316,8 @@ Part 2 — institution:
 - New `services/membership-api.ts`: `GET /users/me/memberships`, `POST /users/me/memberships {institution_id, role: "student", identifier: matric, is_default}`, `POST /users/me/switch-institution` (new tokens saved; `saveSession` now keeps the current user if a token response doesn't include it).
 - Settings → Connected university: new "Your university on Zuri" panel. Universities on the server are mapped by name (`SERVER_INSTITUTIONS`, only `Veritas University` → `veritas_uni` for now); others show "isn't on Zuri yet". Linking re-syncs courses.
 - **Backend security bug reported** (BACKEND_REQUESTS #0): the server lets any user give themselves any role at any university. The app only asks for "student".
+
+### "Zuri needs one detail" prompts (context gaps) (2026-11-17)
+- `academic-api`: `getContextGaps()` (`GET /academic/context-gaps`), `resolveContextGap()` (`POST …/:id/resolve {response_value}`).
+- Home: new `components/academic/missing-info.tsx` shows up to 2 open prompts (theme `Card`, `Chip`, `Button`, `Text`). Missing venue → type it → resolve. Missing class time → pick day + start time (+ venue) → adds the class with the normal timetable flow (syncs to the server for catalogue courses); the gap isn't resolved on the server because its resolver writes a fixed Monday 9–11 class (BACKEND_REQUESTS #22). "Later" hides a prompt.
+- Only catalogue courses get prompts, so most students won't see this until the catalogue is seeded.

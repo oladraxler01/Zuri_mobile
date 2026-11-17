@@ -21,6 +21,7 @@ import { useMaterials } from '@/context/materials-context';
 import { describeDue, daysUntil } from '@/utils/planner';
 import { kindMeta } from '@/components/planner/assessment-card';
 import { TodayFromZuri } from '@/components/academic/from-zuri';
+import { MissingInfoPrompts } from '@/components/academic/missing-info';
 import { makeStyles, useTheme } from '@/theme';
 
 export default function AcademicHomeScreen() {
@@ -196,6 +197,9 @@ export default function AcademicHomeScreen() {
 
         {/* Today's cards from Zuri's academic service (hidden when there are none) */}
         <TodayFromZuri />
+
+        {/* Missing class times / venues Zuri asks for (hidden when none) */}
+        <MissingInfoPrompts />
 
         {/* New student: getting started */}
         {showStart && (
