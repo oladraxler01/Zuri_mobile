@@ -274,3 +274,8 @@ Part 2 — institution:
 - Home: "Today from Zuri" shows the top 4 open cards from `GET /academic/today` (class countdown, pre-class prep, post-class summary, deadline, practice gap, lecturer revision pack). Tap → `POST …/act` and opens the matching screen (upcoming class, planner, course, weak-topic study session); × → `POST …/dismiss`. Hidden when there are no cards.
 - Course page → Overview: "Zuri suggests revising" from `GET /academic/courses/:id/weak-topics` for catalogue courses; tap a topic to practise it.
 - Live catalogue is still empty, so most students see neither panel until courses are seeded (custom courses have no server mastery).
+
+### Research: AI answers and evidence overview (2026-11-17)
+- Research project → Ask your sources: each question is answered by `chat.generate` from the best 5 matching passages (abstracts, saved evidence, notes), citing author-year, saying where sources disagree; the passages are listed under "Sources used". The last 2 turns are sent as history.
+- Synthesis: "Overview with Zuri" writes a short overview from the evidence, theme by theme (top 5 themes), with citations, gaps and what to read next; it can be shared. Marked as a study aid, not finished prose.
+- Paper search stays on OpenAlex directly (no backend needed). Projects still live on the phone only (no research routes on the server, BACKEND_REQUESTS #20).
