@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme-provider';
 import { Text } from '../text';
 import { haptics } from '../haptics';
-import type { ColorToken } from '../tokens';
+import type { ColorName } from '../tokens';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -28,7 +28,7 @@ export interface ButtonProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const FILL: Record<ButtonVariant, { bg?: ColorToken; pressed?: ColorToken; fg: ColorToken; border?: ColorToken }> = {
+const FILL: Record<ButtonVariant, { bg?: ColorName; pressed?: ColorName; fg: ColorName; border?: ColorName }> = {
   primary: { bg: 'primary', pressed: 'primary-pressed', fg: 'on-primary' },
   secondary: { fg: 'text', border: 'border-strong' },
   tonal: { bg: 'tint', fg: 'on-tint' },
@@ -57,7 +57,7 @@ export function Button({
   const inactive = disabled || loading;
   const fg = colors[fill.fg];
   const small = size === 'sm';
-  const height = small ? sizes.controlHeightSm : sizes.controlHeight;
+  const height = small ? sizes['control-height-sm'] : sizes['control-height'];
 
   return (
     <Pressable
@@ -71,7 +71,7 @@ export function Button({
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: inactive, busy: loading }}
       // Keep the hit area at the 48px touch target even for small buttons.
-      hitSlop={Math.max(0, (sizes.touchTarget - height) / 2)}
+      hitSlop={Math.max(0, (sizes['touch-target'] - height) / 2)}
       style={({ pressed }) => [
         styles.base,
         {
@@ -103,7 +103,7 @@ export function Button({
           {loading ? (
             <ActivityIndicator size="small" color={fg} style={{ marginRight: space[2] }} />
           ) : icon ? (
-            <Ionicons name={icon} size={sizes.iconMd} color={fg} style={{ marginRight: space[2] }} />
+            <Ionicons name={icon} size={sizes['icon-md']} color={fg} style={{ marginRight: space[2] }} />
           ) : null}
           <Text variant={small ? 'subhead' : 'headline'} color={fill.fg} numberOfLines={1}>
             {label}

@@ -59,14 +59,14 @@ export function ListRow({ title, meta, icon, leadingColor, trailing, onPress, on
 
   const leading = icon ? (
     <View style={[styles.well, { backgroundColor: colors.tint, borderRadius: radius.sm }]}>
-      <Ionicons name={icon} size={size.iconMd} color={colors['on-tint']} />
+      <Ionicons name={icon} size={size['icon-md']} color={colors['on-tint']} />
     </View>
   ) : leadingColor ? (
     <View style={[styles.well, { backgroundColor: leadingColor, borderRadius: radius.sm }]} />
   ) : null;
 
   const end =
-    trailing ?? (onPress ? <Ionicons name="chevron-forward" size={size.iconMd} color={colors['text-subtle']} /> : null);
+    trailing ?? (onPress ? <Ionicons name="chevron-forward" size={size['icon-md']} color={colors['text-subtle']} /> : null);
 
   const body = (
     <>
