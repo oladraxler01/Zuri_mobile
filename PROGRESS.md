@@ -268,3 +268,9 @@ Part 2 — institution:
 - Settings → Notifications: new "From Zuri" panel with the account's settings (`GET/PUT /notifications/preferences`: push, email, document ready, study reminders, quiz results, streaks, goals).
 - Notification centre: "From Zuri" section with `GET /notifications/history`; its settings link now opens Settings → Notifications.
 - Class and deadline reminders stay on the phone (work offline, no duplicates). Server pushes don't arrive yet: the backend's sender is a stub (BACKEND_REQUESTS #3).
+
+### Today's cards and weak topics from the academic service on screen (2026-11-17)
+- New `components/academic/from-zuri.tsx`.
+- Home: "Today from Zuri" shows the top 4 open cards from `GET /academic/today` (class countdown, pre-class prep, post-class summary, deadline, practice gap, lecturer revision pack). Tap → `POST …/act` and opens the matching screen (upcoming class, planner, course, weak-topic study session); × → `POST …/dismiss`. Hidden when there are no cards.
+- Course page → Overview: "Zuri suggests revising" from `GET /academic/courses/:id/weak-topics` for catalogue courses; tap a topic to practise it.
+- Live catalogue is still empty, so most students see neither panel until courses are seeded (custom courses have no server mastery).
