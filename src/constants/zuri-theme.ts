@@ -1,31 +1,37 @@
+import { brand, lightColors as t } from '@/theme/tokens';
+
 /**
- * Zuri Design System
- * Extracted from the Stitch-generated design tokens.
- * All colors follow Material Design 3 naming conventions.
+ * @deprecated Use `@/theme` instead: `useTheme()` for colours (light and dark),
+ * spacing and radii, and `<Text variant>` for type. Kept as an alias while
+ * screens move to tokens (design system §8); delete it once nothing imports it.
+ *
+ * Keys that have a design-system token now point at it. Every one of them had
+ * the same value already, so nothing changes visually. Keys with no token keep
+ * their old literal; don't use them in new code.
  */
 
 // ─── Color Palette ───────────────────────────────────────────────
 export const ZuriColors = {
   // Core surfaces
-  surface: '#fbf9f8',
-  background: '#fbf9f8',
-  surfaceContainerLowest: '#ffffff',
+  surface: t.surface,
+  background: t.surface,
+  surfaceContainerLowest: t['surface-raised'],
   surfaceContainerLow: '#f6f3f2',
-  surfaceContainer: '#f0eded',
+  surfaceContainer: t['surface-sunken'],
   surfaceContainerHigh: '#eae8e7',
-  surfaceContainerHighest: '#e4e2e1',
-  surfaceBright: '#fbf9f8',
+  surfaceContainerHighest: t.border,
+  surfaceBright: t.surface,
   surfaceDim: '#dcd9d9',
-  surfaceVariant: '#e4e2e1',
+  surfaceVariant: t.border,
   surfaceTint: '#546257',
 
   // Primary
-  primary: '#17231b',
-  primaryContainer: '#2c3930',
-  onPrimary: '#ffffff',
+  primary: t.primary,
+  primaryContainer: t['primary-pressed'],
+  onPrimary: t['on-primary'],
   onPrimaryContainer: '#94a397',
-  primaryFixed: '#d7e6d9',
-  primaryFixedDim: '#bbcabe',
+  primaryFixed: t.tint,
+  primaryFixedDim: t['text-on-inverse-muted'],
   onPrimaryFixed: '#121e16',
   onPrimaryFixedVariant: '#3d4a40',
   inversePrimary: '#bbcabe',
@@ -41,28 +47,28 @@ export const ZuriColors = {
   onSecondaryFixedVariant: '#474744',
 
   // Tertiary (Gold/Amber accent)
-  tertiary: '#735c00',
-  tertiaryContainer: '#cba72f',
+  tertiary: t['accent-text'],
+  tertiaryContainer: brand['gold-deep'],
   onTertiary: '#ffffff',
   onTertiaryContainer: '#4e3d00',
   tertiaryFixed: '#ffe088',
-  tertiaryFixedDim: '#e9c349',
+  tertiaryFixedDim: t.accent,
   onTertiaryFixed: '#241a00',
   onTertiaryFixedVariant: '#574500',
 
   // Error
-  error: '#ba1a1a',
-  errorContainer: '#ffdad6',
+  error: t.danger,
+  errorContainer: t['danger-container'],
   onError: '#ffffff',
   onErrorContainer: '#93000a',
 
   // On-surface
-  onSurface: '#1b1c1c',
-  onSurfaceVariant: '#434844',
-  onBackground: '#1b1c1c',
+  onSurface: t.text,
+  onSurfaceVariant: t['text-muted'],
+  onBackground: t.text,
 
   // Outline
-  outline: '#737873',
+  outline: t['border-strong'],
   outlineVariant: '#c3c8c2',
 
   // Inverse
