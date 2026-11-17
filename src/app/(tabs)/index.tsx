@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Pressable,
   ScrollView,
   StatusBar,
@@ -11,7 +10,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ZuriColors, ZuriFonts, ZuriSpacing } from '@/constants/zuri-theme';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic } from '@/context/academic-context';
 import { useLectures } from '@/context/lectures-context';
@@ -23,8 +21,11 @@ import { useMaterials } from '@/context/materials-context';
 import { describeDue, daysUntil } from '@/utils/planner';
 import { kindMeta } from '@/components/planner/assessment-card';
 import { TodayFromZuri } from '@/components/academic/from-zuri';
+import { makeStyles, useTheme } from '@/theme';
 
 export default function AcademicHomeScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const router = useRouter();
   const [fontsLoaded] = useZuriFonts();
   const { state } = useAcademic();
@@ -97,7 +98,7 @@ export default function AcademicHomeScreen() {
       {/* Top Navigation Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Ionicons name="school" size={24} color="#272e0a" />
+          <Ionicons name="school" size={24} color={colors.text} />
           <Text style={styles.headerLogo}>ZURI</Text>
         </View>
 
@@ -109,7 +110,7 @@ export default function AcademicHomeScreen() {
           accessibilityRole="button"
           accessibilityLabel="Search"
         >
-          <Ionicons name="search-outline" size={23} color="#272e0a" />
+          <Ionicons name="search-outline" size={23} color={colors.text} />
         </Pressable>
         <Pressable
           style={styles.profileBtn}
@@ -118,7 +119,7 @@ export default function AcademicHomeScreen() {
           accessibilityRole="button"
           accessibilityLabel={`Notifications${feed.unread ? `, ${feed.unread} unread` : ''}`}
         >
-          <Ionicons name="notifications-outline" size={24} color="#272e0a" />
+          <Ionicons name="notifications-outline" size={24} color={colors.text} />
           {feed.unread > 0 && (
             <View style={styles.bellBadge}>
               <Text style={styles.bellBadgeText}>{feed.unread > 9 ? '9+' : feed.unread}</Text>
@@ -132,7 +133,7 @@ export default function AcademicHomeScreen() {
           accessibilityRole="button"
           accessibilityLabel="Account Profile"
         >
-          <Ionicons name="person-circle-outline" size={28} color="#272e0a" />
+          <Ionicons name="person-circle-outline" size={28} color={colors.text} />
         </Pressable>
         </View>
       </View>
@@ -160,7 +161,7 @@ export default function AcademicHomeScreen() {
               <Ionicons
                 name={recentLecture.status === 'ready' ? 'checkmark-circle' : recentLecture.status === 'failed' ? 'alert-circle' : 'sync'}
                 size={18}
-                color={recentLecture.status === 'failed' ? '#ba1a1a' : '#e9c349'}
+                color={recentLecture.status === 'failed' ? colors.danger : colors.accent}
               />
             </View>
             <Text style={styles.postLectureTitle}>
@@ -202,7 +203,7 @@ export default function AcademicHomeScreen() {
             <View style={styles.startHead}>
               <Text style={styles.startTitle}>Get started with your semester</Text>
               <Pressable onPress={() => feed.dismiss('welcome')} hitSlop={10} accessibilityLabel="Hide getting started">
-                <Ionicons name="close" size={18} color="#77786c" />
+                <Ionicons name="close" size={18} color={colors['text-subtle']} />
               </Pressable>
             </View>
             <Text style={styles.startSub}>
@@ -210,9 +211,9 @@ export default function AcademicHomeScreen() {
             </Text>
             {startSteps.map((st) => (
               <Pressable key={st.label} style={styles.startRow} onPress={st.onPress} disabled={st.done}>
-                <Ionicons name={st.done ? 'checkmark-circle' : 'ellipse-outline'} size={22} color={st.done ? '#2f6b3a' : '#77786c'} />
+                <Ionicons name={st.done ? 'checkmark-circle' : 'ellipse-outline'} size={22} color={st.done ? colors.success : colors['text-subtle']} />
                 <Text style={[styles.startText, st.done && styles.startTextDone]}>{st.label}</Text>
-                {!st.done && <Ionicons name="chevron-forward" size={16} color="#77786c" />}
+                {!st.done && <Ionicons name="chevron-forward" size={16} color={colors['text-subtle']} />}
               </Pressable>
             ))}
           </View>
@@ -225,7 +226,7 @@ export default function AcademicHomeScreen() {
             onPress={() => router.push(`/assessment/${urgent.id}` as Href)}
           >
             <View style={styles.dueIcon}>
-              <Ionicons name={kindMeta(urgent.kind).icon} size={20} color="#7a4f12" />
+              <Ionicons name={kindMeta(urgent.kind).icon} size={20} color={colors.warning} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.dueTag}>
@@ -238,7 +239,7 @@ export default function AcademicHomeScreen() {
                 {urgent.steps.filter((s) => s.done).length} of {urgent.steps.length} preparation steps done
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color="#7a4f12" />
+            <Ionicons name="chevron-forward" size={18} color={colors.warning} />
           </Pressable>
         )}
 
@@ -272,7 +273,7 @@ export default function AcademicHomeScreen() {
               <View style={styles.pulsingDot} />
               <Text style={styles.alertBadgeText}>{describeStart(nextOcc).toUpperCase()}</Text>
             </View>
-            <Ionicons name="notifications" size={16} color="#c5832b" />
+            <Ionicons name="notifications" size={16} color={colors.warning} />
           </View>
 
           <Text style={styles.alertTitle}>Ready to capture {nextClass.courseCode}?</Text>
@@ -287,7 +288,7 @@ export default function AcademicHomeScreen() {
             ]}
             onPress={() => handleStartRecording(nextClass.courseId)}
           >
-            <Ionicons name="mic" size={18} color="#ffffff" />
+            <Ionicons name="mic" size={18} color={colors['on-primary']} />
             <Text style={styles.alertRecordBtnText}>Start Recording Lecture</Text>
           </Pressable>
         </View>
@@ -327,7 +328,7 @@ export default function AcademicHomeScreen() {
               </Text>
 
               <View style={styles.venueRow}>
-                <Ionicons name="location-outline" size={16} color={ZuriColors.onSurfaceVariant} />
+                <Ionicons name="location-outline" size={16} color={colors['text-muted']} />
                 <Text style={styles.venueText}>{nextClass.venue}</Text>
               </View>
 
@@ -352,7 +353,7 @@ export default function AcademicHomeScreen() {
                   hitSlop={6}
                   accessibilityLabel="Record Lecture"
                 >
-                  <Ionicons name="mic-outline" size={18} color="#272e0a" />
+                  <Ionicons name="mic-outline" size={18} color={colors.text} />
                 </Pressable>
               </View>
             </View>
@@ -364,7 +365,7 @@ export default function AcademicHomeScreen() {
           {feed.top && (
           <View style={styles.timelineSection}>
             <View style={styles.milestoneDotBulb}>
-              <Ionicons name="bulb-outline" size={12} color="#272e0a" />
+              <Ionicons name="bulb-outline" size={12} color={colors.text} />
             </View>
 
             <View style={styles.sectionHeaderRow}>
@@ -374,14 +375,14 @@ export default function AcademicHomeScreen() {
             <Pressable style={styles.reviewCard} onPress={() => router.push(feed.top!.href as Href)}>
               <View style={styles.reviewCardTop}>
                 <Text style={styles.reviewTopicTitle}>{feed.top.title}</Text>
-                <Ionicons name={feed.top.icon} size={18} color="#c5832b" />
+                <Ionicons name={feed.top.icon} size={18} color={colors.warning} />
               </View>
 
               <Text style={styles.reviewDesc}>{feed.top.recommendation?.why ?? feed.top.body}</Text>
 
               <View style={styles.reviewLinkRow}>
                 <Text style={styles.reviewLinkText}>See what to do</Text>
-                <Ionicons name="arrow-forward" size={15} color="#c5832b" />
+                <Ionicons name="arrow-forward" size={15} color={colors.warning} />
               </View>
             </Pressable>
           </View>
@@ -410,7 +411,7 @@ export default function AcademicHomeScreen() {
                         </Text>
                         <Text style={styles.laterVenue}>{occ.slot.venue}</Text>
                       </View>
-                      <Ionicons name="chevron-forward" size={16} color={ZuriColors.outline} />
+                      <Ionicons name="chevron-forward" size={16} color={colors['text-subtle']} />
                     </Pressable>
                   </View>
                 );
@@ -427,17 +428,17 @@ export default function AcademicHomeScreen() {
                 style={styles.quickActionCard}
                 onPress={() => router.push('/study' as Href)}
               >
-                <Ionicons name="book-outline" size={20} color="#272e0a" />
+                <Ionicons name="book-outline" size={20} color={colors.text} />
                 <Text style={styles.quickActionTitle}>Study session</Text>
               </Pressable>
 
               <Pressable style={styles.quickActionCard} onPress={() => router.push('/ask' as Href)}>
-                <Ionicons name="chatbubble-ellipses-outline" size={20} color="#272e0a" />
+                <Ionicons name="chatbubble-ellipses-outline" size={20} color={colors.text} />
                 <Text style={styles.quickActionTitle}>Ask about your notes</Text>
               </Pressable>
 
               <Pressable style={styles.quickActionCard} onPress={() => router.push('/materials' as Href)}>
-                <Ionicons name="folder-open-outline" size={20} color="#272e0a" />
+                <Ionicons name="folder-open-outline" size={20} color={colors.text} />
                 <Text style={styles.quickActionTitle}>Materials</Text>
               </Pressable>
 
@@ -445,7 +446,7 @@ export default function AcademicHomeScreen() {
                 style={styles.quickActionCard}
                 onPress={() => router.push('/lectures' as Href)}
               >
-                <Ionicons name="albums-outline" size={20} color="#272e0a" />
+                <Ionicons name="albums-outline" size={20} color={colors.text} />
                 <Text style={styles.quickActionTitle}>
                   Lecture Archive{lectures.length ? ` · ${lectures.length}` : ''}
                 </Text>
@@ -459,104 +460,93 @@ export default function AcademicHomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   bellBadge: {
     position: 'absolute',
     top: 2,
     right: 0,
     minWidth: 16,
     height: 16,
-    borderRadius: 8,
-    backgroundColor: '#ba1a1a',
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors.danger,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 3,
   },
-  bellBadgeText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 10, color: '#ffffff' },
+  bellBadgeText: { ...t.type.caption, color: t.colors['on-primary'] },
   startCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
+    backgroundColor: t.colors['surface-raised'],
+    borderRadius: t.radius.lg,
     borderWidth: 1,
-    borderColor: 'rgba(199, 199, 185, 0.4)',
+    borderColor: t.colors.border,
     padding: 16,
     marginBottom: 14,
   },
   startHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  startTitle: { fontFamily: ZuriFonts.headlineMd, fontSize: 18, color: '#272e0a', flex: 1 },
-  startSub: { fontFamily: ZuriFonts.labelSmBold, fontSize: 12, color: '#c5832b', marginTop: 2, marginBottom: 6 },
+  startTitle: { ...t.type['title-2'], color: t.colors.text, flex: 1 },
+  startSub: { ...t.type.caption, color: t.colors['accent-text'], marginTop: 2, marginBottom: 6 },
   startRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9 },
-  startText: { flex: 1, fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: '#272e0a' },
-  startTextDone: { color: '#77786c', textDecorationLine: 'line-through' },
+  startText: { ...t.type.subhead, flex: 1, color: t.colors.text },
+  startTextDone: { color: t.colors['text-subtle'], textDecorationLine: 'line-through' },
   dueCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#fdf1df',
-    borderRadius: 18,
+    backgroundColor: t.colors['warning-container'],
+    borderRadius: t.radius.lg,
     borderWidth: 1,
-    borderColor: '#f1d7ab',
+    borderColor: t.colors.warning,
     padding: 16,
     marginBottom: 14,
   },
-  dueCardLate: { backgroundColor: '#fff1ef', borderColor: '#f6c9c2' },
+  dueCardLate: { backgroundColor: t.colors['danger-container'], borderColor: t.colors.danger },
   dueIcon: {
     width: 40,
     height: 40,
-    borderRadius: 12,
-    backgroundColor: '#ffffff',
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors['surface-raised'],
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dueTag: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: '#9a5b0b' },
-  dueTitle: { fontFamily: ZuriFonts.headlineMd, fontSize: 17, lineHeight: 22, color: '#272e0a', marginTop: 2 },
-  dueMeta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: '#6b5a3a', marginTop: 3 },
+  dueTag: { ...t.type.caption, letterSpacing: 0.8, color: t.colors.warning },
+  dueTitle: { ...t.type['title-2'], color: t.colors.text, marginTop: 2 },
+  dueMeta: { ...t.type.caption, color: t.colors.warning, marginTop: 3 },
   examCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
+    backgroundColor: t.colors['surface-raised'],
+    borderRadius: t.radius.lg,
     borderWidth: 1,
-    borderColor: 'rgba(199, 199, 185, 0.4)',
+    borderColor: t.colors.border,
     padding: 16,
     marginBottom: 14,
   },
   examCount: {
     width: 58,
     height: 58,
-    borderRadius: 14,
-    backgroundColor: '#272e0a',
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors['surface-inverse'],
     alignItems: 'center',
     justifyContent: 'center',
   },
-  examDays: { fontFamily: ZuriFonts.headlineMd, fontSize: 22, color: '#e9c349', lineHeight: 26 },
-  examDaysLabel: { fontFamily: ZuriFonts.labelSmBold, fontSize: 10, color: 'rgba(255,255,255,0.75)' },
-  examTag: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: '#c5832b' },
-  examTitle: { fontFamily: ZuriFonts.headlineMd, fontSize: 17, lineHeight: 22, color: '#272e0a', marginTop: 2 },
-  examMeta: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: '#77786c', marginTop: 3 },
+  examDays: { ...t.type['title-2'], color: t.colors.accent, },
+  examDaysLabel: { ...t.type.caption, color: t.colors['text-on-inverse-muted'] },
+  examTag: { ...t.type.caption, letterSpacing: 0.8, color: t.colors['accent-text'] },
+  examTitle: { ...t.type['title-2'], color: t.colors.text, marginTop: 2 },
+  examMeta: { ...t.type.caption, color: t.colors['text-subtle'], marginTop: 3 },
   postLectureCard: {
-    backgroundColor: '#272e0a',
-    borderRadius: 20,
+    backgroundColor: t.colors['surface-inverse'],
+    borderRadius: t.radius.lg,
     padding: 20,
     marginBottom: 20,
   },
-  postLectureTag: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 11,
-    letterSpacing: 1.2,
-    color: '#e9c349',
+  postLectureTag: { ...t.type.eyebrow, color: t.colors.accent,
   },
-  postLectureTitle: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 20,
-    lineHeight: 26,
-    color: '#ffffff',
+  postLectureTitle: { ...t.type['title-2'], color: t.colors['text-on-inverse'],
     marginTop: 10,
   },
-  postLectureMeta: {
-    fontFamily: ZuriFonts.bodyRegular,
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.7)',
+  postLectureMeta: { ...t.type.footnote, color: t.colors['text-on-inverse-muted'],
     marginTop: 6,
   },
   postLectureActions: {
@@ -565,31 +555,25 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   postLectureBtn: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
+    backgroundColor: t.colors['surface-raised'],
+    borderRadius: t.radius.lg,
     paddingHorizontal: 16,
     paddingVertical: 9,
   },
-  postLectureBtnText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 13,
-    color: '#272e0a',
+  postLectureBtnText: { ...t.type.subhead, color: t.colors.text,
   },
   postLectureBtnGhost: {
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.35)',
-    borderRadius: 20,
+    borderColor: t.colors['text-on-inverse-muted'],
+    borderRadius: t.radius.lg,
     paddingHorizontal: 16,
     paddingVertical: 9,
   },
-  postLectureBtnGhostText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 13,
-    color: '#ffffff',
+  postLectureBtnGhostText: { ...t.type.subhead, color: t.colors['text-on-inverse'],
   },
   container: {
     flex: 1,
-    backgroundColor: '#f9f7f2', // surface-cream
+    backgroundColor: t.colors.surface, // surface-cream
   },
   header: {
     height: 56,
@@ -598,20 +582,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(199, 199, 185, 0.25)',
+    borderBottomColor: t.colors.border,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  headerLogo: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 22,
-    letterSpacing: -0.5,
-    color: '#272e0a',
-    fontWeight: '700',
-  },
+  headerLogo: { ...t.type['title-2'], letterSpacing: -0.5,
+    color: t.colors.text,
+    },
   profileBtn: {
     padding: 4,
   },
@@ -625,18 +605,12 @@ const styles = StyleSheet.create({
   },
   // Proactive Alert Banner
   proactiveAlertCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
+    backgroundColor: t.colors['surface-raised'],
+    borderRadius: t.radius.full,
     padding: 16,
     borderWidth: 1.5,
-    borderColor: '#c5832b',
-    marginBottom: 24,
-    shadowColor: '#c5832b',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
-  },
+    borderColor: t.colors.accent,
+    marginBottom: 24, boxShadow: t.shadows.card,},
   alertHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -647,35 +621,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(197, 131, 43, 0.12)',
+    backgroundColor: t.colors['warning-container'],
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: t.radius.sm,
   },
   pulsingDot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
-    backgroundColor: '#ba1a1a',
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors.danger,
   },
-  alertBadgeText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 11,
-    color: '#c5832b',
+  alertBadgeText: { ...t.type.caption, color: t.colors['accent-text'],
     letterSpacing: 0.5,
   },
-  alertTitle: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 17,
-    color: '#272e0a',
-    fontWeight: '600',
+  alertTitle: { ...t.type['title-2'], color: t.colors.text,
     marginBottom: 4,
   },
-  alertSubtitle: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 13,
-    lineHeight: 18,
-    color: ZuriColors.onSurfaceVariant,
+  alertSubtitle: { ...t.type.footnote, color: t.colors['text-muted'],
     marginBottom: 14,
   },
   alertRecordBtn: {
@@ -683,14 +646,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#272e0a',
+    backgroundColor: t.colors.primary,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: t.radius.md,
   },
-  alertRecordBtnText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 13,
-    color: '#ffffff',
+  alertRecordBtnText: { ...t.type.subhead, color: t.colors['on-primary'],
   },
   btnPressed: {
     opacity: 0.9,
@@ -700,19 +660,10 @@ const styles = StyleSheet.create({
   greetingSection: {
     marginBottom: 24,
   },
-  greetingTitle: {
-    fontFamily: ZuriFonts.headlineLgMobile,
-    fontSize: 32,
-    lineHeight: 38,
-    color: '#272e0a',
-    fontWeight: '700',
+  greetingTitle: { ...t.type.display, color: t.colors.text,
     marginBottom: 6,
   },
-  greetingSubtitle: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 15,
-    lineHeight: 22,
-    color: ZuriColors.onSurfaceVariant,
+  greetingSubtitle: { ...t.type.callout, color: t.colors['text-muted'],
   },
   // Timeline
   timelineContainer: {
@@ -725,7 +676,7 @@ const styles = StyleSheet.create({
     bottom: 40,
     left: 7,
     width: 1.5,
-    backgroundColor: 'rgba(199, 199, 185, 0.4)',
+    backgroundColor: t.colors.border,
   },
   timelineSection: {
     position: 'relative',
@@ -737,10 +688,10 @@ const styles = StyleSheet.create({
     top: 2,
     width: 16,
     height: 16,
-    borderRadius: 8,
+    borderRadius: t.radius.full,
     borderWidth: 3,
-    borderColor: '#c5832b',
-    backgroundColor: '#f9f7f2',
+    borderColor: t.colors.accent,
+    backgroundColor: t.colors.surface,
     zIndex: 2,
   },
   milestoneDotBulb: {
@@ -749,8 +700,8 @@ const styles = StyleSheet.create({
     top: 2,
     width: 16,
     height: 16,
-    borderRadius: 8,
-    backgroundColor: '#eae8e3',
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors['surface-sunken'],
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 2,
@@ -761,8 +712,8 @@ const styles = StyleSheet.create({
     top: 4,
     width: 10,
     height: 10,
-    borderRadius: 5,
-    backgroundColor: ZuriColors.outlineVariant,
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors.border,
     zIndex: 2,
   },
   sectionHeaderRow: {
@@ -771,55 +722,32 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 8,
   },
-  tagGold: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 11,
-    letterSpacing: 1,
-    color: '#c5832b',
-    fontWeight: '700',
-  },
-  tagMuted: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 11,
-    letterSpacing: 1,
-    color: ZuriColors.outline,
-    fontWeight: '700',
+  tagGold: { ...t.type.eyebrow, color: t.colors['accent-text'],
+    },
+  tagMuted: { ...t.type.eyebrow, color: t.colors['text-subtle'],
     marginBottom: 8,
   },
-  timeTagText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 13,
-    color: ZuriColors.onSurfaceVariant,
+  timeTagText: { ...t.type.footnote, color: t.colors['text-muted'],
   },
   // Next Card
   nextCard: {
     position: 'relative',
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
+    backgroundColor: t.colors['surface-raised'],
+    borderRadius: t.radius.full,
     padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(197, 131, 43, 0.25)',
-    shadowColor: '#c5832b',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
-    elevation: 2,
-    overflow: 'hidden',
-  },
+    borderColor: t.colors.warning,
+    overflow: 'hidden', boxShadow: t.shadows.raised,},
   cardGoldGlow: {
     position: 'absolute',
     top: 0,
     right: 0,
     width: 80,
     height: 80,
-    backgroundColor: 'rgba(197, 131, 43, 0.04)',
-    borderBottomLeftRadius: 80,
+    backgroundColor: t.colors['warning-container'],
+    borderBottomLeftRadius: t.radius.full,
   },
-  nextCourseTitle: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 19,
-    color: '#272e0a',
-    fontWeight: '600',
+  nextCourseTitle: { ...t.type['title-2'], color: t.colors.text,
     marginBottom: 6,
   },
   venueRow: {
@@ -828,10 +756,7 @@ const styles = StyleSheet.create({
     gap: 4,
     marginBottom: 16,
   },
-  venueText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 13,
-    color: ZuriColors.onSurfaceVariant,
+  venueText: { ...t.type.footnote, color: t.colors['text-muted'],
   },
   actionButtonsRow: {
     flexDirection: 'row',
@@ -839,49 +764,43 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   primaryActionBtn: {
-    backgroundColor: '#272e0a',
+    backgroundColor: t.colors.primary,
     paddingHorizontal: 14,
     paddingVertical: 9,
-    borderRadius: 8,
+    borderRadius: t.radius.md,
   },
-  primaryActionBtnText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 13,
-    color: '#ffffff',
+  primaryActionBtnText: { ...t.type.subhead, color: t.colors['on-primary'],
   },
   secondaryActionBtn: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: 'rgba(199, 199, 185, 0.6)',
+    borderColor: t.colors.border,
     paddingHorizontal: 14,
     paddingVertical: 9,
-    borderRadius: 8,
+    borderRadius: t.radius.md,
   },
-  secondaryActionBtnText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 13,
-    color: '#272e0a',
+  secondaryActionBtnText: { ...t.type.subhead, color: t.colors.text,
   },
   micQuickBtn: {
     width: 38,
     height: 38,
-    borderRadius: 8,
-    backgroundColor: '#f5f3ee',
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors['surface-sunken'],
     borderWidth: 1,
-    borderColor: 'rgba(199, 199, 185, 0.5)',
+    borderColor: t.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 'auto',
   },
   // Review Card
   reviewCard: {
-    backgroundColor: '#f5f3ee',
-    borderRadius: 14,
+    backgroundColor: t.colors['surface-sunken'],
+    borderRadius: t.radius.md,
     padding: 16,
     borderLeftWidth: 4,
-    borderLeftColor: '#c5832b',
+    borderLeftColor: t.colors.accent,
     borderWidth: 1,
-    borderColor: 'rgba(199, 199, 185, 0.25)',
+    borderColor: t.colors.border,
   },
   reviewCardTop: {
     flexDirection: 'row',
@@ -889,28 +808,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 6,
   },
-  reviewTopicTitle: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 17,
-    color: '#272e0a',
-    fontWeight: '600',
-  },
+  reviewTopicTitle: { ...t.type['title-2'], color: t.colors.text,
+    },
   durationChip: {
-    backgroundColor: '#eae8e3',
+    backgroundColor: t.colors['surface-sunken'],
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: t.radius.sm,
   },
-  durationChipText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 10,
-    color: ZuriColors.primary,
+  durationChipText: { ...t.type.caption, color: t.colors.text,
   },
-  reviewDesc: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 13,
-    lineHeight: 18,
-    color: ZuriColors.onSurfaceVariant,
+  reviewDesc: { ...t.type.footnote, color: t.colors['text-muted'],
     marginBottom: 12,
   },
   reviewLinkRow: {
@@ -918,48 +826,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  reviewLinkText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 13,
-    color: '#c5832b',
+  reviewLinkText: { ...t.type.subhead, color: t.colors['accent-text'],
   },
   // Later Today
   laterList: {
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
+    backgroundColor: t.colors['surface-raised'],
+    borderRadius: t.radius.md,
     borderWidth: 1,
-    borderColor: 'rgba(199, 199, 185, 0.3)',
+    borderColor: t.colors.border,
     overflow: 'hidden',
   },
   laterItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 14,
+    gap: t.space[3],
   },
-  laterTime: {
-    width: 68,
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 13,
-    color: ZuriColors.onSurfaceVariant,
+  laterTime: { ...t.type.footnote, fontFamily: t.type.subhead.fontFamily, width: 72,
+    color: t.colors['text-muted'],
   },
   laterDetails: {
     flex: 1,
   },
-  laterTitle: {
-    fontFamily: ZuriFonts.bodyLg,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#272e0a',
+  laterTitle: { ...t.type.callout, color: t.colors.text,
   },
-  laterVenue: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 12,
-    color: ZuriColors.onSurfaceVariant,
+  laterVenue: { ...t.type.caption, color: t.colors['text-muted'],
     marginTop: 2,
   },
   laterDivider: {
     height: 1,
-    backgroundColor: 'rgba(199, 199, 185, 0.25)',
+    backgroundColor: t.colors.border,
     marginLeft: 82,
   },
   // Quick actions
@@ -974,28 +870,25 @@ const styles = StyleSheet.create({
   quickActionCard: {
     flexBasis: '46%',
     flexGrow: 1,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    backgroundColor: t.colors['surface-raised'],
+    borderRadius: t.radius.md,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(199, 199, 185, 0.3)',
+    borderColor: t.colors.border,
     gap: 8,
   },
-  quickActionTitle: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 13,
-    color: '#272e0a',
+  quickActionTitle: { ...t.type.subhead, color: t.colors.text,
   },
   // Modals
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    backgroundColor: t.colors.scrim,
     justifyContent: 'flex-end',
   },
   modalSheet: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: t.colors['surface-raised'],
+    borderTopLeftRadius: t.radius.lg,
+    borderTopRightRadius: t.radius.lg,
     padding: 20,
     paddingBottom: 36,
   },
@@ -1005,47 +898,28 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 16,
   },
-  modalTitle: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 18,
-    color: '#272e0a',
-    fontWeight: '700',
-  },
-  modalBodyText: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 14,
-    lineHeight: 22,
-    color: ZuriColors.onSurface,
+  modalTitle: { ...t.type['title-2'], color: t.colors.text,
+    },
+  modalBodyText: { ...t.type.callout, color: t.colors.text,
   },
   flashcardBox: {
-    backgroundColor: '#f5f3ee',
-    borderRadius: 12,
+    backgroundColor: t.colors['surface-sunken'],
+    borderRadius: t.radius.md,
     padding: 16,
     marginVertical: 14,
   },
-  flashcardQ: {
-    fontFamily: ZuriFonts.headlineMd,
-    fontSize: 16,
-    color: '#272e0a',
-    fontWeight: '600',
+  flashcardQ: { ...t.type['title-2'], color: t.colors.text,
     marginBottom: 8,
   },
-  flashcardA: {
-    fontFamily: ZuriFonts.bodyMd,
-    fontSize: 14,
-    lineHeight: 20,
-    color: ZuriColors.onSurfaceVariant,
+  flashcardA: { ...t.type.callout, color: t.colors['text-muted'],
   },
   doneBtn: {
-    backgroundColor: '#272e0a',
+    backgroundColor: t.colors.primary,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: t.radius.md,
     alignItems: 'center',
     marginTop: 8,
   },
-  doneBtnText: {
-    fontFamily: ZuriFonts.labelSmBold,
-    fontSize: 14,
-    color: '#ffffff',
+  doneBtnText: { ...t.type.subhead, color: t.colors['on-primary'],
   },
-});
+}));

@@ -1,29 +1,33 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
-import { ZuriFonts } from '@/constants/zuri-theme';
-import { UI } from '@/constants/zuri-ui';
 import { ASSESSMENT_KINDS, type Assessment } from '@/types/planner';
 import { daysUntil, describeDue } from '@/utils/planner';
+import { lightColors, makeStyles, useTheme, type ThemeColors } from '@/theme';
 
 export function kindMeta(kind: Assessment['kind']) {
   return ASSESSMENT_KINDS.find((k) => k.key === kind) ?? ASSESSMENT_KINDS[0];
 }
 
-/** Colour for how urgent a deadline is. */
-export function urgencyColor(a: Assessment, now = new Date()) {
-  if (a.status === 'done') return UI.success;
-  if (new Date(a.dueAt) < now) return UI.error;
-  if (daysUntil(a.dueAt, now) <= 2) return UI.amber;
-  return UI.muted;
+/**
+ * Colour for how urgent a deadline is. Pass the theme's colours from
+ * useTheme(); screens not yet on tokens get the light palette.
+ */
+export function urgencyColor(a: Assessment, now = new Date(), colors: ThemeColors = lightColors) {
+  if (a.status === 'done') return colors.success;
+  if (new Date(a.dueAt) < now) return colors.danger;
+  if (daysUntil(a.dueAt, now) <= 2) return colors.warning;
+  return colors['text-subtle'];
 }
 
 export function AssessmentCard({ item, showCourse = true }: { item: Assessment; showCourse?: boolean }) {
+  const styles = useStyles();
+  const { colors } = useTheme();
   const meta = kindMeta(item.kind);
   const done = item.steps.filter((s) => s.done).length;
-  const color = urgencyColor(item);
+  const color = urgencyColor(item, new Date(), colors);
 
   return (
     <Pressable
@@ -32,8 +36,8 @@ export function AssessmentCard({ item, showCourse = true }: { item: Assessment; 
       accessibilityRole="button"
       accessibilityLabel={`${meta.label}: ${item.title}, ${describeDue(item)}`}
     >
-      <View style={[styles.icon, item.status === 'done' && { backgroundColor: UI.successSoft }]}>
-        <Ionicons name={item.status === 'done' ? 'checkmark' : meta.icon} size={18} color={item.status === 'done' ? UI.success : UI.ink} />
+      <View style={[styles.icon, item.status === 'done' && { backgroundColor: colors['success-container'] }]}>
+        <Ionicons name={item.status === 'done' ? 'checkmark' : meta.icon} size={18} color={item.status === 'done' ? colors.success : colors.text} />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.eyebrow}>
@@ -56,38 +60,38 @@ export function AssessmentCard({ item, showCourse = true }: { item: Assessment; 
           </View>
         )}
       </View>
-      <Ionicons name="chevron-forward" size={18} color={UI.muted} />
+      <Ionicons name="chevron-forward" size={18} color={colors['text-subtle']} />
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    backgroundColor: UI.card,
-    borderRadius: 16,
+    backgroundColor: t.colors['surface-raised'],
+    borderRadius: t.radius.md,
     borderWidth: 1,
-    borderColor: UI.border,
+    borderColor: t.colors.border,
     padding: 16,
   },
   pressed: { opacity: 0.9, transform: [{ scale: 0.99 }] },
   icon: {
     width: 42,
     height: 42,
-    borderRadius: 12,
-    backgroundColor: UI.cardMuted,
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors['surface-sunken'],
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'flex-start',
   },
-  eyebrow: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 0.8, color: UI.amber, marginBottom: 2 },
-  title: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, lineHeight: 21, color: UI.ink },
-  titleDone: { color: UI.muted, textDecorationLine: 'line-through' },
-  due: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, marginTop: 3 },
+  eyebrow: { ...t.type.caption, letterSpacing: 0.8, color: t.colors['accent-text'], marginBottom: 2 },
+  title: { ...t.type.subhead, color: t.colors.text },
+  titleDone: { color: t.colors['text-subtle'], textDecorationLine: 'line-through' },
+  due: { ...t.type.subhead, marginTop: 3 },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
-  track: { flex: 1, height: 4, borderRadius: 2, backgroundColor: UI.cardMuted, overflow: 'hidden' },
-  fill: { height: '100%', backgroundColor: UI.amber },
-  progressText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, color: UI.muted },
-});
+  track: { flex: 1, height: 4, borderRadius: t.radius.full, backgroundColor: t.colors['surface-sunken'], overflow: 'hidden' },
+  fill: { height: '100%', backgroundColor: t.colors.accent },
+  progressText: { ...t.type.caption, color: t.colors['text-subtle'] },
+}));

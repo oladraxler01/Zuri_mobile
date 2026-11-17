@@ -46,7 +46,14 @@ module.exports = defineConfig([
   },
   {
     // On tokens, not yet clean of the pre-existing hook rules: hex literals are errors.
-    files: ['src/app/onboarding/**/*.{ts,tsx}', 'src/components/onboarding/**/*.{ts,tsx}'],
+    files: [
+      'src/app/onboarding/**/*.{ts,tsx}',
+      'src/components/onboarding/**/*.{ts,tsx}',
+      'src/app/(tabs)/index.tsx',
+      'src/components/lecture/lecture-card.tsx',
+      'src/components/planner/assessment-card.tsx',
+      'src/components/zuri-bottom-tab-bar.tsx',
+    ],
     rules: { 'no-restricted-syntax': ['error', noHexColours] },
   },
   {
