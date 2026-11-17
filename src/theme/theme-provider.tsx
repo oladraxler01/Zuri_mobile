@@ -10,27 +10,30 @@ import {
   size,
   space,
   type,
-  type ShadowToken,
-  type ThemeColors,
+  type ColorName,
+  type ShadowName,
 } from './tokens';
 
 /**
- * Dark mode stays off until every student-loop screen is on tokens
- * (roadmap Phase 0, design system §8 step 4). Flip this to true then.
- * While it's false the app always renders light, whatever the system or
- * the saved preference says, so nothing changes visually yet.
+ * Dark mode stays off until every screen in the student loop is on tokens
+ * (docs/MOBILE_ROADMAP.md Phase 0; design system migration step 4). Until
+ * then useTheme() always returns the light theme, whatever the system or the
+ * saved preference says, so migrated and unmigrated screens look the same.
  */
 export const DARK_MODE_ENABLED = false;
 
 export type AppearancePreference = 'system' | 'light' | 'dark';
 export type ColorScheme = 'light' | 'dark';
+export type ThemeColors = Record<ColorName, string>;
 
 const STORAGE_KEY = 'zuri.appearance';
 
 export interface Theme {
   scheme: ColorScheme;
+  /** Same as scheme === 'dark'. */
+  dark: boolean;
   colors: ThemeColors;
-  shadows: { readonly [K in ShadowToken]: string | undefined };
+  shadows: Record<ShadowName, string | undefined>;
   space: typeof space;
   radius: typeof radius;
   size: typeof size;
@@ -38,10 +41,12 @@ export interface Theme {
 }
 
 export function buildTheme(scheme: ColorScheme): Theme {
+  const dark = scheme === 'dark';
   return {
     scheme,
-    colors: scheme === 'dark' ? darkColors : lightColors,
-    shadows: scheme === 'dark' ? darkShadows : lightShadows,
+    dark,
+    colors: dark ? darkColors : lightColors,
+    shadows: dark ? darkShadows : lightShadows,
     space,
     radius,
     size,
@@ -51,6 +56,12 @@ export function buildTheme(scheme: ColorScheme): Theme {
 
 const LIGHT = buildTheme('light');
 const DARK = buildTheme('dark');
+
+function resolveScheme(preference: AppearancePreference, system: string | null | undefined): ColorScheme {
+  if (!DARK_MODE_ENABLED) return 'light';
+  if (preference === 'system') return system === 'dark' ? 'dark' : 'light';
+  return preference;
+}
 
 interface ThemeContextValue {
   theme: Theme;
@@ -82,14 +93,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.setItem(STORAGE_KEY, p).catch(() => {});
   }, []);
 
-  const scheme: ColorScheme = !DARK_MODE_ENABLED
-    ? 'light'
-    : preference === 'system'
-      ? system === 'dark'
-        ? 'dark'
-        : 'light'
-      : preference;
-
+  const scheme = resolveScheme(preference, system);
   const value = useMemo(
     () => ({ theme: scheme === 'dark' ? DARK : LIGHT, preference, setPreference }),
     [scheme, preference, setPreference],
@@ -99,18 +103,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * The current theme: `{ colors, shadows, space, radius, size, type, scheme }`.
- * Outside a ThemeProvider (tests, isolated previews) it returns the light theme.
+ * The design system's tokens for the current theme:
+ * `{ colors, shadows, space, radius, size, type, scheme, dark }`.
+ * Outside a ThemeProvider (tests, isolated previews) it follows the system
+ * setting, which is light while DARK_MODE_ENABLED is false.
  */
 export function useTheme(): Theme {
-  return useContext(ThemeContext)?.theme ?? LIGHT;
+  const ctx = useContext(ThemeContext);
+  const system = useColorScheme();
+  if (ctx) return ctx.theme;
+  return resolveScheme('system', system) === 'dark' ? DARK : LIGHT;
 }
 
 /** The Settings → Appearance preference and its setter. */
 export function useAppearance() {
   const ctx = useContext(ThemeContext);
   return {
-    preference: ctx?.preference ?? 'system',
+    preference: ctx?.preference ?? ('system' as AppearancePreference),
     setPreference: ctx?.setPreference ?? (() => {}),
     darkModeAvailable: DARK_MODE_ENABLED,
   };

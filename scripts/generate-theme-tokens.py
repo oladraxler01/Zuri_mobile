@@ -1,7 +1,8 @@
 """
 Generate src/theme/tokens.ts from the design system's tokens.json.
 
-    python scripts/generate-theme-tokens.py
+    python scripts/generate-theme-tokens.py          write the file
+    python scripts/generate-theme-tokens.py --check  fail if it's out of date (CI)
 
 tokens.json (.claude/skills/zuri-design-system/tokens.json) is the single
 source of truth; never edit src/theme/tokens.ts by hand.
@@ -9,6 +10,7 @@ source of truth; never edit src/theme/tokens.ts by hand.
 import json
 import os
 import re
+import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, '.claude', 'skills', 'zuri-design-system', 'tokens.json')
@@ -54,6 +56,17 @@ space = keyed('space-', d['spacing']['tokens'])
 radius = keyed('radius-', d['radius']['tokens'])
 size = {t['name']: num(t['value']) for t in d['size']['tokens'] if num(t['value']) is not None}
 
+def camel(name):
+    return re.sub(r'-([a-z])', lambda m: m.group(1).upper(), name)
+
+
+# React Native (new architecture) takes CSS box-shadow strings; None = no shadow.
+shadow_light, shadow_dark = {}, {}
+for t in d.get('shadow', {}).get('tokens', []):
+    key = camel(t['name'][len('shadow-'):] if t['name'].startswith('shadow-') else t['name'])
+    shadow_light[key] = None if t['value']['light'] == 'none' else t['value']['light']
+    shadow_dark[key] = None if t['value']['dark'] == 'none' else t['value']['dark']
+
 FONT = {('serif', 600): 'SourceSerif4_600SemiBold', ('sans', 400): 'Inter_400Regular',
         ('sans', 500): 'Inter_500Medium', ('sans', 600): 'Inter_600SemiBold'}
 type_styles = {}
@@ -83,7 +96,7 @@ def ts(obj, indent=2):
         if isinstance(v, dict):
             lines.append(f'{pad}{key}: {ts(v, indent + 2)},')
         else:
-            lines.append(f'{pad}{key}: {json.dumps(v)},')
+            lines.append(f'{pad}{key}: {"undefined" if v is None else json.dumps(v)},')
     lines.append(' ' * (indent - 2) + '}')
     return '\n'.join(lines)
 
@@ -112,9 +125,27 @@ export const size = {ts(size)} as const;
 /** Type styles: spread into a Text style, e.g. {{...type.headline}}. */
 export const type = {ts(type_styles)} as const;
 
+/** CSS box-shadow strings per theme; undefined means no shadow (dark cards use a hairline instead). */
+export const lightShadows: Record<ShadowName, string | undefined> = {ts(shadow_light)};
+export const darkShadows: Record<ShadowName, string | undefined> = {ts(shadow_dark)};
+
 export type ColorName = keyof typeof lightColors;
 export type TypeStyle = keyof typeof type;
+export type SizeName = keyof typeof size;
+export type ShadowName = {' | '.join(json.dumps(k) for k in shadow_light) or 'never'};
 '''
-os.makedirs(os.path.dirname(OUT), exist_ok=True)
-open(OUT, 'w', encoding='utf-8').write(out)
-print('wrote', OUT)
+
+if '--check' in sys.argv:
+    try:
+        # newline='' keeps \r\n so a CRLF checkout can be compared after normalising.
+        current = open(OUT, encoding='utf-8', newline='').read().replace('\r\n', '\n')
+    except FileNotFoundError:
+        current = ''
+    if current != out:
+        print('src/theme/tokens.ts is out of date. Run: npm run tokens', file=sys.stderr)
+        sys.exit(1)
+    print('tokens.ts is up to date.')
+else:
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    open(OUT, 'w', encoding='utf-8', newline='\n').write(out)
+    print('wrote', OUT)

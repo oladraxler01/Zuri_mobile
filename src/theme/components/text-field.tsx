@@ -50,7 +50,7 @@ export const TextField = forwardRef<React.ComponentRef<typeof TextInput>, TextFi
         style={{
           ...type.body,
           color: colors.text,
-          minHeight: size.controlHeight,
+          minHeight: size['control-height'],
           paddingHorizontal: space[4],
           backgroundColor: colors['surface-raised'],
           borderRadius: radius.md,

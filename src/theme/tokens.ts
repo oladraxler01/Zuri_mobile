@@ -176,5 +176,19 @@ export const type = {
   },
 } as const;
 
+/** CSS box-shadow strings per theme; undefined means no shadow (dark cards use a hairline instead). */
+export const lightShadows: Record<ShadowName, string | undefined> = {
+  card: "0 1px 2px rgba(23, 35, 27, 0.06), 0 6px 16px rgba(23, 35, 27, 0.06)",
+  raised: "0 8px 24px rgba(23, 35, 27, 0.14)",
+  sheet: "0 -8px 32px rgba(23, 35, 27, 0.16)",
+};
+export const darkShadows: Record<ShadowName, string | undefined> = {
+  card: undefined,
+  raised: "0 8px 24px rgba(0, 0, 0, 0.5)",
+  sheet: "0 -8px 32px rgba(0, 0, 0, 0.6)",
+};
+
 export type ColorName = keyof typeof lightColors;
 export type TypeStyle = keyof typeof type;
+export type SizeName = keyof typeof size;
+export type ShadowName = "card" | "raised" | "sheet";

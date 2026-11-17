@@ -45,7 +45,7 @@ export function StateView({ kind, title, body, icon, actionLabel, onAction, styl
           style,
         ]}
       >
-        <Ionicons name={icon ?? 'cloud-offline-outline'} size={size.iconMd} color={colors.warning} />
+        <Ionicons name={icon ?? 'cloud-offline-outline'} size={size['icon-md']} color={colors.warning} />
         <Text variant="subhead" color="warning" style={{ flex: 1 }}>
           {body}
         </Text>
@@ -69,7 +69,7 @@ export function StateView({ kind, title, body, icon, actionLabel, onAction, styl
       >
         <Ionicons
           name={icon ?? (isError ? 'alert-circle-outline' : 'folder-open-outline')}
-          size={size.iconLg}
+          size={size['icon-lg']}
           color={isError ? colors.danger : colors['on-tint']}
         />
       </View>

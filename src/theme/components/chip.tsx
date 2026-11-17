@@ -3,7 +3,7 @@ import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme-provider';
 import { Text } from '../text';
-import type { ColorToken } from '../tokens';
+import type { ColorName } from '../tokens';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -33,12 +33,12 @@ export interface ChipProps {
 export function Chip({ label, icon, selected = false, status, onPress, role = 'checkbox', style }: ChipProps) {
   const { colors, radius, space, size } = useTheme();
 
-  let bg: ColorToken = 'surface-sunken';
-  let fg: ColorToken = 'text-muted';
+  let bg: ColorName = 'surface-sunken';
+  let fg: ColorName = 'text-muted';
   let glyph: IoniconName | undefined = icon;
 
   if (status) {
-    bg = `${status}-container` as ColorToken;
+    bg = `${status}-container` as ColorName;
     fg = status;
     glyph = icon ?? STATUS_ICON[status];
   } else if (selected) {
@@ -60,7 +60,7 @@ export function Chip({ label, icon, selected = false, status, onPress, role = 'c
 
   const content = (
     <>
-      {glyph ? <Ionicons name={glyph} size={size.iconSm} color={colors[fg]} /> : null}
+      {glyph ? <Ionicons name={glyph} size={size['icon-sm']} color={colors[fg]} /> : null}
       <Text variant="caption" color={fg} numberOfLines={1}>
         {label}
       </Text>
@@ -81,7 +81,7 @@ export function Chip({ label, icon, selected = false, status, onPress, role = 'c
       accessibilityRole={role}
       accessibilityLabel={label}
       accessibilityState={{ checked: selected }}
-      hitSlop={(size.touchTarget - CHIP_HEIGHT) / 2}
+      hitSlop={(size['touch-target'] - CHIP_HEIGHT) / 2}
       style={({ pressed }) => [chipStyle, pressed && { opacity: 0.8 }, style]}
     >
       {content}
