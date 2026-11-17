@@ -20,6 +20,7 @@ import { conceptForQuestion } from '@/utils/mastery';
 import { MATERIAL_CATEGORIES, type Material } from '@/types/material';
 import { formatLectureDate } from '@/utils/time';
 import { summariseMaterial } from '@/services/ai-api';
+import { ListenButton } from '@/components/materials/listen-button';
 import { lightColors, radius, space } from '@/theme';
 
 type Tab = 'summary' | 'concepts' | 'questions' | 'passages';
@@ -174,7 +175,17 @@ export default function MaterialScreen() {
               {tab === 'summary' && (
                 <>
                   {a.summary ? (
-                    <Text style={styles.body}>{a.summary}</Text>
+                    <>
+                      {a.source === 'server' && (
+                        <ListenButton
+                          materialId={m.id}
+                          serverId={m.serverId}
+                          savedUri={a.summaryAudioUri}
+                          onSaved={(uri) => updateMaterial(m.id, { analysis: { ...a, summaryAudioUri: uri } })}
+                        />
+                      )}
+                      <Text style={styles.body}>{a.summary}</Text>
+                    </>
                   ) : summaryBusy ? (
                     <View style={{ alignItems: 'center', paddingVertical: 24, gap: 10 }}>
                       <ActivityIndicator color={UI.ink} />

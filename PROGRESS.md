@@ -301,3 +301,8 @@ Part 2 — institution:
 - The gateway sends `X-Quota-Limit` / `X-Quota-Remaining` on every `/ai/*` answer (50 per user per UTC day). `api-client` reads them into `services/ai-quota.ts` (saved, resets at UTC midnight); a 429 "daily AI quota exceeded" now says when it resets and that notes, quizzes and flashcards still work.
 - New `components/ai-quota-note.tsx` ("37 of 50 AI requests left today", warning icon + words at ≤ 5) in Ask Zuri and the Practice tab.
 - Every AI call (chat, summary, quiz, flashcards) is recorded with `POST /analytics/ai-interactions` (tokens, latency, success, model; fire-and-forget), so `/analytics/ai-usage` reflects real use.
+
+### Listen to a summary (text-to-speech) (2026-11-17)
+- Material page → Summary → "Listen to summary": `reading.analyse` with `tts: true` returns `tts_audio_b64` (MP3 of the first ~1,000 characters). Saved to the cache (`summary-<id>.mp3`, path kept on the material as `summaryAudioUri`), so replaying is free and works offline. Play/pause with `expo-audio`; works in silent mode.
+- The server has no standalone text-to-speech yet (BACKEND_REQUESTS #16), so each first listen costs one AI request and re-generates the summary on the server.
+- New `components/materials/listen-button.tsx` (theme `Button`/`Text`).

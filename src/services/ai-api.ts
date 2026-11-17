@@ -93,6 +93,21 @@ export interface MaterialSummary {
   vocab_terms: { term: string; definition: string; context_snippet?: string }[];
 }
 
+/**
+ * The material's summary read aloud (text-to-speech). The server only speaks as
+ * part of a summary request: reading.analyse with { tts: true } →
+ * { tts_audio_b64 (MP3, first ~1,000 characters of the summary) }. One AI request.
+ */
+export async function summaryAudio(materialId: string): Promise<string> {
+  const res = await executeAI<{ tts_audio_b64?: string | null }>(
+    'reading.analyse',
+    { material_id: materialId },
+    { summary_type: 'concise', tts: true }
+  );
+  if (!res.tts_audio_b64) throw new ApiError('server', 'Zuri couldn’t make the audio right now. Please try again later.');
+  return res.tts_audio_b64;
+}
+
 /** Summary, key points and key terms of a processed material. */
 export function summariseMaterial(materialId: string): Promise<MaterialSummary> {
   return executeAI<MaterialSummary>('reading.analyse', { material_id: materialId }, { summary_type: 'concise' });

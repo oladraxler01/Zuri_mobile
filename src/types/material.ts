@@ -30,6 +30,8 @@ export interface MaterialAnalysis {
   concepts: LectureConcept[];
   questions: LectureQuestion[];
   passages: MaterialPassage[];
+  /** The summary read aloud (MP3 saved on the phone), so it plays again without another AI request. */
+  summaryAudioUri?: string;
   /** The quiz saved on the server (POST /quizzes) and its question ids, in order. */
   serverQuiz?: { id: string; questionIds: string[] };
   /** The flashcard deck saved on the server (POST /flashcard-decks). */
