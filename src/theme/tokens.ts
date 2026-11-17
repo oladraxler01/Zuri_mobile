@@ -1,0 +1,195 @@
+// GENERATED FILE. Do not edit by hand.
+// Source: .claude/skills/zuri-design-system/tokens.json (Zuri Mobile v1, synced 2026-11-16)
+// Regenerate with: node scripts/generate-tokens.mjs
+
+/** Brand primitives. Screens use the semantic colours below, not these. */
+export const brand = {
+  forest: "#17231b",
+  pine: "#2c3930",
+  paper: "#fbf9f8",
+  gold: "#e9c349",
+  "gold-deep": "#cba72f",
+  "gold-text": "#735c00",
+  mint: "#d7e6d9",
+  ink: "#1b1c1c",
+} as const;
+
+/** Semantic colours, light theme. */
+export const lightColors = {
+  surface: "#fbf9f8",
+  "surface-raised": "#ffffff",
+  "surface-sunken": "#f0eded",
+  "surface-inverse": "#17231b",
+  scrim: "rgba(23, 35, 27, 0.45)",
+  text: "#1b1c1c",
+  "text-muted": "#434844",
+  "text-subtle": "#5f6560",
+  "text-on-inverse": "#fbf9f8",
+  "text-on-inverse-muted": "#bbcabe",
+  border: "#e4e2e1",
+  "border-strong": "#737873",
+  primary: "#17231b",
+  "on-primary": "#ffffff",
+  "primary-pressed": "#2c3930",
+  accent: "#e9c349",
+  "on-accent": "#17231b",
+  "accent-text": "#735c00",
+  tint: "#d7e6d9",
+  "on-tint": "#17231b",
+  focus: "#735c00",
+  success: "#2f6b3a",
+  "success-container": "#dfeee2",
+  warning: "#8f4a00",
+  "warning-container": "#fbeedd",
+  danger: "#ba1a1a",
+  "danger-container": "#ffdad6",
+  recording: "#d92d20",
+} as const;
+
+/** Semantic colours, dark theme. */
+export const darkColors: { readonly [K in keyof typeof lightColors]: string } = {
+  surface: "#0f1712",
+  "surface-raised": "#18221b",
+  "surface-sunken": "#0a100c",
+  "surface-inverse": "#24302a",
+  scrim: "rgba(0, 0, 0, 0.6)",
+  text: "#eef1ee",
+  "text-muted": "#b9c3bc",
+  "text-subtle": "#929d95",
+  "text-on-inverse": "#eef1ee",
+  "text-on-inverse-muted": "#b9c3bc",
+  border: "#2a362e",
+  "border-strong": "#76847a",
+  primary: "#d7e6d9",
+  "on-primary": "#17231b",
+  "primary-pressed": "#bbcabe",
+  accent: "#e9c349",
+  "on-accent": "#17231b",
+  "accent-text": "#e9c349",
+  tint: "#223328",
+  "on-tint": "#d7e6d9",
+  focus: "#e9c349",
+  success: "#86c995",
+  "success-container": "#1b3122",
+  warning: "#f2ad6b",
+  "warning-container": "#3a2715",
+  danger: "#ffb4ab",
+  "danger-container": "#5a1712",
+  recording: "#ff6b5e",
+};
+
+export type ColorToken = keyof typeof lightColors;
+export type ThemeColors = { readonly [K in ColorToken]: string };
+
+/** Type styles. Use them through <Text variant>, not directly. */
+export const type = {
+  display: {
+    fontFamily: "SourceSerif4_600SemiBold",
+    fontSize: 34,
+    lineHeight: 40,
+    letterSpacing: -0.68,
+  },
+  "title-1": {
+    fontFamily: "SourceSerif4_600SemiBold",
+    fontSize: 28,
+    lineHeight: 34,
+    letterSpacing: -0.56,
+  },
+  "title-2": {
+    fontFamily: "SourceSerif4_600SemiBold",
+    fontSize: 22,
+    lineHeight: 28,
+    letterSpacing: -0.44,
+  },
+  headline: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 17,
+    lineHeight: 22,
+  },
+  body: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  callout: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 15,
+    lineHeight: 20,
+  },
+  subhead: {
+    fontFamily: "Inter_500Medium",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  footnote: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  caption: {
+    fontFamily: "Inter_500Medium",
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  eyebrow: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 1.1,
+  },
+  stat: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 32,
+    lineHeight: 36,
+    letterSpacing: -0.64,
+  },
+} as const;
+
+export type TypeVariant = keyof typeof type;
+
+/** 4-point spacing scale: space[4] is 16. */
+export const space = {
+  "1": 4,
+  "2": 8,
+  "3": 12,
+  "4": 16,
+  "5": 20,
+  "6": 24,
+  "8": 32,
+  "12": 48,
+} as const;
+
+/** The five radii. */
+export const radius = {
+  sm: 8,
+  md: 14,
+  lg: 20,
+  xl: 28,
+  full: 999,
+} as const;
+
+/** Fixed sizes (touch target, control heights, icons). */
+export const size = {
+  touchTarget: 48,
+  controlHeight: 52,
+  controlHeightSm: 36,
+  tabBarHeight: 64,
+  iconSm: 16,
+  iconMd: 20,
+  iconLg: 24,
+  recordButton: 72,
+} as const;
+
+/** CSS box-shadow strings; undefined means no shadow in that theme. */
+export const lightShadows: { readonly [K in ShadowToken]: string | undefined } = {
+  card: "0 1px 2px rgba(23, 35, 27, 0.06), 0 6px 16px rgba(23, 35, 27, 0.06)",
+  raised: "0 8px 24px rgba(23, 35, 27, 0.14)",
+  sheet: "0 -8px 32px rgba(23, 35, 27, 0.16)",
+};
+export const darkShadows: { readonly [K in ShadowToken]: string | undefined } = {
+  card: undefined,
+  raised: "0 8px 24px rgba(0, 0, 0, 0.5)",
+  sheet: "0 -8px 32px rgba(0, 0, 0, 0.6)",
+};
+
+export type ShadowToken = "card" | "raised" | "sheet";

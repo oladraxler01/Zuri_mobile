@@ -19,6 +19,7 @@ import { OfflineBanner } from '@/components/states/offline-banner';
 import { ReminderSync } from '@/components/reminder-sync';
 import { StateView } from '@/components/states/state-view';
 import { UI } from '@/constants/zuri-ui';
+import { ThemeProvider } from '@/theme';
 
 // Keep the native launch screen up until fonts and saved data are ready,
 // so the app never flashes a blank screen.
@@ -26,6 +27,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   return (
+    <ThemeProvider>
     <NetworkProvider>
       <ProgressProvider>
       <ConversationsProvider>
@@ -51,6 +53,7 @@ export default function RootLayout() {
       </ConversationsProvider>
       </ProgressProvider>
     </NetworkProvider>
+    </ThemeProvider>
   );
 }
 
