@@ -29,7 +29,7 @@ export default function NewClassmateRequestScreen() {
   const params = useLocalSearchParams<{ courseId?: string; topic?: string }>();
   const { state } = useAcademic();
   const { user } = useSession();
-  const days = useMemo(recentDays, []);
+  const days = useMemo(() => recentDays(), []);
 
   const [courseId, setCourseId] = useState(params.courseId || state.courses[0]?.id || '');
   const [kind, setKind] = useState<RequestKind>('lecture_notes');
