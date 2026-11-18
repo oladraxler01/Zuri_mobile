@@ -341,3 +341,9 @@ Part 2 — institution:
 - After a change, the phone announces it with `POST /events {event_type: "materials.changed" | "courses.changed", payload: {device_id}}` (debounced 2 s): materials after processing finishes, rename and delete; courses/classes after they're saved on the server. Other devices get `{type:"event", payload:{event_type, data}}`, ignore their own, and re-sync that area. On (re)connect every area re-syncs once.
 - Materials sync now also removes materials deleted on another device (only when the full list was fetched) and picks up renames.
 - The backend doesn't publish its own changes yet (BACKEND_REQUESTS #24).
+
+### Ask classmates: screens (2026-11-18)
+- New screens (theme components only): `classmates/index` (tabs: Classmates need · My requests · Shared with me; "Ask for notes"), `classmates/new` (course, what you need, which lecture in the last 7 days, topic, message; asks to complete department/level first), `classmates/[id]` (requester: what was shared, thank, report, "I got what I needed", close; classmate: pick one of your processed lectures or materials for that course, or show everything, then share with an optional message).
+- `components/classmates/shared-content.tsx` shows a shared lecture (summary, key points, notes, flashcards; never the recording) or a shared material (summary + "Ask Zuri about it").
+- Entry points: Home quick action "Ask classmates", course page → Lectures → "Missed a lecture? Ask classmates", Settings → Privacy & data → Classmates (take part / notify me). Tapping a `classmate_request` / `classmate_share` push opens the request.
+- The backend has no `/classmates/*` routes yet (BACKEND_REQUESTS #25): every screen shows "Coming soon: sharing with classmates isn't switched on yet" and the settings panel stays hidden. No sample data.

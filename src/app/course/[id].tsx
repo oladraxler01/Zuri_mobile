@@ -292,22 +292,33 @@ export default function CourseDetailScreen() {
             />
           ))}
 
-        {tab === 'lectures' &&
-          (courseLectures.length ? (
-            <View style={{ gap: 10 }}>
-              {courseLectures.map((l) => (
-                <LectureCard key={l.id} lecture={l} showCourse={false} />
-              ))}
-            </View>
-          ) : (
-            <EmptyState
-              compact
-              icon="mic-outline"
-              title="No lectures yet"
-              message={`Record a ${course.code} class to get its transcript, notes and questions here.`}
-              primary={{ label: 'Record a lecture', icon: 'mic', onPress: record }}
-            />
-          ))}
+        {tab === 'lectures' && (
+          <>
+            <Pressable
+              style={styles.inlineAction}
+              onPress={() => router.push({ pathname: '/classmates/new', params: { courseId: course.id } } as any)}
+              accessibilityRole="button"
+            >
+              <Ionicons name="people-outline" size={18} color={UI.ink} />
+              <Text style={styles.inlineActionText}>Missed a lecture? Ask classmates</Text>
+            </Pressable>
+            {courseLectures.length ? (
+              <View style={{ gap: 10 }}>
+                {courseLectures.map((l) => (
+                  <LectureCard key={l.id} lecture={l} showCourse={false} />
+                ))}
+              </View>
+            ) : (
+              <EmptyState
+                compact
+                icon="mic-outline"
+                title="No lectures yet"
+                message={`Record a ${course.code} class to get its transcript, notes and questions here.`}
+                primary={{ label: 'Record a lecture', icon: 'mic', onPress: record }}
+              />
+            )}
+          </>
+        )}
         {tab === 'materials' && (
           <>
             <Pressable style={styles.inlineAction} onPress={() => pickAndUploadMaterial(course.id)}>

@@ -43,6 +43,9 @@ export function ReminderSync() {
         router.push({ pathname: '/upcoming-lecture', params: { slotId: data.slotId } } as unknown as Href);
       } else if (typeof data.assessmentId === 'string') {
         router.push(`/assessment/${data.assessmentId}` as Href);
+      } else if ((data.type === 'classmate_request' || data.type === 'classmate_share') && typeof data.request_id === 'string') {
+        // Server push from "Ask classmates" (BACKEND_REQUESTS #25).
+        router.push({ pathname: '/classmates/[id]', params: { id: data.request_id } } as unknown as Href);
       }
     });
     return () => sub.remove();

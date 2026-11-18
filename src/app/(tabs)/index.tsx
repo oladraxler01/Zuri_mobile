@@ -441,6 +441,16 @@ export default function AcademicHomeScreen() {
                 <Text style={styles.quickActionTitle}>Ask about your notes</Text>
               </Pressable>
 
+              <Pressable
+                style={styles.quickActionCard}
+                onPress={() => router.push('/classmates' as Href)}
+                accessibilityRole="button"
+                accessibilityLabel="Ask classmates for notes"
+              >
+                <Ionicons name="people-outline" size={20} color={colors.text} />
+                <Text style={styles.quickActionTitle}>Ask classmates</Text>
+              </Pressable>
+
               <Pressable style={styles.quickActionCard} onPress={() => router.push('/materials' as Href)}>
                 <Ionicons name="folder-open-outline" size={20} color={colors.text} />
                 <Text style={styles.quickActionTitle}>Materials</Text>

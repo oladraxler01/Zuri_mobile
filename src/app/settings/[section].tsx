@@ -24,6 +24,7 @@ import { getNotificationPermission, requestNotificationPermission, type Notifica
 import { resetAllData } from '@/utils/reset';
 import { isBackendConfigured } from '@/services/lecture-api';
 import { UniversityAccountPanel } from '@/components/account/university-panel';
+import { getClassmateSettings, saveClassmateSettings, type ClassmateSettings } from '@/services/classmates-api';
 import {
   getPreferences as getServerNotificationPrefs,
   savePreferences as saveServerNotificationPrefs,
@@ -144,6 +145,51 @@ function Notifications() {
       </Panel>
       <ServerNotificationPrefs />
     </>
+  );
+}
+
+/** "Ask classmates" privacy (GET/PUT /classmates/settings). Hidden until the server has the feature. */
+function ClassmatesPrivacy() {
+  const { user } = useSession();
+  const [s, setS] = useState<ClassmateSettings | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!user) return;
+    getClassmateSettings()
+      .then(setS)
+      .catch(() => setS(null)); // not switched on yet, or offline: nothing to show
+  }, [user]);
+
+  if (!user || !s) return null;
+
+  const set = (key: keyof ClassmateSettings, value: boolean) => {
+    const before = s;
+    setS({ ...s, [key]: value });
+    setError('');
+    saveClassmateSettings({ [key]: value }).catch((e) => {
+      setS(before);
+      setError(e instanceof Error ? e.message : 'Couldn’t save that. Please try again.');
+    });
+  };
+
+  return (
+    <Panel title="Classmates" subtitle="Who can ask you for notes, and who sees your requests">
+      <Toggle
+        title="Take part in Ask classmates"
+        desc="See requests from your department and level, and let classmates see yours (first name only)"
+        value={s.classmates_visible}
+        onChange={(v) => set('classmates_visible', v)}
+      />
+      <Divider />
+      <Toggle
+        title="Notify me about requests"
+        desc="When a classmate asks for notes you might have (at most 3 a day)"
+        value={s.notify_classmate_requests}
+        onChange={(v) => set('notify_classmate_requests', v)}
+      />
+      {!!error && <Text style={[styles.toggleDesc, { color: UI.error }]}>{error}</Text>}
+    </Panel>
   );
 }
 
@@ -331,6 +377,7 @@ function Privacy() {
 
   return (
     <>
+      <ClassmatesPrivacy />
       <Panel title="What’s stored">
         <Text style={styles.body}>
           Your profile, courses, timetable, {lectures.length} lectures, {materials.length} materials, deadlines, learning history, conversations and
