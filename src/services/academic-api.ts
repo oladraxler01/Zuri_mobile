@@ -1,4 +1,4 @@
-import { apiRequest } from '@/services/api-client';
+import { ApiError, apiRequest } from '@/services/api-client';
 
 /**
  * Academic data on the Zuri API: enrolled courses, timetable, the "today"
@@ -74,6 +74,11 @@ export interface CourseSyllabusTopic {
 
 export interface CourseDetailDTO {
   id: string;
+  /** "catalogue" (the school's) or "private" (the student's own; Phase 1). */
+  visibility?: 'catalogue' | 'private' | string;
+  /** The phone's id for a private course, echoed back. */
+  client_id?: string | null;
+  archived?: boolean;
   institution_id: string;
   department_id: string;
   code: string;
@@ -277,8 +282,14 @@ export function createTimetableSlot(payload: {
   start_time: string; // "09:00:00"
   end_time: string;
   venue: string;
-}): Promise<CourseScheduleDTO> {
-  return apiRequest<CourseScheduleDTO>('/academic/timetable/slots', { method: 'POST', body: payload });
+}, clientId?: string): Promise<CourseScheduleDTO> {
+  // Saved in the student's own timetable (works for catalogue and personal academic courses).
+  // The phone's slot id as Idempotency-Key: a retry after a lost connection doesn't add it twice.
+  return apiRequest<CourseScheduleDTO>('/academic/timetable/slots', {
+    method: 'POST',
+    body: payload,
+    ...(clientId ? { headers: { 'Idempotency-Key': `slot-${clientId}` } } : {}),
+  });
 }
 
 // ─── Today timeline ──────────────────────────────────────────────
@@ -349,6 +360,126 @@ export function ingestLectureTranscript(
     `/academic/courses/${enc(courseIdOrCode)}/lectures/${enc(lectureId)}/ingest`,
     { method: 'POST', body: payload, timeoutMs: AI_TIMEOUT_MS }
   );
+}
+
+// ─── Phase 1 (flag "onboarding_v1"): personal courses, own classes, profile ───
+
+/**
+ * POST /academic/courses { code, title, level?, credit_units?, client_id } → 201 CourseDetailDTO.
+ * The course lives in the academic service, so its classes, reminders and prep work like a
+ * catalogue course. 409 "catalogue_course_exists" returns the school's course to enrol in
+ * instead; 409 "duplicate_personal_course" returns the existing id. Both are resolved here.
+ * Idempotency-Key = the phone's course id, so a retry never creates two.
+ */
+export async function createAcademicCourse(input: {
+  code?: string;
+  title: string;
+  level?: number;
+  credit_units?: number;
+  client_id: string;
+}): Promise<{ course: CourseDetailDTO; catalogue: boolean }> {
+  try {
+    const course = await apiRequest<CourseDetailDTO>('/academic/courses', {
+      method: 'POST',
+      body: input,
+      headers: { 'Idempotency-Key': `course-${input.client_id}` },
+    });
+    return { course, catalogue: false };
+  } catch (e) {
+    const detail = e instanceof ApiError ? (e.body as any)?.detail : undefined;
+    if (detail?.code === 'catalogue_course_exists' && detail.catalogue_course) {
+      return { course: detail.catalogue_course as CourseDetailDTO, catalogue: true };
+    }
+    if (detail?.code === 'duplicate_personal_course' && detail.existing_course_id) {
+      return { course: await getCourseDetail(detail.existing_course_id), catalogue: false };
+    }
+    throw e;
+  }
+}
+
+/** DELETE /academic/courses/:id → archives a personal course (restore with POST …/restore). */
+export async function archiveAcademicCourse(id: string): Promise<void> {
+  await apiRequest(`/academic/courses/${enc(id)}`, { method: 'DELETE' });
+}
+
+/** DELETE /academic/timetable/slots/:id → removes one of the student's own classes (204). */
+export async function deleteTimetableSlot(id: string): Promise<void> {
+  try {
+    await apiRequest(`/academic/timetable/slots/${enc(id)}`, { method: 'DELETE' });
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 404) return; // already gone
+    throw e;
+  }
+}
+
+export interface AcademicProfileDTO {
+  user_id: string;
+  institution_id?: string | null;
+  level?: number | null;
+  semester?: string | null;
+  timezone: string;
+  reminder_lead_minutes: number;
+  onboarding_completed_at?: string | null;
+  updated_at?: string | null;
+}
+
+/** GET /academic/profile */
+export function getAcademicProfile(): Promise<AcademicProfileDTO> {
+  return apiRequest<AcademicProfileDTO>('/academic/profile');
+}
+
+/** PUT /academic/profile: sends only the fields given (level 100–900, semester, timezone, reminder lead…). */
+export function saveAcademicProfile(patch: {
+  level?: number;
+  semester?: string;
+  timezone?: string;
+  reminder_lead_minutes?: number;
+  institution_id?: string;
+}): Promise<AcademicProfileDTO> {
+  return apiRequest<AcademicProfileDTO>('/academic/profile', { method: 'PUT', body: patch });
+}
+
+// ─── Phase 2 (flag "proactive_worker"): one-off timetable changes ───
+
+export interface TimetableExceptionDTO {
+  id: string;
+  course_id: string;
+  slot_id?: string | null;
+  kind: 'cancelled' | 'moved' | 'extra';
+  date: string;
+  new_date?: string | null;
+  new_start_time?: string | null;
+  new_end_time?: string | null;
+  new_venue?: string | null;
+  note?: string | null;
+}
+
+/**
+ * POST /academic/timetable/exceptions: one class meeting is cancelled, moved, or an extra class is added.
+ * The server's reminders and "next class" follow it, and it sends one follow-up if a reminded class changes.
+ */
+export function createTimetableException(input: {
+  kind: 'cancelled' | 'moved' | 'extra';
+  date: string;
+  slot_id?: string;
+  course_id?: string;
+  new_date?: string;
+  new_start_time?: string;
+  new_end_time?: string;
+  new_venue?: string;
+  note?: string;
+}): Promise<TimetableExceptionDTO> {
+  return apiRequest<TimetableExceptionDTO>('/academic/timetable/exceptions', { method: 'POST', body: input });
+}
+
+/** GET /academic/timetable/exceptions */
+export function listTimetableExceptions(): Promise<TimetableExceptionDTO[]> {
+  return apiRequest<TimetableExceptionDTO[]>('/academic/timetable/exceptions');
+}
+
+/** DELETE /academic/timetable/exceptions/:id (undo) */
+export async function deleteTimetableException(id: string): Promise<void> {
+  await apiRequest(`/academic/timetable/exceptions/${enc(id)}`, { method: 'DELETE' });
 }
 
 // ─── Lecturer: where the class is struggling ─────────────────────

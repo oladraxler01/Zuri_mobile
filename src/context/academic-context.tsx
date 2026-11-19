@@ -4,6 +4,8 @@ import { onReset } from '@/utils/reset';
 import { isBackendConfigured } from '@/services/api-config';
 import { ApiError, currentUser, loadAuth, onAuthChange } from '@/services/api-client';
 import { announceChange, onRemoteChange } from '@/services/device-sync';
+import { isOn, loadFlags } from '@/services/feature-flags';
+import { archiveAcademicCourse, createAcademicCourse, deleteTimetableSlot } from '@/services/academic-api';
 import {
   actOnIntervention,
   createPersonalCourse,
@@ -47,6 +49,13 @@ export interface CourseItem {
    * false: the student's own course; its classes stay on the phone.
    */
   catalogue?: boolean;
+  /**
+   * true: saved in the academic service (catalogue enrolment, or a private course
+   * when the "onboarding_v1" flag is on), so its classes are saved on the server too.
+   */
+  onAcademic?: boolean;
+  /** Set once the move into the academic service has been tried (so it isn't retried every sync). */
+  academicTried?: boolean;
   /** From the server's course catalogue, when it has them. */
   syllabus?: CourseSyllabusTopic[];
   lectures?: LectureDTO[];
@@ -327,16 +336,30 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     let patch: Partial<CourseItem>;
     try {
       const d = await enrollCourse(course.code, semesterCode(stateRef.current.semester));
-      patch = { serverId: d.id, catalogue: true, syllabus: d.syllabus, lectures: d.lectures, events: d.events };
+      patch = { serverId: d.id, catalogue: true, onAcademic: true, syllabus: d.syllabus, lectures: d.lectures, events: d.events };
     } catch (e) {
       if (e instanceof ApiError && e.kind !== 'server') throw e; // offline / signed out: try later
-      // Not in the institution's catalogue: save it as the student's own course.
-      const created = await createPersonalCourse({
-        name: course.title,
-        code: course.code,
-        description: course.lecturer ? `Lecturer: ${course.lecturer}` : undefined,
-      });
-      patch = { serverId: created.id, catalogue: false };
+      await loadFlags();
+      if (isOn('onboarding_v1')) {
+        // Phase 1: a private course in the academic service, so its classes, reminders and prep work too.
+        const level = parseInt(stateRef.current.level, 10);
+        const { course: d, catalogue } = await createAcademicCourse({
+          code: course.code,
+          title: course.title,
+          credit_units: course.units || undefined,
+          ...(Number.isFinite(level) ? { level } : {}),
+          client_id: course.id,
+        });
+        patch = { serverId: d.id, catalogue, onAcademic: true, syllabus: d.syllabus ?? undefined };
+      } else {
+        // Not in the institution's catalogue: save it as the student's own course (content service).
+        const created = await createPersonalCourse({
+          name: course.title,
+          code: course.code,
+          description: course.lecturer ? `Lecturer: ${course.lecturer}` : undefined,
+        });
+        patch = { serverId: created.id, catalogue: false, onAcademic: false };
+      }
     }
     setState((prev) => ({
       ...prev,
@@ -351,7 +374,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
       start_time: to24h(slot.startTime),
       end_time: to24h(slot.endTime),
       venue: slot.venue,
-    });
+    }, slot.id);
     setState((prev) => ({
       ...prev,
       timetable: prev.timetable.map((t) => (t.id === slot.id ? { ...t, serverId: created.id, pendingSync: false } : t)),
@@ -383,7 +406,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     for (const slot of stateRef.current.timetable.filter((t) => t.pendingSync)) {
       const course = stateRef.current.courses.find((c) => c.id === slot.courseId);
       if (!course?.serverId) continue; // course not saved yet: try again after it is
-      if (!course.catalogue) {
+      if (!course.catalogue && !course.onAcademic) {
         keepLocal('timetable', slot.id);
         continue;
       }
@@ -439,6 +462,25 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     syncing.current = true;
     setSync((s) => ({ ...s, status: 'syncing', error: undefined }));
     try {
+      // Phase 1 just switched on: move the student's own courses (saved earlier in the
+      // content service, classes kept on the phone) into the academic service, once.
+      await loadFlags();
+      if (isOn('onboarding_v1')) {
+        const prev = stateRef.current;
+        const upgrade = new Set(
+          prev.courses.filter((c) => c.serverId && !c.catalogue && !c.onAcademic && !c.pendingSync && !c.academicTried).map((c) => c.id)
+        );
+        if (upgrade.size) {
+          const next: StudentAcademicState = {
+            ...prev,
+            courses: prev.courses.map((c) => (upgrade.has(c.id) ? { ...c, pendingSync: true, academicTried: true } : c)),
+            timetable: prev.timetable.map((t) => (upgrade.has(t.courseId) && !t.serverId ? { ...t, pendingSync: true } : t)),
+          };
+          stateRef.current = next; // schedulePush reads the ref straight away
+          setState(next);
+        }
+      }
+
       await schedulePush();
 
       const [enrolled, personal, slots, next, today, stats] = await Promise.allSettled([
@@ -454,19 +496,22 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
       if (failure && results.every((r) => r.status === 'rejected')) throw failure.reason;
 
       const hidden = new Set(stateRef.current.hiddenServerIds ?? []);
-      type ServerCourse = Omit<CourseItem, 'id' | 'color'> & { serverId: string };
+      type ServerCourse = Omit<CourseItem, 'id' | 'color'> & { serverId: string; clientId?: string };
       const serverCourses: ServerCourse[] = [];
       const seen = new Set<string>();
       if (enrolled.status === 'fulfilled') {
         for (const c of enrolled.value ?? []) {
-          if (hidden.has(c.id) || seen.has(normCode(c.code))) continue;
-          seen.add(normCode(c.code));
+          if (c.archived || hidden.has(c.id) || seen.has(normCode(c.code || c.title))) continue;
+          seen.add(normCode(c.code || c.title));
           serverCourses.push({
             serverId: c.id,
-            code: c.code,
+            clientId: c.client_id ?? undefined,
+            code: c.code || c.title,
             title: c.title,
             units: c.credit_units || 3,
-            catalogue: true,
+            // Phase 1 private courses come back here too; only "catalogue" ones are the school's.
+            catalogue: (c.visibility ?? 'catalogue') === 'catalogue',
+            onAcademic: true,
             syllabus: c.syllabus,
             lectures: c.lectures,
             events: c.events,
@@ -484,6 +529,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
             title: c.name,
             units: c.credit_units || 3,
             catalogue: false,
+            onAcademic: false,
             lecturer: c.description?.replace(/^Lecturer:\s*/, '') || undefined,
           });
         }
@@ -496,8 +542,9 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
 
         // Keep each course's id on the phone (lectures, materials… point at it).
         const localByCode = new Map(prev.courses.map((c) => [normCode(c.code), c]));
-        const merged: CourseItem[] = serverCourses.map((s, i) => {
-          const local = localByCode.get(normCode(s.code));
+        const localById = new Map(prev.courses.map((c) => [c.id, c]));
+        const merged: CourseItem[] = serverCourses.map(({ clientId, ...s }, i) => {
+          const local = (clientId && localById.get(clientId)) || localByCode.get(normCode(s.code));
           return local
             ? { ...local, ...s, lecturer: s.lecturer ?? local.lecturer, pendingSync: false }
             : { ...s, id: s.serverId, color: COURSE_COLORS[i % COURSE_COLORS.length] };
@@ -644,6 +691,14 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeCourse = (id: string) => {
+    const course = stateRef.current.courses.find((c) => c.id === id);
+    if (course?.serverId && course.onAcademic && !course.catalogue && signedIn()) {
+      // A private academic course: archive it on the server (it can be restored there).
+      loadFlags()
+        .then(() => (isOn('onboarding_v1') ? archiveAcademicCourse(course.serverId!) : undefined))
+        .then(() => announceChange('courses'))
+        .catch((e) => console.warn(`Could not remove ${course.code} on the server`, e));
+    }
     setState((prev) => ({
       ...prev,
       hiddenServerIds: hide(prev, [
@@ -668,6 +723,13 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeTimetableSlot = (id: string) => {
+    const slot = stateRef.current.timetable.find((t) => t.id === id);
+    if (slot?.serverId && signedIn()) {
+      loadFlags()
+        .then(() => (isOn('onboarding_v1') ? deleteTimetableSlot(slot.serverId!) : undefined))
+        .then(() => announceChange('courses'))
+        .catch((e) => console.warn('Could not remove the class on the server', e));
+    }
     setState((prev) => ({
       ...prev,
       hiddenServerIds: hide(prev, prev.timetable.filter((t) => t.id === id)),

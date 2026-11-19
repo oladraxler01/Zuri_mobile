@@ -6,6 +6,8 @@ import { useSession } from '@/context/session-context';
 import { useAcademic } from '@/context/academic-context';
 import { usePlanner } from '@/context/planner-context';
 import { notificationsSupported, syncLectureReminders } from '@/services/notifications';
+import { useFlag } from '@/services/feature-flags';
+import { saveAcademicProfile } from '@/services/academic-api';
 
 /**
  * Keeps lecture reminders in step with the timetable and preferences,
@@ -16,6 +18,15 @@ export function ReminderSync() {
   const { state, hydrated } = useAcademic();
   const { lectureReminders, reminderLeadMinutes, assignmentAlerts, examCountdown } = state.preferences;
   const { assessments, hydrated: plannerReady } = usePlanner();
+  // Phase 2: Zuri's server sends class reminders (at the profile's lead time, honouring
+  // quiet hours, cancellations and moves). Then the phone mustn't schedule its own too.
+  const serverReminders = useFlag('proactive_worker');
+
+  // Keep the server's reminder lead time in step with the app setting.
+  useEffect(() => {
+    if (!serverReminders || !hydrated) return;
+    saveAcademicProfile({ reminder_lead_minutes: lectureReminders ? reminderLeadMinutes : 0 }).catch(() => {});
+  }, [serverReminders, hydrated, lectureReminders, reminderLeadMinutes]);
 
   useEffect(() => {
     if (!hydrated || !plannerReady || !notificationsSupported) return;
@@ -23,7 +34,7 @@ export function ReminderSync() {
     // Wait for a pause so rapid edits (ticking steps) reschedule once.
     const timer = setTimeout(() => {
     syncLectureReminders({
-      enabled: student && lectureReminders,
+      enabled: student && lectureReminders && !serverReminders,
       leadMinutes: reminderLeadMinutes,
       timetable: state.timetable,
       courses: state.courses,
@@ -33,7 +44,7 @@ export function ReminderSync() {
     }).catch((e) => console.warn('Reminder sync failed', e));
     }, 800);
     return () => clearTimeout(timer);
-  }, [hydrated, plannerReady, role, lectureReminders, reminderLeadMinutes, assignmentAlerts, examCountdown, state.timetable, state.courses, assessments]);
+  }, [hydrated, plannerReady, role, lectureReminders, reminderLeadMinutes, assignmentAlerts, examCountdown, state.timetable, state.courses, assessments, serverReminders]);
 
   useEffect(() => {
     if (!notificationsSupported) return;

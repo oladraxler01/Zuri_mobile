@@ -11,6 +11,8 @@ import { FACULTY_OPTIONS } from '@/constants/course-catalogue';
 import { looksLikeMatric } from '@/utils/validation';
 import { useSession } from '@/context/session-context';
 import { updateProfile } from '@/services/auth-api';
+import { isOn, loadFlags } from '@/services/feature-flags';
+import { saveAcademicProfile } from '@/services/academic-api';
 import { lightColors, radius, space } from '@/theme';
 
 const LEVELS = ['100L', '200L', '300L', '400L', '500L'];
@@ -58,6 +60,16 @@ export default function AcademicProfileScreen() {
           academic_level: level,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         });
+        // Phase 1: the academic profile drives reminders, prep and classmates (level as a number, e.g. 300).
+        await loadFlags();
+        if (isOn('onboarding_v1')) {
+          const lvl = parseInt(level, 10);
+          await saveAcademicProfile({
+            ...(Number.isFinite(lvl) ? { level: lvl } : {}),
+            semester,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          });
+        }
       } catch (e) {
         setSaving(false);
         return setError(

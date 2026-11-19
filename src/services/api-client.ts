@@ -213,12 +213,14 @@ export async function requireAccessToken(): Promise<string> {
 // ─── Requests ────────────────────────────────────────────────────
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   query?: Record<string, string | undefined>;
   /** Send the access token (default true). */
   auth?: boolean;
   timeoutMs?: number;
+  /** Extra headers, e.g. { 'Idempotency-Key': localId } so a retried create never duplicates. */
+  headers?: Record<string, string>;
 }
 
 interface RawResult {
@@ -240,7 +242,7 @@ function buildUrl(path: string, query?: RequestOptions['query']): string {
 async function rawFetch(path: string, opts: RequestOptions, token?: string | null): Promise<RawResult> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 20_000);
-  const headers: Record<string, string> = { Accept: 'application/json', 'X-Client-Type': 'mobile' };
+  const headers: Record<string, string> = { Accept: 'application/json', 'X-Client-Type': 'mobile', ...opts.headers };
   if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
   if (token) headers.Authorization = `Bearer ${token}`;
   try {

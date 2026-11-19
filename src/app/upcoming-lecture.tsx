@@ -8,6 +8,7 @@ import { ZuriFonts } from '@/constants/zuri-theme';
 import { UI } from '@/constants/zuri-ui';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic } from '@/context/academic-context';
+import { ClassChangeCard } from '@/components/academic/class-change';
 import { useLectures } from '@/context/lectures-context';
 import { describeStart, nextOccurrence, upcomingClasses } from '@/utils/time';
 import { lectureTitle } from '@/components/lecture/lecture-card';
@@ -85,6 +86,9 @@ export default function UpcomingLectureScreen() {
             {course?.lecturer && <Fact icon="person-outline" text={course.lecturer} />}
           </View>
         </View>
+
+        {/* Cancelled / moved this week (server reminders follow it) */}
+        <ClassChangeCard slot={slot} course={course} date={occ.start} />
 
         {/* Preparation */}
         <Text style={styles.sectionLabel}>PREPARE IN 5 MINUTES</Text>
