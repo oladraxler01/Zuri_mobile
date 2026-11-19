@@ -13,7 +13,7 @@ import { useSession } from '@/context/session-context';
 import { updateProfile } from '@/services/auth-api';
 import { isOn, loadFlags } from '@/services/feature-flags';
 import { saveAcademicProfile } from '@/services/academic-api';
-import { lightColors, radius, space } from '@/theme';
+import { lightColors } from '@/theme';
 
 const LEVELS = ['100L', '200L', '300L', '400L', '500L'];
 
