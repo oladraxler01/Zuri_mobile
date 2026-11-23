@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE } from '@/services/api-config';
-import { onReset } from '@/utils/reset';
+import { onReset, resetKeepsSignIn } from '@/utils/reset';
 import { noteQuotaExhausted, noteQuotaHeaders, QUOTA_EXHAUSTED_MESSAGE } from '@/services/ai-quota';
 import { fetch as expoFetch } from 'expo/fetch';
 
@@ -167,7 +167,7 @@ export async function clearSession(): Promise<void> {
 
 // "Delete all my data" also signs out on this device.
 onReset(() => {
-  clearSession();
+  if (!resetKeepsSignIn()) clearSession();
 });
 
 let refreshing: Promise<boolean> | null = null;

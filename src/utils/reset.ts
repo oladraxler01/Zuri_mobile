@@ -19,8 +19,19 @@ export function onReset(fn: Listener): () => void {
   };
 }
 
-export async function resetAllData(): Promise<void> {
-  listeners.forEach((fn) => fn());
+let keepingSignIn = false;
+/** True while a reset that must not sign the user out is running (account switch). */
+export function resetKeepsSignIn(): boolean {
+  return keepingSignIn;
+}
+
+export async function resetAllData(opts: { keepSignIn?: boolean } = {}): Promise<void> {
+  keepingSignIn = !!opts.keepSignIn;
+  try {
+    listeners.forEach((fn) => fn());
+  } finally {
+    keepingSignIn = false;
+  }
   // Let stores re-render with empty state before wiping storage.
   await new Promise((r) => setTimeout(r, 50));
   const keys = (await AsyncStorage.getAllKeys()).filter((k) => k.startsWith('lexi.'));

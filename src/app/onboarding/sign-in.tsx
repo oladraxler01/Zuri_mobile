@@ -64,7 +64,7 @@ export default function SignInScreen() {
         return;
       }
       // Profile is kept on the phone: returning users go home, new phones finish setup.
-      router.replace((role ? ROLE_HOME[role] : '/onboarding/institution') as Href);
+      router.replace((role && !result.freshStart ? ROLE_HOME[role] : '/onboarding/institution') as Href);
     } catch (e) {
       setFormError(e instanceof Error ? e.message : 'We couldn’t sign you in. Please try again.');
     } finally {

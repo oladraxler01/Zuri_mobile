@@ -1,3 +1,4 @@
+import { claimLocalData } from '@/utils/account-owner';
 import {
   ApiError,
   apiRequest,
@@ -104,7 +105,7 @@ export async function resendVerification(email: string): Promise<void> {
   }
 }
 
-export type LoginResult = { status: 'signed-in'; user: AuthUser } | { status: 'needs-verification'; userId: string };
+export type LoginResult = { status: 'signed-in'; user: AuthUser; /** this phone held another account's data, now cleared */ freshStart: boolean } | { status: 'needs-verification'; userId: string };
 
 export async function login(email: string, password: string): Promise<LoginResult> {
   try {
@@ -114,7 +115,8 @@ export async function login(email: string, password: string): Promise<LoginResul
       body: { email, password },
     });
     const user = await saveSession(json.data);
-    return { status: 'signed-in', user };
+    const freshStart = await claimLocalData(user.id).catch(() => false);
+    return { status: 'signed-in', user, freshStart };
   } catch (e) {
     if (e instanceof ApiError && e.code === 'EMAIL_NOT_VERIFIED') {
       return { status: 'needs-verification', userId: String(e.body?.user_id ?? '') };

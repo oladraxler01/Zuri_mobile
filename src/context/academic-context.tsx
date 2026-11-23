@@ -187,10 +187,9 @@ interface AcademicContextType {
 
 /**
  * The demo courses and timetable that earlier versions showed every new student.
- * New installs start empty (courses come from onboarding or the server). These
- * are kept only so that saved demo entries from older installs aren't uploaded
- * to the server as the student's own (see the load step below). They're not
- * deleted automatically: a student may have kept one as a real course.
+ * New installs start empty (courses come from onboarding or the server). Saved
+ * copies from older installs are removed on load (see the load step below),
+ * unless the student saved one to the server as a real course.
  */
 const DEFAULT_COURSES: CourseItem[] = [
   { id: '1', code: 'CSC 201', title: 'Data Structures & Algorithms', units: 3 },
@@ -206,6 +205,9 @@ const DEFAULT_TIMETABLE: TimetableSlot[] = [
   { id: 's4', courseId: '1', courseCode: 'CSC 201', day: 'Thu', startTime: '02:00 PM', endTime: '04:00 PM', venue: 'Faculty Lab 2' },
   { id: 's5', courseId: '4', courseCode: 'GET 203', day: 'Fri', startTime: '08:00 AM', endTime: '10:00 AM', venue: 'Engineering Hall 3' },
 ];
+
+const isDemoCourse = (c: CourseItem) => DEFAULT_COURSES.some((d) => d.id === c.id && d.code === c.code);
+const isDemoSlot = (t: TimetableSlot) => DEFAULT_TIMETABLE.some((d) => d.id === t.id && d.courseCode === t.courseCode);
 
 const initialState: StudentAcademicState = {
   studentName: '',
@@ -306,18 +308,16 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     loadJSON<StudentAcademicState>(STORAGE_KEYS.academic).then((saved) => {
       if (saved) {
         // Courses and classes saved before server sync existed are uploaded too
-        // (but not the built-in sample ones).
-        const sampleCourse = new Set(DEFAULT_COURSES.map((c) => c.id));
-        const sampleSlot = new Set(DEFAULT_TIMETABLE.map((t) => t.id));
+        // (the built-in demo ones from older versions are dropped).
         setState({
           ...initialState,
           ...saved,
-          courses: (saved.courses ?? initialState.courses).map((c) =>
-            c.serverId || c.pendingSync !== undefined || sampleCourse.has(c.id) ? c : { ...c, pendingSync: true }
-          ),
-          timetable: (saved.timetable ?? initialState.timetable).map((t) =>
-            t.serverId || t.pendingSync !== undefined || sampleSlot.has(t.id) ? t : { ...t, pendingSync: true }
-          ),
+          courses: (saved.courses ?? initialState.courses)
+            .filter((c) => c.serverId || !isDemoCourse(c))
+            .map((c) => (c.serverId || c.pendingSync !== undefined ? c : { ...c, pendingSync: true })),
+          timetable: (saved.timetable ?? initialState.timetable)
+            .filter((t) => t.serverId || !isDemoSlot(t))
+            .map((t) => (t.serverId || t.pendingSync !== undefined ? t : { ...t, pendingSync: true })),
           preferences: { ...initialState.preferences, ...saved.preferences },
         });
       }

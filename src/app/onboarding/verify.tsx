@@ -152,7 +152,7 @@ export default function VerifyEmailScreen() {
       const result = await login(pending.email, pending.password);
       if (result.status !== 'signed-in') throw new Error('not-signed-in');
       setPendingSignIn(null);
-      router.replace((role ? ROLE_HOME[role] : '/onboarding/institution') as Href);
+      router.replace((role && !result.freshStart ? ROLE_HOME[role] : '/onboarding/institution') as Href);
     } catch {
       Alert.alert('Email verified', 'Your email is confirmed. Please sign in to continue.');
       router.replace('/onboarding/sign-in' as Href);

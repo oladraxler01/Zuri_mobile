@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
+import { startFreshForNewAccount } from '@/utils/account-owner';
 import { useAcademic } from '@/context/academic-context';
 import { register, login, resendVerification, setPendingSignIn, MIN_PASSWORD_LENGTH } from '@/services/auth-api';
 import { isValidEmail } from '@/utils/validation';
@@ -61,11 +62,13 @@ export default function SignUpScreen() {
       return;
     }
     setFormError('');
-    setAcademicInfo({ studentName: fullName.trim(), email: cleanEmail });
 
     setBusy(true);
     try {
       const user = await register(cleanEmail, password);
+      // A new account starts clean: nothing saved on this phone is theirs.
+      await startFreshForNewAccount();
+      setAcademicInfo({ studentName: fullName.trim(), email: cleanEmail });
       setPendingSignIn({ email: cleanEmail, password, userId: user.id });
       router.push({ pathname: '/onboarding/verify', params: { email: cleanEmail, userId: user.id } } as any);
     } catch (e) {
@@ -80,6 +83,7 @@ export default function SignUpScreen() {
             await resendVerification(cleanEmail).catch(() => {});
             router.push({ pathname: '/onboarding/verify', params: { email: cleanEmail, userId: result.userId } } as any);
           } else {
+            setAcademicInfo({ studentName: fullName.trim(), email: cleanEmail });
             router.replace('/onboarding/institution' as Href);
           }
           return;

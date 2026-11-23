@@ -31,72 +31,8 @@ export function defaultSteps(kind: AssessmentKind): PrepStep[] {
   return DEFAULT_STEPS[kind].map((text, i) => ({ id: `s${i}_${Date.now().toString(36)}`, text, done: false }));
 }
 
-/** Sample entries for a first launch, dated relative to today. */
-function seedAssessments(): Assessment[] {
-  const at = (days: number, hour: number) => {
-    const d = new Date();
-    d.setDate(d.getDate() + days);
-    d.setHours(hour, 0, 0, 0);
-    return d.toISOString();
-  };
-  const now = new Date().toISOString();
-  return [
-    {
-      id: 'a_seed1',
-      kind: 'assignment',
-      courseId: '1',
-      courseCode: 'CSC 201',
-      title: 'Linked list implementation',
-      dueAt: at(3, 23),
-      notes: 'Implement insert, delete and reverse for a singly linked list. Submit on the portal.',
-      weight: 10,
-      status: 'todo',
-      steps: defaultSteps('assignment'),
-      createdAt: now,
-    },
-    {
-      id: 'a_seed2',
-      kind: 'test',
-      courseId: '3',
-      courseCode: 'MTH 201',
-      title: 'Matrices and determinants test',
-      dueAt: at(6, 10),
-      venue: 'Auditorium 1',
-      weight: 15,
-      status: 'todo',
-      steps: defaultSteps('test'),
-      createdAt: now,
-    },
-    {
-      id: 'a_seed3',
-      kind: 'exam',
-      courseId: '2',
-      courseCode: 'CSC 205',
-      title: 'Mid-semester exam',
-      dueAt: at(12, 9),
-      venue: 'LT B',
-      weight: 30,
-      status: 'todo',
-      steps: defaultSteps('exam'),
-      createdAt: now,
-    },
-  ];
-}
-
-/** Sample academic calendar; replaced by the university's calendar from the backend. */
-function seedCalendar(): CalendarEvent[] {
-  const day = (offset: number) => {
-    const d = new Date();
-    d.setDate(d.getDate() + offset);
-    return localDateKey(d);
-  };
-  return [
-    { id: 'c1', title: 'Semester began', date: day(-42), kind: 'semester' },
-    { id: 'c2', title: 'Mid-semester break', date: day(18), endDate: day(22), kind: 'holiday' },
-    { id: 'c3', title: 'Examination period', date: day(56), endDate: day(70), kind: 'exams' },
-    { id: 'c4', title: 'Semester ends', date: day(72), kind: 'semester' },
-  ];
-}
+/** Ids of the made-up calendar events earlier versions added. */
+const SEED_CALENDAR_IDS = new Set(['c1', 'c2', 'c3', 'c4']);
 
 interface PlannerState {
   assessments: Assessment[];
@@ -123,7 +59,17 @@ export function PlannerProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     loadJSON<PlannerState>(STORAGE_KEYS.planner).then((saved) => {
-      setData(saved ?? { assessments: seedAssessments(), calendar: seedCalendar() });
+      // New students start empty. Earlier versions added made-up starter items
+      // (ids a_seed*, and calendar c1-c4); remove those from older installs.
+      setData(
+        saved
+          ? {
+              ...saved,
+              assessments: (saved.assessments ?? []).filter((a) => !a.id.startsWith('a_seed')),
+              calendar: (saved.calendar ?? []).filter((c) => !SEED_CALENDAR_IDS.has(c.id)),
+            }
+          : { assessments: [], calendar: [] }
+      );
       setHydrated(true);
     });
   }, []);
