@@ -796,7 +796,7 @@ const useStyles = makeStyles((t) => ({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: t.colors['surface-raised'],
-    borderRadius: t.radius.full,
+    borderRadius: t.radius.lg,
     padding: 14,
     borderWidth: 1,
     borderColor: t.colors.border, boxShadow: t.shadows.card,},
