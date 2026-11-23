@@ -187,7 +187,7 @@ const useStyles = makeStyles((t) => ({
   heroCard: {
     width: '100%',
     aspectRatio: 4 / 3,
-    borderRadius: t.radius.full,
+    borderRadius: t.radius.lg,
     overflow: 'hidden',
     backgroundColor: 'rgba(251, 249, 248, 0.85)',
     borderWidth: 1,

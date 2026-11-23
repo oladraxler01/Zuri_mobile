@@ -620,7 +620,7 @@ const useStyles = makeStyles((t) => ({
   // Proactive Alert Banner
   proactiveAlertCard: {
     backgroundColor: t.colors['surface-raised'],
-    borderRadius: t.radius.full,
+    borderRadius: t.radius.lg,
     padding: 16,
     borderWidth: 1.5,
     borderColor: t.colors.accent,
@@ -747,7 +747,7 @@ const useStyles = makeStyles((t) => ({
   nextCard: {
     position: 'relative',
     backgroundColor: t.colors['surface-raised'],
-    borderRadius: t.radius.full,
+    borderRadius: t.radius.lg,
     padding: 18,
     borderWidth: 1,
     borderColor: t.colors.warning,

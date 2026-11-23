@@ -10,6 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardSheet } from '@/components/ui/keyboard-sheet';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -341,8 +342,7 @@ export default function StudentCoursesScreen() {
         animationType="fade"
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalSheet}>
+        <KeyboardSheet backdropStyle={styles.modalBackdrop} sheetStyle={styles.modalSheet}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add New Course</Text>
               <Pressable onPress={() => setModalVisible(false)} hitSlop={8}>
@@ -403,8 +403,7 @@ export default function StudentCoursesScreen() {
                 <Text style={styles.saveCourseBtnText}>Add to Course List</Text>
               </Pressable>
             </View>
-          </View>
-        </View>
+        </KeyboardSheet>
       </Modal>
     </SafeAreaView>
   );
@@ -669,7 +668,7 @@ const useStyles = makeStyles((t) => ({
     width: '100%',
     maxWidth: 380,
     backgroundColor: t.colors.surface,
-    borderRadius: t.radius.full,
+    borderRadius: t.radius.xl,
     padding: 20,
     borderWidth: 1,
     borderColor: t.colors.border, boxShadow: t.shadows.raised,},

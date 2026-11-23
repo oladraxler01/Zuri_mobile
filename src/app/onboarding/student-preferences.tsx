@@ -472,7 +472,7 @@ const useStyles = makeStyles((t) => ({
   },
   summaryCard: {
     backgroundColor: t.colors['surface-raised'],
-    borderRadius: t.radius.full,
+    borderRadius: t.radius.lg,
     padding: 16,
     borderWidth: 1.5,
     borderColor: t.colors.primary,
