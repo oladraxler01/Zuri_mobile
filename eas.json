@@ -10,7 +10,10 @@
       "channel": "development",
       "env": {
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EXPO_PUBLIC_DIAGNOSTICS": "1"
+        "EXPO_PUBLIC_DIAGNOSTICS": "1",
+        "EXPO_PUBLIC_API_GATEWAY_URL": "https://api.zurilearn.com",
+        "EXPO_PUBLIC_USE_LIVE_API": "true",
+        "EXPO_PUBLIC_APP_ENV": "development"
       }
     },
     "preview": {
@@ -18,14 +21,23 @@
       "channel": "preview",
       "env": {
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EXPO_PUBLIC_DIAGNOSTICS": "1"
+        "EXPO_PUBLIC_DIAGNOSTICS": "1",
+        "EXPO_PUBLIC_API_GATEWAY_URL": "https://api.zurilearn.com",
+        "EXPO_PUBLIC_USE_LIVE_API": "true",
+        "EXPO_PUBLIC_APP_ENV": "preview"
+      },
+      "android": {
+        "buildType": "apk"
       }
     },
     "production": {
       "autoIncrement": true,
       "channel": "production",
       "env": {
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EXPO_PUBLIC_API_GATEWAY_URL": "https://api.zurilearn.com",
+        "EXPO_PUBLIC_USE_LIVE_API": "true",
+        "EXPO_PUBLIC_APP_ENV": "production"
       }
     }
   },
