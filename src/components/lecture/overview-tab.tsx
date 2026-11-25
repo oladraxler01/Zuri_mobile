@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView, Modal, TextInput, StyleSheet } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Ionicons } from '@expo/vector-icons';
 import { ZuriFonts } from '@/constants/zuri-theme';
 import { UI } from '@/constants/zuri-ui';
@@ -29,7 +30,7 @@ export function OverviewTab({ lecture, canSeek, onSeek, onOpenQuiz, onCard }: Pr
 
   return (
     <>
-      <ScrollView contentContainerStyle={t.scroll} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView bottomOffset={24} keyboardShouldPersistTaps="handled" contentContainerStyle={t.scroll} showsVerticalScrollIndicator={false}>
         {a.source === 'sample' && (
           <View style={t.banner}>
             <Ionicons name="information-circle-outline" size={18} color={UI.amber} />
@@ -102,7 +103,7 @@ export function OverviewTab({ lecture, canSeek, onSeek, onOpenQuiz, onCard }: Pr
             <Text style={[t.secondaryBtnText, { color: '#7a4f12' }]}>Ask about this lecture</Text>
           </Pressable>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <ConceptSheet
         concept={concept}
@@ -116,7 +117,7 @@ export function OverviewTab({ lecture, canSeek, onSeek, onOpenQuiz, onCard }: Pr
       />
 
       {a.knowledgeGap && (
-        <Modal visible={gapOpen} transparent animationType="slide" onRequestClose={() => setGapOpen(false)}>
+        <Modal statusBarTranslucent navigationBarTranslucent visible={gapOpen} transparent animationType="slide" onRequestClose={() => setGapOpen(false)}>
           <View style={t.backdrop}>
             <View style={t.sheet}>
               <View style={t.sheetHeader}>
@@ -125,9 +126,9 @@ export function OverviewTab({ lecture, canSeek, onSeek, onOpenQuiz, onCard }: Pr
                   <Ionicons name="close" size={24} color={UI.ink} />
                 </Pressable>
               </View>
-              <ScrollView>
+              <KeyboardAwareScrollView bottomOffset={24} keyboardShouldPersistTaps="handled">
                 <Text style={t.body}>{a.knowledgeGap.explanation ?? a.knowledgeGap.reason}</Text>
-              </ScrollView>
+              </KeyboardAwareScrollView>
               <Pressable
                 style={({ pressed }) => [t.primaryBtn, { marginTop: 18 }, pressed && t.pressed]}
                 onPress={() => setGapOpen(false)}
@@ -195,7 +196,7 @@ function ConceptSheet({
 }) {
   const mentions = concept ? searchTranscript(lecture.analysis!.transcript, concept.title, 3) : [];
   return (
-    <Modal visible={!!concept} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal statusBarTranslucent navigationBarTranslucent visible={!!concept} transparent animationType="slide" onRequestClose={onClose}>
       <View style={t.backdrop}>
         <View style={t.sheet}>
           <View style={t.sheetHeader}>
@@ -204,7 +205,7 @@ function ConceptSheet({
               <Ionicons name="close" size={24} color={UI.ink} />
             </Pressable>
           </View>
-          <ScrollView>
+          <KeyboardAwareScrollView bottomOffset={24} keyboardShouldPersistTaps="handled">
             <Text style={t.body}>{concept?.summary}</Text>
             {mentions.length > 0 && (
               <>
@@ -216,7 +217,7 @@ function ConceptSheet({
                 </View>
               </>
             )}
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </View>
       </View>
     </Modal>
@@ -249,7 +250,7 @@ function FlashcardSheet({
   const last = idx === cards.length - 1;
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
+    <Modal statusBarTranslucent navigationBarTranslucent visible={visible} transparent animationType="slide" onRequestClose={close}>
       <View style={t.backdrop}>
         <View style={t.sheet}>
           <View style={t.sheetHeader}>
@@ -379,7 +380,7 @@ function AskSheet({
   const suggestions = lecture.analysis!.concepts.slice(0, 3).map((c) => `What is ${c.title.toLowerCase()}?`);
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal statusBarTranslucent navigationBarTranslucent visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={t.backdrop}>
         <View style={[t.sheet, { height: '85%' }]}>
           <View style={t.sheetHeader}>
@@ -390,7 +391,7 @@ function AskSheet({
           </View>
           <Text style={styles.askNote}>Answers come from this lecture's transcript.</Text>
 
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 10, paddingVertical: 8 }}>
+          <KeyboardAwareScrollView bottomOffset={24} keyboardShouldPersistTaps="handled" style={{ flex: 1 }} contentContainerStyle={{ gap: 10, paddingVertical: 8 }}>
             {msgs.map((m, i) => (
               <View key={i} style={[styles.bubble, m.role === 'user' ? styles.bubbleUser : styles.bubbleZuri]}>
                 <Text style={[styles.bubbleText, m.role === 'user' && { color: '#fff' }]}>{m.text}</Text>
@@ -401,7 +402,7 @@ function AskSheet({
                 ))}
               </View>
             ))}
-          </ScrollView>
+          </KeyboardAwareScrollView>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
             {suggestions.map((s) => (

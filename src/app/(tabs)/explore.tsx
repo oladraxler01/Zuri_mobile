@@ -8,6 +8,7 @@ import {
   TextInput,
   Modal,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -67,7 +68,7 @@ export default function CoursesScreen() {
         </Pressable>
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollView bottomOffset={24} keyboardShouldPersistTaps="handled"
         contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]}
         showsVerticalScrollIndicator={false}
       >
@@ -164,10 +165,10 @@ export default function CoursesScreen() {
             </Pressable>
           );
         })}
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* Add Course Modal */}
-      <Modal visible={isAddModalOpen} animationType="slide" transparent>
+      <Modal statusBarTranslucent navigationBarTranslucent visible={isAddModalOpen} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <View style={styles.modalHeader}>

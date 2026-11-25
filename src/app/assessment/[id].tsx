@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet, StatusBar, TextInput } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -98,7 +99,7 @@ export default function AssessmentScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView bottomOffset={24} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.hero}>
           <Text style={styles.heroEyebrow}>
@@ -247,7 +248,7 @@ export default function AssessmentScreen() {
           <Ionicons name="chatbubble-ellipses-outline" size={18} color="#7a4f12" />
           <Text style={styles.askText}>Ask about this {meta.label.toLowerCase()}</Text>
         </Pressable>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <ConfirmSheet
         visible={confirmDelete}

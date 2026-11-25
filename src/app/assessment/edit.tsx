@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, StatusBar, Platform } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -79,8 +80,8 @@ export default function EditAssessmentScreen() {
         </Pressable>
       </View>
 
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <View style={{ flex: 1 }}>
+        <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <Text style={styles.label}>TYPE</Text>
           <View style={styles.wrap}>
             {ASSESSMENT_KINDS.map((k) => (
@@ -152,8 +153,8 @@ export default function EditAssessmentScreen() {
           {!existing && (
             <Text style={styles.hint}>A preparation checklist and study sessions are added automatically. You can edit both later.</Text>
           )}
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+      </View>
     </SafeAreaView>
   );
 }

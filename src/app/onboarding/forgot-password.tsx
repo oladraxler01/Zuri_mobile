@@ -1,16 +1,6 @@
 import { useMemo, useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  Pressable,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  StatusBar,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, TextInput, StyleSheet, Pressable, ScrollView, Platform, StatusBar, ActivityIndicator } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -86,8 +76,8 @@ export default function ForgotPasswordScreen() {
         <View style={{ width: size['touch-target'] }} />
       </View>
 
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <View style={{ flex: 1 }}>
+        <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           {step === 'done' ? (
             <>
               <Text style={styles.headline}>Password changed.</Text>
@@ -190,8 +180,8 @@ export default function ForgotPasswordScreen() {
               )}
             </>
           )}
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+      </View>
     </SafeAreaView>
   );
 }

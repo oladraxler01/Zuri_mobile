@@ -9,6 +9,7 @@ import {
   Modal,
   Alert,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardSheet } from '@/components/ui/keyboard-sheet';
 import { useRouter } from 'expo-router';
@@ -116,7 +117,7 @@ export default function StudentCoursesScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollView bottomOffset={24}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -306,7 +307,7 @@ export default function StudentCoursesScreen() {
             </View>
           ))}
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* Footer Actions */}
       <View style={styles.footer}>
@@ -336,7 +337,7 @@ export default function StudentCoursesScreen() {
       />
 
       {/* Add Course Modal */}
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={modalVisible}
         transparent
         animationType="fade"

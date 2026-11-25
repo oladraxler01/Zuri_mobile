@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet, StatusBar, Platform, Linking, ActivityIndicator, TextInput } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -103,7 +104,7 @@ export default function MaterialScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView bottomOffset={24} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.bigIcon}>
@@ -307,7 +308,7 @@ export default function MaterialScreen() {
             </View>
           </>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <ConfirmSheet
         visible={confirmDelete}

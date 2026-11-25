@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput, StyleSheet, StatusBar } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -72,7 +73,7 @@ export default function LectureArchiveScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <Text style={styles.count}>
           {lectures.length} {lectures.length === 1 ? 'lecture' : 'lectures'} recorded
         </Text>
@@ -129,7 +130,7 @@ export default function LectureArchiveScreen() {
             ))}
           </View>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, type StyleProp, type ViewStyle } from 'react-native';
+import { Keyboard, Pressable, type StyleProp, type ViewStyle } from 'react-native';
+import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 /**
  * Body of a form pop-up (inside a transparent <Modal>): moves above the
@@ -16,12 +17,12 @@ export function KeyboardSheet({
   children: React.ReactNode;
 }) {
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <Pressable style={backdropStyle} onPress={Keyboard.dismiss} accessible={false}>
         <Pressable style={[sheetStyle, { maxHeight: '90%' }]} onPress={Keyboard.dismiss} accessible={false}>
-          <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false} bounces={false}>
+          <KeyboardAwareScrollView bottomOffset={24} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false} bounces={false}>
             {children}
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </Pressable>
       </Pressable>
     </KeyboardAvoidingView>

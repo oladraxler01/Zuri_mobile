@@ -1,16 +1,6 @@
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  StatusBar,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, Platform, StatusBar, Alert, ActivityIndicator } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -124,11 +114,8 @@ export default function SignUpScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoid}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
+      <View style={{ flex: 1 }}>
+        <KeyboardAwareScrollView bottomOffset={24}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -295,8 +282,8 @@ export default function SignUpScreen() {
               <Text style={styles.socialButtonText}>Continue with Apple</Text>
             </Pressable>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+      </View>
     </SafeAreaView>
   );
 }

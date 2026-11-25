@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, StatusBar, Platform } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -111,8 +112,8 @@ export default function LecturerSetupScreen() {
         <View style={[styles.progressFill, { width: step === 1 ? '50%' : '100%' }]} />
       </View>
 
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <View style={{ flex: 1 }}>
+        <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           {step === 1 ? (
             <>
               <Text style={styles.h1}>Your teaching profile</Text>
@@ -214,8 +215,8 @@ export default function LecturerSetupScreen() {
             <Text style={styles.primaryText}>Continue</Text>
             <Ionicons name="arrow-forward" size={18} color={colors['on-primary']} />
           </Pressable>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+      </View>
     </SafeAreaView>
   );
 }

@@ -1,16 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  KeyboardAvoidingView,
-  Platform,
-  StatusBar,
-  Alert,
-  ActivityIndicator,
-  type TextInputInstance,
-} from 'react-native';
+import { View, Text, TextInput, Pressable, Platform, StatusBar, Alert, ActivityIndicator, type TextInputInstance } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -200,7 +190,7 @@ export default function VerifyEmailScreen() {
 
       <KeyboardAvoidingView
         style={styles.keyboardAvoid}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
       >
         <View style={styles.content}>
           {/* Header Group */}

@@ -10,6 +10,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardSheet } from '@/components/ui/keyboard-sheet';
 import { useRouter } from 'expo-router';
@@ -180,7 +181,7 @@ export default function StudentTimetableScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollView bottomOffset={24}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -403,7 +404,7 @@ export default function StudentTimetableScreen() {
             </View>
           </View>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -422,7 +423,7 @@ export default function StudentTimetableScreen() {
       </View>
 
       {/* Add Slot Modal */}
-      <Modal
+      <Modal statusBarTranslucent navigationBarTranslucent
         visible={modalVisible}
         transparent
         animationType="fade"

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, StatusBar, Platform } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -48,8 +49,8 @@ export default function ProfileSetupScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <View style={{ flex: 1 }}>
+        <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.avatar}>
             <Text style={styles.initials}>{initials}</Text>
           </View>
@@ -117,8 +118,8 @@ export default function ProfileSetupScreen() {
             <Text style={styles.primaryText}>Continue</Text>
             <Ionicons name="arrow-forward" size={18} color={colors['on-primary']} />
           </Pressable>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+      </View>
     </SafeAreaView>
   );
 }

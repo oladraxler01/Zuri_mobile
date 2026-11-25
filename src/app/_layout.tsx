@@ -1,3 +1,4 @@
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Stack, SplashScreen } from 'expo-router';
@@ -31,6 +32,7 @@ initMonitoring();
 
 function RootLayout() {
   return (
+    <KeyboardProvider>
     <ThemeProvider>
     <NetworkProvider>
       <ProgressProvider>
@@ -58,6 +60,7 @@ function RootLayout() {
       </ProgressProvider>
     </NetworkProvider>
     </ThemeProvider>
+    </KeyboardProvider>
   );
 }
 

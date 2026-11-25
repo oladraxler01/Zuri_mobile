@@ -1,17 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  ScrollView,
-  TextInput,
-  StyleSheet,
-  StatusBar,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
-  type ScrollViewInstance,
-} from 'react-native';
+import { View, Text, Pressable, ScrollView, TextInput, StyleSheet, StatusBar, Platform, ActivityIndicator, type ScrollViewInstance } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -249,7 +238,7 @@ export default function AskScreen() {
         </ScrollView>
       )}
 
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <ScrollView ref={scrollRef} contentContainerStyle={styles.thread} keyboardShouldPersistTaps="handled">
           {msgs.length === 0 && (
             <View style={styles.intro}>

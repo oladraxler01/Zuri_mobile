@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, StatusBar } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -39,7 +40,7 @@ export default function AskHistoryScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <Segmented<'all' | 'saved'>
           options={[
             { key: 'all', label: `History · ${conversations.length}` },
@@ -90,7 +91,7 @@ export default function AskHistoryScreen() {
             ))}
           </View>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }

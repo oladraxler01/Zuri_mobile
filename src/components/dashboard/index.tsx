@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet, StatusBar, useWindowDimensions, type ViewStyle } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -37,7 +38,7 @@ export function ScreenShell({
   return (
     <SafeAreaView edges={edges} style={styles.screen}>
       <StatusBar barStyle="dark-content" />
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView bottomOffset={24} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             {back && (
@@ -53,7 +54,7 @@ export function ScreenShell({
           {right}
         </View>
         {children}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }
