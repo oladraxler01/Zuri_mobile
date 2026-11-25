@@ -54,7 +54,18 @@
           "url": "https://sentry.io/"
         }
       ],
-      "@sentry/react-native"
+      "@sentry/react-native",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Zuri uses the microphone to record and transcribe your lectures when you tap record.",
+          "speechRecognitionPermission": "Zuri turns the lecture into text as it happens, so you get a transcript and notes.",
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox",
+            "com.google.android.as"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -5,7 +5,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import type { Lecture } from '@/types/lecture';
-import { processLecture, ApiError } from '@/services/lecture-api';
+import { processLecture, processTranscript, ApiError } from '@/services/lecture-api';
 import { STORAGE_KEYS } from '@/utils/storage';
 import { useNetwork } from '@/context/network-context';
 import { useAcademic } from '@/context/academic-context';
@@ -18,8 +18,12 @@ interface NewLecture {
   courseCode: string;
   courseTitle: string;
   durationSeconds: number;
-  /** temporary recording file from the recorder */
-  recordingUri: string;
+  /** temporary recording file from the recorder (may be missing with live transcription) */
+  recordingUri?: string;
+  /** transcript written live on the phone */
+  liveTranscript?: import('@/types/lecture').TranscriptSegment[];
+  /** extra audio files from live transcription restarts */
+  extraAudioUris?: string[];
 }
 
 interface LecturesContextType {
@@ -114,6 +118,55 @@ export function LecturesProvider({ children }: { children: React.ReactNode }) {
 
   const run = useCallback(
     async (lecture: Lecture) => {
+      if (lecture.liveTranscript) {
+        if (running.current.has(lecture.id)) return;
+        if (!onlineRef.current) {
+          updateLecture(lecture.id, { status: 'waiting', progress: 0, error: undefined });
+          return;
+        }
+        running.current.add(lecture.id);
+        updateLecture(lecture.id, { status: 'processing', progress: 0, error: undefined });
+        try {
+          const analysis = await processTranscript(
+            {
+              segments: lecture.liveTranscript,
+              courseCode: lecture.courseCode,
+              courseTitle: lecture.courseTitle,
+              durationSeconds: lecture.durationSeconds,
+              createdAt: lecture.createdAt,
+              serverId: lecture.serverId,
+              onServerId: (serverId) => updateLecture(lecture.id, { serverId }),
+            },
+            (stage, progress) => updateLecture(lecture.id, { status: stage, progress })
+          );
+          updateLecture(lecture.id, { status: 'ready', progress: 1, analysis, seenAt: lecture.seenAt });
+        } catch (e) {
+          // Keep the transcript readable whatever happened on the server.
+          const why = e instanceof Error ? e.message : 'Something went wrong.';
+          if (e instanceof ApiError && e.kind === 'network') {
+            updateLecture(lecture.id, { status: 'waiting', progress: 0, error: why });
+          } else {
+            updateLecture(lecture.id, {
+              status: 'ready',
+              progress: 1,
+              analysis: {
+                source: 'server',
+                title: `${lecture.courseCode} lecture`,
+                summary: '',
+                transcript: lecture.liveTranscript,
+                concepts: [],
+                questions: [],
+                flashcards: [],
+                notes: [],
+                notesPending: `Your transcript is saved. Notes aren’t ready yet: ${why}`,
+              },
+            });
+          }
+        } finally {
+          running.current.delete(lecture.id);
+        }
+        return;
+      }
       if (!lecture.audioUri) {
         updateLecture(lecture.id, { status: 'failed', error: 'The recording file is missing.' });
         return;
@@ -190,8 +243,10 @@ export function LecturesProvider({ children }: { children: React.ReactNode }) {
         courseTitle: input.courseTitle,
         createdAt: new Date().toISOString(),
         durationSeconds: input.durationSeconds,
-        audioUri: persistAudio(input.recordingUri, id),
-        status: 'uploading',
+        audioUri: input.recordingUri ? persistAudio(input.recordingUri, id) : undefined,
+        liveTranscript: input.liveTranscript,
+        extraAudioUris: input.extraAudioUris?.map((u, i) => persistAudio(u, `${id}-${i + 2}`)),
+        status: input.liveTranscript ? 'processing' : 'uploading',
         progress: 0,
       };
       setLectures((prev) => [lecture, ...prev]);
@@ -212,6 +267,7 @@ export function LecturesProvider({ children }: { children: React.ReactNode }) {
   const deleteLecture = useCallback((id: string) => {
     const lecture = lecturesRef.current.find((l) => l.id === id);
     deleteAudio(lecture?.audioUri);
+    lecture?.extraAudioUris?.forEach(deleteAudio);
     setLectures((prev) => prev.filter((l) => l.id !== id));
   }, []);
 

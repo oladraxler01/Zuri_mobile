@@ -135,6 +135,18 @@ export default function LectureScreen() {
             </Text>
           </View>
 
+          {!!lecture.analysis?.notesPending && (
+            <View style={styles.pendingCard}>
+              <Ionicons name="time-outline" size={18} color={UI.amber} />
+              <View style={{ flex: 1, gap: 8 }}>
+                <Text style={styles.pendingText}>{lecture.analysis.notesPending}</Text>
+                <Pressable onPress={() => retryProcessing(lecture.id)} accessibilityRole="button" hitSlop={8}>
+                  <Text style={styles.pendingAction}>Make notes again</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
+
           {/* Tabs */}
           <View style={styles.tabs} accessibilityRole="tablist">
             {tabs.map((t) => (
@@ -237,6 +249,9 @@ export default function LectureScreen() {
 }
 
 const styles = StyleSheet.create({
+  pendingCard: { flexDirection: 'row', gap: 10, marginHorizontal: 20, marginBottom: 12, padding: 14, borderRadius: 14, backgroundColor: UI.amberSoft },
+  pendingText: { fontFamily: ZuriFonts.bodyRegular, fontSize: 13, lineHeight: 19, color: UI.ink },
+  pendingAction: { fontFamily: ZuriFonts.bodyMedium, fontSize: 14, color: UI.ink, textDecorationLine: 'underline' },
   container: {
     flex: 1,
     backgroundColor: UI.bg,

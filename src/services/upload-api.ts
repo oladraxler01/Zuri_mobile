@@ -124,7 +124,7 @@ export async function deleteServerMaterial(id: string): Promise<void> {
 /** Why processing failed, in words a student understands. */
 function failureMessage(mimeType: string): string {
   if (mimeType.startsWith('audio/')) {
-    return 'Zuri can’t transcribe recordings yet. Your recording is saved on this phone.';
+    return 'Zuri can’t transcribe this kind of recording yet.';
   }
   if (mimeType !== 'application/pdf' && !mimeType.startsWith('text/')) {
     return 'Zuri can only read PDF and text files for now. Try a PDF version of this file.';

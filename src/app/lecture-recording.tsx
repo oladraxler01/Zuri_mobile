@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, StatusBar, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams, useNavigation, usePreventRemove } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -25,6 +25,7 @@ import { useLectures } from '@/context/lectures-context';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
 import { PermissionState } from '@/components/states/state-view';
 import { formatClock, formatDuration, upcomingClasses } from '@/utils/time';
+import { liveTranscriptionAvailable, useLiveTranscript } from '@/hooks/use-live-transcript';
 
 /** Voice-optimised settings from AUDIO_PROCESSING_SPEC.md: 16 kHz mono AAC, 64 kbps. */
 const LECTURE_RECORDING: RecordingOptions = {
@@ -65,6 +66,9 @@ export default function LectureRecordingScreen() {
   );
   const recorder = useAudioRecorder(recordingOptions);
   const recState = useAudioRecorderState(recorder, 200);
+  // Live transcription with the phone's speech recognition when available (the transcript
+  // appears as the lecturer speaks); otherwise the plain audio recorder above.
+  const [live] = useState(() => liveTranscriptionAvailable());
 
   const [phase, setPhase] = useState<Phase>('checking');
   const [errorMsg, setErrorMsg] = useState('');
@@ -88,6 +92,28 @@ export default function LectureRecordingScreen() {
   const [course, setCourse] = useState<CourseItem | undefined>(defaultCourse);
   const courseCode = course?.code ?? params.courseCode ?? 'Lecture';
   const courseTitle = course?.title ?? params.courseTitle ?? 'Untitled course';
+  const vocabulary = useMemo(() => [courseCode, ...courseTitle.split(/[\s&,]+/).filter((w) => w.length > 3)], [courseCode, courseTitle]);
+  const lt = useLiveTranscript({ contextualStrings: vocabulary });
+  const [liveSeconds, setLiveSeconds] = useState(0);
+  const transcriptScroll = useRef<ScrollViewInstance>(null);
+
+  // Live mode: tick the clock and the waveform from the recognizer's volume.
+  useEffect(() => {
+    if (!live || phase !== 'recording') return;
+    const t = setInterval(() => {
+      setLiveSeconds(lt.elapsed());
+      setLevels((prev) => [...prev.slice(1), Math.max(0.06, lt.level || 0.06)]);
+    }, 250);
+    return () => clearInterval(t);
+  }, [live, phase, lt]);
+
+  // A problem the recognizer can't recover from (e.g. permission refused).
+  useEffect(() => {
+    if (live && lt.fatal && (phase === 'recording' || phase === 'paused')) {
+      setErrorMsg(lt.fatal);
+      setPhase('error');
+    }
+  }, [live, lt.fatal, phase]);
 
   // ── Permission check on open ──
   useEffect(() => {
@@ -105,7 +131,7 @@ export default function LectureRecordingScreen() {
 
   // ── Meter → waveform ──
   useEffect(() => {
-    if (phase !== 'recording') return;
+    if (phase !== 'recording' || live) return;
     const db = recState.metering;
     // dB is roughly -60 (silence) … 0 (loud). Fall back to gentle motion if unavailable.
     const level =
@@ -131,6 +157,22 @@ export default function LectureRecordingScreen() {
   };
 
   const start = async () => {
+    if (live) {
+      try {
+        const ok = await lt.start();
+        if (!ok) {
+          setErrorMsg('Zuri needs the microphone and speech recognition to transcribe. Allow them in Settings and try again.');
+          setPhase('error');
+          return;
+        }
+        setLiveSeconds(0);
+        setPhase('recording');
+      } catch (e) {
+        setErrorMsg(e instanceof Error ? e.message : 'Live transcription could not be started.');
+        setPhase('error');
+      }
+      return;
+    }
     try {
       try {
         await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true, allowsBackgroundRecording: true });
@@ -156,6 +198,16 @@ export default function LectureRecordingScreen() {
   };
 
   const togglePause = () => {
+    if (live) {
+      if (phase === 'recording') {
+        lt.pause();
+        setPhase('paused');
+      } else if (phase === 'paused') {
+        lt.resume();
+        setPhase('recording');
+      }
+      return;
+    }
     if (phase === 'recording') {
       recorder.pause();
       setPhase('paused');
@@ -166,6 +218,12 @@ export default function LectureRecordingScreen() {
   };
 
   const stop = async () => {
+    if (live) {
+      await lt.stop();
+      setFinalSeconds(lt.elapsed());
+      setPhase('completed');
+      return;
+    }
     const seconds = recState.durationMillis / 1000;
     try {
       await recorder.stop();
@@ -187,6 +245,11 @@ export default function LectureRecordingScreen() {
   };
 
   const discard = async () => {
+    if (live) {
+      await lt.stop();
+      leave();
+      return;
+    }
     if (phase === 'recording' || phase === 'paused') {
       await recorder.stop().catch(() => {});
     }
@@ -194,6 +257,23 @@ export default function LectureRecordingScreen() {
   };
 
   const save = () => {
+    if (live) {
+      const segments = lt.interim
+        ? [...lt.segments, { start: finalSeconds, end: finalSeconds, text: lt.interim }]
+        : lt.segments;
+      const id = saveRecording({
+        courseId: course?.id,
+        courseCode,
+        courseTitle,
+        durationSeconds: finalSeconds,
+        recordingUri: lt.audioUris[0],
+        extraAudioUris: lt.audioUris.slice(1),
+        liveTranscript: segments,
+      });
+      allowLeave.current = true;
+      router.replace(`/lecture/${id}` as Href);
+      return;
+    }
     if (!recordingUri) return;
     const id = saveRecording({
       courseId: course?.id,
@@ -296,7 +376,7 @@ export default function LectureRecordingScreen() {
             </View>
 
             <View style={styles.hubCard}>
-              <Text style={styles.timerDisplay}>{formatClock(recState.durationMillis / 1000)}</Text>
+              <Text style={styles.timerDisplay}>{formatClock(live ? liveSeconds : recState.durationMillis / 1000)}</Text>
 
               <View style={styles.waveContainer} accessibilityElementsHidden>
                 {levels.map((l, i) => (
@@ -331,6 +411,33 @@ export default function LectureRecordingScreen() {
               </View>
             </View>
 
+            {live && (
+              <View style={styles.liveCard}>
+                <View style={styles.liveHeader}>
+                  <Text style={styles.liveLabel}>LIVE TRANSCRIPT</Text>
+                  <Text style={styles.liveCount}>{lt.segments.length ? `${lt.segments.reduce((n, x) => n + x.text.split(/\s+/).length, 0)} words` : ''}</Text>
+                </View>
+                <ScrollView
+                  ref={transcriptScroll}
+                  style={styles.liveScroll}
+                  nestedScrollEnabled
+                  onContentSizeChange={() => transcriptScroll.current?.scrollToEnd({ animated: true })}
+                >
+                  {lt.segments.length === 0 && !lt.interim ? (
+                    <Text style={styles.liveEmpty}>
+                      {phase === 'paused' ? 'Paused.' : 'Listening… words appear here as the lecturer speaks.'}
+                    </Text>
+                  ) : (
+                    <Text style={styles.liveText}>
+                      {lt.segments.slice(-40).map((x) => x.text).join(' ')}
+                      {lt.interim ? <Text style={styles.liveInterim}> {lt.interim}</Text> : null}
+                    </Text>
+                  )}
+                </ScrollView>
+                {!!lt.warning && <Text style={styles.liveWarning}>{lt.warning}</Text>}
+              </View>
+            )}
+
             {phase === 'paused' && (
               <View style={styles.pausedNote}>
                 <Ionicons name="pause-circle-outline" size={18} color={UI.amber} />
@@ -351,8 +458,9 @@ export default function LectureRecordingScreen() {
             </View>
             <Text style={styles.blockTitle}>Recording complete</Text>
             <Text style={styles.blockText}>
-              {formatDuration(finalSeconds)} recorded for {courseCode}. Save it to get a transcript, summary, notes and
-              questions.
+              {live
+                ? `${formatDuration(finalSeconds)} transcribed for ${courseCode} (${lt.segments.reduce((n, x) => n + x.text.split(/\s+/).length, 0)} words). Save it to get a summary, key points and questions.`
+                : `${formatDuration(finalSeconds)} recorded for ${courseCode}. Save it to get a transcript, summary, notes and questions.`}
             </Text>
 
             <View style={styles.summaryCard}>
@@ -469,6 +577,15 @@ function PulseDot({ paused }: { paused: boolean }) {
 }
 
 const styles = StyleSheet.create({
+  liveCard: { marginTop: 16, backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border, padding: 16 },
+  liveHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  liveLabel: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted },
+  liveCount: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted },
+  liveScroll: { maxHeight: 220 },
+  liveEmpty: { fontFamily: ZuriFonts.bodyRegular, fontSize: 14, lineHeight: 21, color: UI.muted },
+  liveText: { fontFamily: ZuriFonts.bodyRegular, fontSize: 15, lineHeight: 23, color: UI.ink },
+  liveInterim: { color: UI.muted },
+  liveWarning: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.amber, marginTop: 8 },
   container: {
     flex: 1,
     backgroundColor: UI.bg,

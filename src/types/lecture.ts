@@ -56,6 +56,8 @@ export interface LectureAnalysis {
   questions: LectureQuestion[];
   flashcards: Flashcard[];
   notes: NoteSection[];
+  /** Set when the transcript is saved but Zuri couldn't make notes yet (why). */
+  notesPending?: string;
 }
 
 export interface Lecture {
@@ -67,6 +69,10 @@ export interface Lecture {
   createdAt: string;
   durationSeconds: number;
   audioUri?: string;
+  /** Transcript written live on the phone while recording (speech recognition). */
+  liveTranscript?: TranscriptSegment[];
+  /** Extra audio files when live transcription restarted mid-lecture. */
+  extraAudioUris?: string[];
   status: LectureStatus;
   /** 0–1 progress of the current stage, when known */
   progress?: number;
