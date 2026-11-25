@@ -10,7 +10,7 @@ import { Chip } from '@/components/ui/chip';
 import { EmptyState } from '@/components/states/state-view';
 import { classInsights } from '@/data/sample-class-insights';
 
-const DAYS: InstSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS: InstSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const toMin = (t: string) => {
   const [h, m] = t.split(':').map((x) => parseInt(x, 10));
   return (h || 0) * 60 + (m || 0);

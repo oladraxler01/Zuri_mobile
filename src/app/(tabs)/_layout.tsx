@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { ZuriBottomTabBar } from '@/components/zuri-bottom-tab-bar';
 import { RoleGate } from '@/components/role-gate';
+import { AssistantFab } from '@/components/assistant/assistant-fab';
 
 export default function TabsLayout() {
+  const [barHeight, setBarHeight] = useState(76);
   return (
     <RoleGate role="student">
+    <View style={{ flex: 1 }}>
     <Tabs
-      tabBar={(props) => <ZuriBottomTabBar {...props} />}
+      tabBar={(props) => <ZuriBottomTabBar {...props} onHeight={setBarHeight} />}
       screenOptions={{
         headerShown: false,
       }}
@@ -43,6 +47,8 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    <AssistantFab bottom={barHeight + 14} />
+    </View>
     </RoleGate>
   );
 }

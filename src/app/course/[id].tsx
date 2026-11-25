@@ -34,7 +34,7 @@ const TABS = [
 ] as const;
 type TabKey = (typeof TABS)[number]['key'];
 
-const DAY_ORDER: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAY_ORDER: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const DAY_NAME: Record<TimetableSlot['day'], string> = {
   Mon: 'Monday',
   Tue: 'Tuesday',
@@ -42,6 +42,7 @@ const DAY_NAME: Record<TimetableSlot['day'], string> = {
   Thu: 'Thursday',
   Fri: 'Friday',
   Sat: 'Saturday',
+  Sun: 'Sunday',
 };
 
 export default function CourseDetailScreen() {
@@ -145,6 +146,22 @@ export default function CourseDetailScreen() {
           <View style={styles.statDivider} />
           <Stat value={String(slots.length)} label="classes / week" />
         </View>
+
+        <Pressable
+          style={({ pressed }) => [styles.askCard, pressed && styles.pressed]}
+          onPress={() => router.push({ pathname: '/ask', params: { courseId: course.id } } as Href)}
+          accessibilityRole="button"
+          accessibilityLabel={`Ask Zuri about ${course.code}`}
+        >
+          <View style={styles.askIcon}>
+            <Ionicons name="sparkles" size={18} color={UI.ink} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.askTitle}>Ask Zuri about {course.code}</Text>
+            <Text style={styles.askSub}>Answers from your lectures and notes for this course</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#ffffff" />
+        </Pressable>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={styles.tabs} accessibilityRole="tablist">
@@ -386,6 +403,27 @@ function Stat({ value, label }: { value: string; label: string }) {
 }
 
 const styles = StyleSheet.create({
+  askCard: {
+    marginTop: 14,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: UI.ink,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  askIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#e9c349',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  askTitle: { fontFamily: ZuriFonts.bodyMedium, fontSize: 15, fontWeight: '700', color: '#ffffff' },
+  askSub: { fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
   container: { flex: 1, backgroundColor: UI.bg },
   topBar: {
     height: 52,

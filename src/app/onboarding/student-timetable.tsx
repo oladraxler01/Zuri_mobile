@@ -24,14 +24,7 @@ import { Platform } from 'react-native';
 import { parseTimetableText, normaliseCode } from '@/utils/timetable-import';
 import { makeStyles, useTheme } from '@/theme';
 
-const DAYS: ('Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat')[] = [
-  'Mon',
-  'Tue',
-  'Wed',
-  'Thu',
-  'Fri',
-  'Sat',
-];
+const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const POPULAR_TIMES = [
   { start: '08:00 AM', end: '10:00 AM' },
@@ -51,7 +44,7 @@ export default function StudentTimetableScreen() {
   const [importMsg, setImportMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const [activeTab, setActiveTab] = useState<'manual' | 'upload'>('manual');
-  const [selectedDay, setSelectedDay] = useState<'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat'>('Mon');
+  const [selectedDay, setSelectedDay] = useState<TimetableSlot['day']>('Mon');
 
   // Add Slot Modal state
   const [modalVisible, setModalVisible] = useState(false);
@@ -431,7 +424,7 @@ export default function StudentTimetableScreen() {
       >
         <KeyboardSheet backdropStyle={styles.modalBackdrop} sheetStyle={styles.modalSheet}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Add Class ({selectedDay})</Text>
+              <Text style={styles.modalTitle}>Add Class</Text>
               <Pressable onPress={() => setModalVisible(false)} hitSlop={8}>
                 <Ionicons name="close" size={24} color={colors.text} />
               </Pressable>
@@ -469,6 +462,27 @@ export default function StudentTimetableScreen() {
                     );
                   })}
                 </ScrollView>
+              </View>
+
+              {/* Day */}
+              <View style={styles.fieldBlock}>
+                <Text style={styles.fieldLabel}>Day *</Text>
+                <View style={styles.dayRow}>
+                  {DAYS.map((d) => {
+                    const isSelected = selectedDay === d;
+                    return (
+                      <Pressable
+                        key={d}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: isSelected }}
+                        style={[styles.courseChip, isSelected && styles.courseChipSelected]}
+                        onPress={() => setSelectedDay(d)}
+                      >
+                        <Text style={[styles.courseChipText, isSelected && styles.courseChipTextSelected]}>{d}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
               </View>
 
               {/* Time Slots Selection */}
@@ -917,6 +931,11 @@ const useStyles = makeStyles((t) => ({
   fieldLabel: { ...t.type.caption, color: t.colors.text,
   },
   courseSelectRow: {
+    gap: 8,
+  },
+  dayRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
   courseChip: {

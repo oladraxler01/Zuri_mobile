@@ -6,7 +6,7 @@ import { useSession } from '@/context/session-context';
 import { useAcademic, type TimetableSlot } from '@/context/academic-context';
 import { getContextGaps, resolveContextGap, type ContextGapDTO } from '@/services/academic-api';
 
-const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const TIMES = ['08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'];
 
 /** "10:00 AM" + 2 h → "12:00 PM". */

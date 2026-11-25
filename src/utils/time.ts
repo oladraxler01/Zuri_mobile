@@ -7,6 +7,7 @@ const DAY_INDEX: Record<TimetableSlot['day'], number> = {
   Thu: 4,
   Fri: 5,
   Sat: 6,
+  Sun: 0,
 };
 
 /** "01:05:09" for long recordings, "05:09" otherwise. */

@@ -15,9 +15,11 @@ export interface ZuriTabIcon {
 interface ZuriBottomTabBarProps extends BottomTabBarProps {
   /** Optional per-route icons. Labels come from each screen's `title` option. */
   icons?: Record<string, ZuriTabIcon>;
+  /** Told the bar's height, so things can float just above it. */
+  onHeight?: (height: number) => void;
 }
 
-export function ZuriBottomTabBar({ state, descriptors, emitter, navigateToTab, icons }: ZuriBottomTabBarProps) {
+export function ZuriBottomTabBar({ state, descriptors, emitter, navigateToTab, icons, onHeight }: ZuriBottomTabBarProps) {
   const styles = useStyles();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -71,6 +73,7 @@ export function ZuriBottomTabBar({ state, descriptors, emitter, navigateToTab, i
 
   return (
     <View
+      onLayout={onHeight ? (e) => onHeight(e.nativeEvent.layout.height) : undefined}
       style={[
         styles.container,
         {

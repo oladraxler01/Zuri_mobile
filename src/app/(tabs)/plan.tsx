@@ -16,7 +16,7 @@ import { formatDuration, parseTimeOfDay } from '@/utils/time';
 import type { Assessment, CalendarEvent } from '@/types/planner';
 
 type View_ = 'week' | 'deadlines' | 'calendar';
-const JS_DAY_TO_SLOT: Record<number, TimetableSlot['day'] | undefined> = { 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
+const JS_DAY_TO_SLOT: Record<number, TimetableSlot['day'] | undefined> = { 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 0: 'Sun' };
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function dayLabel(d: Date, today: Date) {

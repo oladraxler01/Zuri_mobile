@@ -438,7 +438,7 @@ export default function AcademicHomeScreen() {
 
               <Pressable style={styles.quickActionCard} onPress={() => router.push('/ask' as Href)}>
                 <Ionicons name="chatbubble-ellipses-outline" size={20} color={colors.text} />
-                <Text style={styles.quickActionTitle}>Ask about your notes</Text>
+                <Text style={styles.quickActionTitle}>Ask Zuri (AI)</Text>
               </Pressable>
 
               <Pressable

@@ -15,6 +15,7 @@ const DAY_MAP: Record<string, TimetableSlot['day']> = {
   thu: 'Thu',
   fri: 'Fri',
   sat: 'Sat',
+  sun: 'Sun',
 };
 
 export interface ParsedTimetable {
@@ -54,7 +55,7 @@ export function parseTimetableText(text: string, courses: Pick<CourseItem, 'code
     if (!line) continue;
 
     const codeM = line.match(/\b([A-Za-z]{2,4})\s*-?\s*(\d{3})\b/);
-    const dayM = line.match(/\b(mon|tue|wed|thu|fri|sat)[a-z]*\b/i);
+    const dayM = line.match(/\b(mon|tue|wed|thu|fri|sat|sun)[a-z]*\b/i);
     if (!codeM || !dayM) {
       if (codeM || dayM) skipped.push({ line, reason: codeM ? 'No day found' : 'No course code found' });
       continue;

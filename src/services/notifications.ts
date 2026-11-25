@@ -22,6 +22,7 @@ const SLOT_TO_WEEKDAY: Record<TimetableSlot['day'], number> = {
   Thu: 5,
   Fri: 6,
   Sat: 7,
+  Sun: 1,
 };
 
 export type NotificationPermission = 'granted' | 'undetermined' | 'denied' | 'unsupported';

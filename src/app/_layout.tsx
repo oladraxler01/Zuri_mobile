@@ -102,6 +102,7 @@ function AppShell() {
         <Stack.Screen name="assessment/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="assessment/edit" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="ask" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="assistant" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="notifications" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="search" options={{ animation: 'fade' }} />
         <Stack.Screen name="ask-history" options={{ animation: 'slide_from_right' }} />

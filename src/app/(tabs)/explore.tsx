@@ -12,13 +12,23 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useAcademicContext, CourseItem } from '@/context/academic-context';
+import { useAcademicContext, CourseItem, type TimetableSlot } from '@/context/academic-context';
+import { KeyboardSheet } from '@/components/ui/keyboard-sheet';
+
+const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const TIMES = [
+  { start: '08:00 AM', end: '10:00 AM' },
+  { start: '10:00 AM', end: '12:00 PM' },
+  { start: '12:00 PM', end: '02:00 PM' },
+  { start: '02:00 PM', end: '04:00 PM' },
+  { start: '04:00 PM', end: '06:00 PM' },
+];
 import { useLectures } from '@/context/lectures-context';
 import { ZuriColors, ZuriFonts } from '@/constants/zuri-theme';
 
 export default function CoursesScreen() {
   const insets = useSafeAreaInsets();
-  const { state, addCourse, removeCourse } = useAcademicContext();
+  const { state, addCourse, removeCourse, addTimetableSlot } = useAcademicContext();
   const { lectures } = useLectures();
   const lectureCounts = lectures.reduce<Record<string, number>>((acc, l) => {
     if (l.courseId) acc[l.courseId] = (acc[l.courseId] ?? 0) + 1;
@@ -30,21 +40,32 @@ export default function CoursesScreen() {
   const [newTitle, setNewTitle] = useState('');
   const [newUnits, setNewUnits] = useState('3');
   const [newLecturer, setNewLecturer] = useState('');
+  const [newDays, setNewDays] = useState<TimetableSlot['day'][]>([]);
+  const [newTime, setNewTime] = useState(TIMES[0]);
+  const [newVenue, setNewVenue] = useState('');
+  const toggleDay = (d: TimetableSlot['day']) =>
+    setNewDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
 
   const totalUnits = state.courses.reduce((sum: number, c: CourseItem) => sum + (c.units || 0), 0);
 
   const handleAddCourse = () => {
     if (!newCode.trim() || !newTitle.trim()) return;
-    addCourse({
-      code: newCode.trim().toUpperCase(),
+    const code = newCode.trim().toUpperCase();
+    const courseId = addCourse({
+      code,
       title: newTitle.trim(),
       units: parseInt(newUnits, 10) || 3,
       lecturer: newLecturer.trim() || 'Department Lecturer',
       color: '#272e0a',
     });
+    for (const day of newDays) {
+      addTimetableSlot({ courseId, courseCode: code, day, startTime: newTime.start, endTime: newTime.end, venue: newVenue.trim() });
+    }
     setNewCode('');
     setNewTitle('');
     setNewLecturer('');
+    setNewDays([]);
+    setNewVenue('');
     setIsAddModalOpen(false);
   };
 
@@ -159,7 +180,17 @@ export default function CoursesScreen() {
                   }
                 >
                   <Ionicons name="mic" size={14} color="#272e0a" />
-                  <Text style={styles.recordButtonText}>Record Lecture</Text>
+                  <Text style={styles.recordButtonText}>Record</Text>
+                </Pressable>
+
+                <Pressable
+                  style={styles.askButton}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Ask Zuri about ${course.code}`}
+                  onPress={() => router.push({ pathname: '/ask', params: { courseId: course.id } } as any)}
+                >
+                  <Ionicons name="sparkles" size={14} color="#ffffff" />
+                  <Text style={styles.askButtonText}>Ask Zuri</Text>
                 </Pressable>
               </View>
             </Pressable>
@@ -169,8 +200,7 @@ export default function CoursesScreen() {
 
       {/* Add Course Modal */}
       <Modal statusBarTranslucent navigationBarTranslucent visible={isAddModalOpen} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+        <KeyboardSheet backdropStyle={styles.modalOverlay} sheetStyle={styles.modalCard}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalHeading}>Enroll New Course</Text>
               <Pressable onPress={() => setIsAddModalOpen(false)}>
@@ -220,11 +250,58 @@ export default function CoursesScreen() {
               </View>
             </View>
 
+            <Text style={styles.inputLabel}>Class days (pick all that apply)</Text>
+            <View style={styles.chipRow}>
+              {DAYS.map((d) => {
+                const on = newDays.includes(d);
+                return (
+                  <Pressable
+                    key={d}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: on }}
+                    onPress={() => toggleDay(d)}
+                    style={[styles.chip, on && styles.chipOn]}
+                  >
+                    <Text style={[styles.chipText, on && styles.chipTextOn]}>{d}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {newDays.length > 0 && (
+              <>
+                <Text style={styles.inputLabel}>Class time</Text>
+                <View style={styles.chipRow}>
+                  {TIMES.map((t) => {
+                    const on = newTime.start === t.start;
+                    return (
+                      <Pressable
+                        key={t.start}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: on }}
+                        onPress={() => setNewTime(t)}
+                        style={[styles.chip, on && styles.chipOn]}
+                      >
+                        <Text style={[styles.chipText, on && styles.chipTextOn]}>{`${t.start} – ${t.end}`}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                <Text style={styles.inputLabel}>Venue</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={newVenue}
+                  onChangeText={setNewVenue}
+                  placeholder="e.g. Lecture Theatre A"
+                  placeholderTextColor="#999"
+                />
+              </>
+            )}
+
             <Pressable style={styles.saveModalButton} onPress={handleAddCourse}>
               <Text style={styles.saveModalButtonText}>Add to Curriculum</Text>
             </Pressable>
-          </View>
-        </View>
+        </KeyboardSheet>
       </Modal>
     </View>
   );
@@ -425,6 +502,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#c5832b',
   },
+  askButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#272e0a',
+    paddingVertical: 9,
+    borderRadius: 8,
+  },
+  askButtonText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
   recordButton: {
     flex: 1,
     flexDirection: 'row',
@@ -485,6 +577,18 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1b1c19',
   },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: '#f5f3ee',
+    borderWidth: 1,
+    borderColor: '#e4e2dd',
+  },
+  chipOn: { backgroundColor: '#272e0a', borderColor: '#272e0a' },
+  chipText: { fontSize: 13, fontWeight: '600', color: '#1b1c19' },
+  chipTextOn: { color: '#ffffff' },
   saveModalButton: {
     backgroundColor: '#272e0a',
     borderRadius: 12,

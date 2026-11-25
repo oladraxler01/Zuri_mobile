@@ -13,7 +13,7 @@ import type { TimetableSlot } from '@/context/academic-context';
 import { makeStyles, useTheme } from '@/theme';
 
 const TITLES = ['Dr.', 'Prof.', 'Engr.', 'Mr.', 'Mrs.', 'Ms.'];
-const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 /** Lecturer onboarding: profile → courses taught → done. */
 export default function LecturerSetupScreen() {

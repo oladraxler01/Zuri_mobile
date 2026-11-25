@@ -66,7 +66,7 @@ export interface TimetableSlot {
   id: string;
   courseId: string;
   courseCode: string;
-  day: 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat';
+  day: 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
   startTime: string; // e.g. "09:00 AM"
   endTime: string;   // e.g. "11:00 AM"
   venue: string;     // e.g. "Lecture Theatre B"
@@ -241,7 +241,7 @@ const initialState: StudentAcademicState = {
 // ─── Server ⇄ app mapping ─────────────────────────────────────────
 
 const COURSE_COLORS = ['#2c3930', '#735c00', '#17231b', '#546257'];
-const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const normCode = (code: string) => code.replace(/\s+/g, '').toUpperCase();
 
@@ -370,7 +370,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
   const pushSlot = useCallback(async (slot: TimetableSlot, courseServerId: string) => {
     const created = await createTimetableSlot({
       course_id: courseServerId,
-      day_of_week: DAYS.indexOf(slot.day) + 1,
+      day_of_week: slot.day === 'Sun' ? 0 : DAYS.indexOf(slot.day) + 1, // server: 0 = Sunday, 1 = Monday
       start_time: to24h(slot.startTime),
       end_time: to24h(slot.endTime),
       venue: slot.venue,
@@ -558,13 +558,13 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
           const idByServerId = new Map(courses.filter((c) => c.serverId).map((c) => [c.serverId!, c.id]));
           const idByCode = new Map(courses.map((c) => [normCode(c.code), c.id]));
           const fromServer: TimetableSlot[] = serverSlots
-            .filter((e) => e.day_of_week >= 1 && e.day_of_week <= 6) // the app has no Sunday classes
+            .filter((e) => e.day_of_week >= 0 && e.day_of_week <= 7) // 0 (or 7) = Sunday
             .map((e) => ({
               id: e.id,
               serverId: e.id,
               courseId: idByServerId.get(e.course_id) ?? idByCode.get(normCode(e.course_code)) ?? e.course_id,
               courseCode: e.course_code,
-              day: DAYS[e.day_of_week - 1],
+              day: e.day_of_week === 0 || e.day_of_week === 7 ? 'Sun' : DAYS[e.day_of_week - 1],
               startTime: to12h(e.start_time),
               endTime: to12h(e.end_time),
               venue: e.venue || '',

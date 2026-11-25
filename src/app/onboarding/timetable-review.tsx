@@ -9,7 +9,7 @@ import { findClashes } from '@/utils/timetable-import';
 import { parseTimeOfDay } from '@/utils/time';
 import { makeStyles, useTheme } from '@/theme';
 
-const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const DAY_NAME: Record<TimetableSlot['day'], string> = {
   Mon: 'Monday',
   Tue: 'Tuesday',
@@ -17,6 +17,7 @@ const DAY_NAME: Record<TimetableSlot['day'], string> = {
   Thu: 'Thursday',
   Fri: 'Friday',
   Sat: 'Saturday',
+  Sun: 'Sunday',
 };
 
 /** Confirm the timetable: grouped by day, with clashes and missing courses flagged. */

@@ -46,7 +46,7 @@ export interface Integration {
 
 export interface InstSlot {
   id: string;
-  day: 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat';
+  day: 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
   start: string; // "08:00"
   end: string; // "10:00"
   venue: string;
