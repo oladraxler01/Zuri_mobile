@@ -21,6 +21,7 @@ import { conceptForQuestion } from '@/utils/mastery';
 import { MATERIAL_CATEGORIES, type Material } from '@/types/material';
 import { formatLectureDate } from '@/utils/time';
 import { summariseMaterial } from '@/services/ai-api';
+import { ReportAnswer } from '@/components/report-answer';
 import { ListenButton } from '@/components/materials/listen-button';
 import { lightColors, radius, space } from '@/theme';
 
@@ -186,6 +187,7 @@ export default function MaterialScreen() {
                         />
                       )}
                       <Text style={styles.body}>{a.summary}</Text>
+                      <ReportAnswer text={a.summary} surface="summary" refId={m.serverId} />
                     </>
                   ) : summaryBusy ? (
                     <View style={{ alignItems: 'center', paddingVertical: 24, gap: 10 }}>

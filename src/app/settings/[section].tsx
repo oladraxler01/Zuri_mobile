@@ -442,7 +442,12 @@ function Account() {
           }}
         />
         <Divider />
-        <ListRow icon="trash-outline" title="Delete account" subtitle="Removes your data from this phone" onPress={() => router.push('/settings/privacy' as Href)} />
+        <ListRow
+          icon="trash-outline"
+          title="Delete account"
+          subtitle={user ? 'Permanently deletes your account and all your data' : 'Sign in first'}
+          onPress={user ? () => router.push('/account/delete' as Href) : undefined}
+        />
       </Panel>
     </>
   );

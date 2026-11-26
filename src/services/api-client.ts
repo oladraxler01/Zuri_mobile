@@ -72,6 +72,8 @@ export interface AuthUser {
   role: string;
   timezone?: string;
   email_verified?: boolean;
+  /** false for Google / Apple accounts that never set a password */
+  has_password?: boolean;
   created_at?: string;
 }
 
