@@ -25,7 +25,11 @@ export default function AskHistoryScreen() {
     .filter((c) => view === 'all' || c.saved)
     .filter((c) => !q || c.title.toLowerCase().includes(q) || c.messages.some((m) => m.text.toLowerCase().includes(q)));
   const scopeLabel = (c: (typeof conversations)[number]) =>
-    c.scope.materialId ? 'One document' : c.scope.courseId ? state.courses.find((x) => x.id === c.scope.courseId)?.code ?? 'Course' : 'Everything';
+    c.scope.materialId
+      ? 'One document'
+      : c.scope.projectId
+        ? 'Research project'
+        : `${c.scope.courseId ? state.courses.find((x) => x.id === c.scope.courseId)?.code ?? 'Course' : 'All courses'} · ${c.scope.mode === 'notes' ? 'My notes' : 'Everything'}`;
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>

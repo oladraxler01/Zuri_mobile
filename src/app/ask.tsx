@@ -10,7 +10,11 @@ import { UI } from '@/constants/zuri-ui';
 import { useAcademic } from '@/context/academic-context';
 import { useLectures } from '@/context/lectures-context';
 import { useMaterials } from '@/context/materials-context';
-import { Chip } from '@/components/ui/chip';
+import { Chip, Segmented } from '@/components/ui/chip';
+import { usePlanner } from '@/context/planner-context';
+import { useResearch } from '@/context/research-context';
+import { answerLocally, buildAssistantContext, summaryAnswer, type AssistantData } from '@/utils/assistant';
+import { framedQuestion, researchSources, type ChatMode } from '@/utils/unified-chat';
 import { SourceCard } from '@/components/source-card';
 import { queryTerms, searchSources, type SourceHit } from '@/utils/source-search';
 import { askZuriStream, searchMaterial } from '@/services/ai-api';
@@ -23,24 +27,47 @@ import { useConversations } from '@/context/conversations-context';
 
 type Msg = import('@/context/conversations-context').ChatMessage;
 
+const SCHEDULE_SUGGESTIONS = ['What classes do I have today?', 'What’s due this week?', 'Summarise my day'];
+
 /**
- * Ask Zuri (chat.generate). Each question is answered by Zuri's AI using the
- * best-matching passages from the student's own lectures and materials, shown
- * under the answer. If the AI is unavailable, the passages alone are shown.
- * Scope: everything, one course (?courseId), or one document (?materialId).
+ * Ask Zuri: the one chat in the app (see src/utils/unified-chat.ts). Every "Ask"
+ * button and the round Zuri button open it.
+ *
+ * Mode "My notes": answered only from the student's lectures and documents.
+ * Mode "Everything": also their classes, tests, deadlines and recordings (answered on the
+ * phone when it can), their research projects, and general knowledge.
+ * Narrow it to one course (?courseId), one document (?materialId) or one research
+ * project (?projectId). The passages used are shown under each answer.
  */
 export default function AskScreen() {
-  const params = useLocalSearchParams<{ courseId?: string; materialId?: string; q?: string; conversationId?: string }>();
+  const params = useLocalSearchParams<{
+    courseId?: string;
+    materialId?: string;
+    projectId?: string;
+    mode?: ChatMode;
+    q?: string;
+    conversationId?: string;
+  }>();
   const convs = useConversations();
   const existing = params.conversationId ? convs.get(params.conversationId) : undefined;
   const { state } = useAcademic();
   const { lectures } = useLectures();
   const { materials, getMaterial } = useMaterials();
+  const { assessments } = usePlanner();
+  const research = useResearch();
   const scrollRef = useRef<ScrollViewInstance>(null);
+  const scheduleData: AssistantData = useMemo(
+    () => ({ courses: state.courses, timetable: state.timetable, assessments, lectures }),
+    [state.courses, state.timetable, assessments, lectures]
+  );
 
   const materialId = existing?.scope.materialId ?? params.materialId;
   const material = materialId ? getMaterial(materialId) : undefined;
   const [courseId, setCourseId] = useState<string | null>(existing?.scope.courseId ?? (params.courseId || null));
+  const [projectId, setProjectId] = useState<string | null>(existing?.scope.projectId ?? (params.projectId || null));
+  const project = projectId ? research.projects.find((p) => p.id === projectId) : undefined;
+  const [mode, setMode] = useState<ChatMode>(existing?.scope.mode ?? params.mode ?? (materialId ? 'notes' : 'everything'));
+  const everything = mode === 'everything' && !material && !project;
   const [input, setInput] = useState('');
   const [msgs, setMsgs] = useState<Msg[]>(existing?.messages ?? []);
   const [convId, setConvId] = useState<string | undefined>(existing?.id);
@@ -48,9 +75,13 @@ export default function AskScreen() {
 
   const scopeLabel = material
     ? `“${material.analysis?.title ?? material.name}”`
-    : courseId
+    : project
+      ? `your research project “${project.title}”`
+      : courseId
       ? state.courses.find((c) => c.id === courseId)?.code ?? 'this course'
-      : 'all your lectures and materials';
+      : everything
+        ? 'anything: your notes, classes, deadlines and research'
+        : 'your lectures and notes';
 
   const sourceCount = useMemo(() => {
     if (material) return 1;
@@ -66,8 +97,12 @@ export default function AskScreen() {
           ...lectures.filter((l) => !courseId || l.courseId === courseId).flatMap((l) => l.analysis?.concepts ?? []),
           ...materials.filter((m) => !courseId || m.courseId === courseId).flatMap((m) => m.analysis?.concepts ?? []),
         ];
-    return Array.from(new Set(pool.map((c) => c.title))).slice(0, 4).map((t) => `What is ${t.toLowerCase()}?`);
-  }, [lectures, materials, courseId, material]);
+    const concepts = Array.from(new Set(pool.map((c) => c.title))).slice(0, 4).map((t) => `What is ${t.toLowerCase()}?`);
+    if (project) {
+      return [project.question, ...project.keywords.map((k) => `What do the sources say about ${k}?`)].filter(Boolean).slice(0, 3) as string[];
+    }
+    return everything ? [...SCHEDULE_SUGGESTIONS, ...concepts.slice(0, 2)] : concepts;
+  }, [lectures, materials, courseId, material, project, everything]);
 
   const [thinking, setThinking] = useState(false);
   /** The course study partner's session, so it remembers this conversation. */
@@ -78,6 +113,11 @@ export default function AskScreen() {
   /** Context for the AI: the best local passages, plus the user's own processed server materials. */
   const gatherSources = async (q: string): Promise<{ hits: SourceHit[]; chunks: string[] }> => {
     const style = state.preferences.aiAnswerStyle === 'concise' ? 2 : 4;
+    if (project) {
+      // One research project: its papers, saved evidence and notes.
+      const top = researchSources(q, research.projects, research.projectPapers, { projectId: project.id, limit: 5 });
+      return { hits: top, chunks: top.map((h) => `${h.location}: ${h.text}`) };
+    }
     const hits = searchSources(q, { lectures, materials }, { courseId: courseId ?? undefined, materialId: material?.id }, style);
 
     // One document: ask the server for its best-matching passages.
@@ -118,8 +158,16 @@ export default function AskScreen() {
         );
     }
 
-    const top = hits.slice(0, 5);
+    if (everything) {
+      // Their research projects too.
+      hits.push(...researchSources(q, research.projects, research.projectPapers, { limit: 2 }));
+      hits.sort((a, b) => b.score - a.score);
+    }
+
+    // Everything: the first passage is their schedule, so 4 are left for sources (the AI takes 5).
+    const top = hits.slice(0, everything ? 4 : 5);
     const chunks = top.map((h) => `${h.title}${h.courseCode ? ` (${h.courseCode})` : ''}, ${h.location}:\n${h.text}`);
+    if (everything) chunks.unshift(buildAssistantContext(scheduleData));
     return { hits: top, chunks };
   };
 
@@ -136,9 +184,22 @@ export default function AskScreen() {
     const { hits, chunks } = await gatherSources(q);
     let reply: Msg | null = null;
 
+    // Everything: questions about their own day are answered on the phone, straight away.
+    if (everything && !hits.length) {
+      const local = answerLocally(q, scheduleData);
+      if (local) reply = { role: 'zuri', text: local };
+    }
+    // My notes, and nothing in them matches: say so without spending an AI answer.
+    if (!reply && mode === 'notes' && !project && !hits.length) {
+      reply = {
+        role: 'zuri',
+        text: `None of ${material ? 'this document' : courseId ? 'your notes for this course' : 'your lectures or notes'} cover that yet. Switch to **Everything** for a general answer, or record or upload more notes.`,
+      };
+    }
+
     // A catalogue course has a study partner on the server that knows its syllabus,
     // your weak topics and past chats, and can reply with flashcards, a quiz or a concept card.
-    const partnerCourse = !material && courseId ? state.courses.find((c) => c.id === courseId && c.catalogue && c.serverId) : undefined;
+    const partnerCourse = !reply && !material && !project && courseId ? state.courses.find((c) => c.id === courseId && c.catalogue && c.serverId) : undefined;
     if (partnerCourse) {
       try {
         const res = await chatWithCoursePartner(partnerCourse.serverId!, {
@@ -161,7 +222,7 @@ export default function AskScreen() {
 
     if (!reply) try {
       const answer = await askZuriStream(
-        q,
+        framedQuestion(q, { mode, project, hasSources: hits.length > 0 }),
         chunks,
         history,
         (soFar) => {
@@ -185,7 +246,7 @@ export default function AskScreen() {
     setLiveText('');
     // Every chat is kept in history; star it to save it.
     if (convId) convs.append(convId, turn);
-    else setConvId(convs.start({ courseId: courseId ?? undefined, materialId: material?.id }, turn));
+    else setConvId(convs.start({ courseId: courseId ?? undefined, materialId: material?.id, projectId: project?.id, mode }, turn));
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
   };
 
@@ -229,14 +290,31 @@ export default function AskScreen() {
         </View>
       </View>
 
-      {!material && (
+      {!material && !project && (
+        <View style={styles.modeRow}>
+          <Segmented<ChatMode>
+            options={[
+              { key: 'notes', label: 'My notes' },
+              { key: 'everything', label: 'Everything' },
+            ]}
+            value={mode}
+            onChange={setMode}
+          />
+        </View>
+      )}
+
+      {project ? (
+        <View style={[styles.scope, { flexDirection: 'row' }]}>
+          <Chip label={`Project: ${project.title.slice(0, 28)}`} icon="close" on onPress={() => setProjectId(null)} />
+        </View>
+      ) : !material ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scope} style={{ flexGrow: 0 }}>
-          <Chip label="Everything" on={!courseId} onPress={() => setCourseId(null)} />
+          <Chip label="All courses" on={!courseId} onPress={() => setCourseId(null)} />
           {state.courses.map((c) => (
             <Chip key={c.id} label={c.code} on={courseId === c.id} onPress={() => setCourseId(c.id)} />
           ))}
         </ScrollView>
-      )}
+      ) : null}
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <ScrollView ref={scrollRef} contentContainerStyle={styles.thread} keyboardShouldPersistTaps="handled">
@@ -247,9 +325,18 @@ export default function AskScreen() {
               </View>
               <Text style={styles.introTitle}>Ask about {scopeLabel}</Text>
               <Text style={styles.introText}>
-                Zuri answers using your own {material ? 'document' : 'lectures and notes'}, and shows the passages it used.{' '}
-                {!material && `${sourceCount} ${sourceCount === 1 ? 'source' : 'sources'} available.`}
+                {project
+                  ? 'Zuri answers only from this project’s papers, evidence and notes, and cites each one.'
+                  : everything
+                    ? 'Zuri uses your lectures and notes, your classes, tests and deadlines, your research projects, and general knowledge, and shows the sources it used.'
+                    : `Zuri answers only from your own ${material ? 'document' : 'lectures and notes'}, and shows the passages it used.`}{' '}
+                {!material && !project && `${sourceCount} ${sourceCount === 1 ? 'note' : 'notes'} available.`}
               </Text>
+            </View>
+          )}
+          {msgs.length === 0 && everything && (
+            <View style={[styles.bubble, styles.zuri]}>
+              <MarkdownText text={`Here’s your day:\n\n${summaryAnswer(scheduleData)}`} style={styles.bubbleText} />
             </View>
           )}
 
@@ -310,7 +397,11 @@ export default function AskScreen() {
             <Ionicons name="arrow-up" size={20} color="#fff" />
           </Pressable>
         </View>
-        <Text style={styles.footnote}>Zuri answers from your lectures and notes, and uses general knowledge when they don’t cover it. Check important facts.</Text>
+        <Text style={styles.footnote}>
+          {mode === 'notes' && !project
+            ? 'My notes: answers come only from your lectures and documents. Check important facts.'
+            : 'Zuri can make mistakes. Check important facts against your sources.'}
+        </Text>
         <AIQuotaNote />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -330,6 +421,7 @@ const styles = StyleSheet.create({
   },
   topTitle: { fontFamily: ZuriFonts.labelSmBold, fontSize: 15, color: UI.ink },
   scope: { gap: 8, paddingHorizontal: 20, paddingVertical: 10 },
+  modeRow: { paddingHorizontal: 20, paddingTop: 10 },
   thread: { padding: 20, gap: 12, maxWidth: 680, width: '100%', alignSelf: 'center', flexGrow: 1 },
   intro: { alignItems: 'center', paddingVertical: 32, paddingHorizontal: 12 },
   introIcon: {

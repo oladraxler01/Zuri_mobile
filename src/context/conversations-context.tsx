@@ -18,7 +18,11 @@ export interface ChatMessage {
 export interface Conversation {
   id: string;
   title: string;
-  scope: { courseId?: string; materialId?: string };
+  /**
+   * mode 'notes': only the student's lectures and documents. 'everything' (or unset, older chats):
+   * notes plus their classes, tests, recordings and research projects, and general knowledge.
+   */
+  scope: { courseId?: string; materialId?: string; projectId?: string; mode?: 'notes' | 'everything' };
   messages: ChatMessage[];
   createdAt: string;
   updatedAt: string;

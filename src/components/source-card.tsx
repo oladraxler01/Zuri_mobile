@@ -11,6 +11,8 @@ export function SourceCard({ hit, index }: { hit: SourceHit; index?: number }) {
   const open = () => {
     if (hit.kind === 'lecture') {
       router.push({ pathname: '/lecture/[id]', params: { id: hit.id, tab: 'transcript', t: String(hit.seconds ?? 0) } } as any);
+    } else if (hit.kind === 'paper') {
+      router.push({ pathname: '/scholar/paper/[id]', params: { id: hit.id } } as any);
     } else {
       router.push({ pathname: '/material/[id]', params: { id: hit.id, tab: 'passages' } } as any);
     }
@@ -28,7 +30,7 @@ export function SourceCard({ hit, index }: { hit: SourceHit; index?: number }) {
             <Text style={styles.numText}>{index + 1}</Text>
           </View>
         )}
-        <Ionicons name={hit.kind === 'lecture' ? 'mic-outline' : 'document-text-outline'} size={14} color={UI.amber} />
+        <Ionicons name={hit.kind === 'lecture' ? 'mic-outline' : hit.kind === 'paper' ? 'library-outline' : 'document-text-outline'} size={14} color={UI.amber} />
         <Text style={styles.title} numberOfLines={1}>
           {hit.courseCode ? `${hit.courseCode} · ` : ''}
           {hit.title}
