@@ -34,6 +34,7 @@ export function useLiveTranscript(opts: { contextualStrings?: string[] } = {}) {
   const [warning, setWarning] = useState('');
   const [fatal, setFatal] = useState('');
   const [audioUris, setAudioUris] = useState<string[]>([]);
+  const audioRef = useRef<string[]>([]); // same list, readable right after stop()
 
   const wanted = useRef(false); // the student is recording (not paused or stopped)
   const lang = useRef('en-NG');
@@ -95,7 +96,10 @@ export function useLiveTranscript(opts: { contextualStrings?: string[] } = {}) {
   });
   useSpeechRecognitionEvent('volumechange', (e) => setLevel(Math.max(0, Math.min(1, (e.value + 2) / 12))));
   useSpeechRecognitionEvent('audioend', (e) => {
-    if (e.uri) setAudioUris((prev) => (prev.includes(e.uri!) ? prev : [...prev, e.uri!]));
+    if (e.uri && !audioRef.current.includes(e.uri)) {
+      audioRef.current = [...audioRef.current, e.uri];
+      setAudioUris(audioRef.current);
+    }
   });
   useSpeechRecognitionEvent('result', (e) => {
     const text = e.results[0]?.transcript?.trim() ?? '';
@@ -168,6 +172,7 @@ export function useLiveTranscript(opts: { contextualStrings?: string[] } = {}) {
     setFatal('');
     setWarning('');
     setAudioUris([]);
+    audioRef.current = [];
     startedAt.current = Date.now();
     pausedMs.current = 0;
     segStart.current = null;
@@ -213,5 +218,8 @@ export function useLiveTranscript(opts: { contextualStrings?: string[] } = {}) {
   /** Seconds on the lecture clock (excluding pauses). */
   const elapsed = useCallback(() => (startedAt.current ? clock() : 0), []);
 
-  return { segments, interim, listening, level, warning, fatal, audioUris, start, pause, resume, stop, elapsed };
+  /** Audio files written so far (up to date even straight after stop()). */
+  const audioFiles = useCallback(() => audioRef.current, []);
+
+  return { segments, interim, listening, level, warning, fatal, audioUris, audioFiles, start, pause, resume, stop, elapsed };
 }

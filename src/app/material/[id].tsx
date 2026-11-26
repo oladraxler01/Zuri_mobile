@@ -319,8 +319,9 @@ export default function MaterialScreen() {
         onCancel={() => setConfirmDelete(false)}
         onConfirm={() => {
           setConfirmDelete(false);
-          deleteMaterial(m.id);
+          const id = m.id;
           goBack();
+          deleteMaterial(id);
         }}
       />
     </SafeAreaView>

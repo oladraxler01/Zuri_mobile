@@ -259,8 +259,9 @@ export default function AssessmentScreen() {
         onCancel={() => setConfirmDelete(false)}
         onConfirm={() => {
           setConfirmDelete(false);
-          planner.deleteAssessment(a.id);
+          const id = a.id;
           goBack();
+          planner.deleteAssessment(id);
         }}
       />
     </SafeAreaView>

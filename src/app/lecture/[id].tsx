@@ -280,8 +280,9 @@ export default function LectureScreen() {
         onConfirm={() => {
           setConfirmDelete(false);
           player.pause();
-          deleteLecture(lecture.id);
+          const id = lecture.id;
           goBack();
+          deleteLecture(id);
         }}
       />
     </SafeAreaView>

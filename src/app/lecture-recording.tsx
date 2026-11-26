@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, StatusBar, ActivityIndicator, type ScrollViewInstance } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, StatusBar, ActivityIndicator, Platform, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { setRecordingBusy } from '@/services/recording/busy';
 import { useRouter, useLocalSearchParams, useNavigation, usePreventRemove } from 'expo-router';
@@ -24,6 +24,7 @@ import { useLecturer } from '@/context/lecturer-context';
 import { teachingTimetable } from '@/utils/lecturer';
 import { useLectures } from '@/context/lectures-context';
 import { ConfirmSheet } from '@/components/ui/confirm-sheet';
+import { File } from 'expo-file-system';
 import { PermissionState } from '@/components/states/state-view';
 import { formatClock, formatDuration, upcomingClasses } from '@/utils/time';
 import { liveTranscriptionAvailable, useLiveTranscript } from '@/hooks/use-live-transcript';
@@ -40,7 +41,7 @@ const LECTURE_RECORDING: RecordingOptions = {
 
 const BAR_COUNT = 28;
 
-type Phase = 'checking' | 'needs-permission' | 'denied' | 'ready' | 'recording' | 'paused' | 'completed' | 'saving' | 'error';
+type Phase = 'checking' | 'needs-permission' | 'denied' | 'ready' | 'recording' | 'paused' | 'completed' | 'saving' | 'discarding' | 'error';
 
 export default function LectureRecordingScreen() {
   const router = useRouter();
@@ -153,7 +154,7 @@ export default function LectureRecordingScreen() {
   const isActive = phase === 'recording' || phase === 'paused' || phase === 'completed';
   // App updates wait until the recording is saved or discarded.
   useEffect(() => {
-    setRecordingBusy(isActive || phase === 'saving');
+    setRecordingBusy(isActive || phase === 'saving' || phase === 'discarding');
   }, [isActive, phase]);
   useEffect(() => () => setRecordingBusy(false), []);
   usePreventRemove(isActive, ({ data }) => {
@@ -267,15 +268,30 @@ export default function LectureRecordingScreen() {
     else router.replace('/(tabs)' as Href);
   };
 
+  /**
+   * Discard: stop the microphone, delete the audio (the sheet promised that), then leave.
+   * Shows "Discarding…" because stopping live transcription can take a few seconds, and
+   * nothing here may throw: whatever fails, the student still gets out of the screen.
+   */
   const discard = async () => {
-    if (live) {
-      await lt.stop();
-      leave();
-      return;
+    if (phase === 'saving' || phase === 'discarding') return;
+    const wasRunning = phase === 'recording' || phase === 'paused';
+    setPhase('discarding');
+    allowLeave.current = true;
+    const files: (string | null | undefined)[] = [];
+    try {
+      if (live) {
+        await lt.stop();
+        files.push(...lt.audioFiles());
+      } else {
+        if (wasRunning) await recorder.stop().catch(() => {});
+        await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true }).catch(() => {});
+        files.push(recordingUri, recorder.uri);
+      }
+    } catch (e) {
+      console.warn('[recording] discard: could not stop cleanly', e);
     }
-    if (phase === 'recording' || phase === 'paused') {
-      await recorder.stop().catch(() => {});
-    }
+    deleteFiles(files);
     leave();
   };
 
@@ -352,7 +368,7 @@ export default function LectureRecordingScreen() {
     ) : null;
 
   const close = () => {
-    if (phase === 'saving') return; // nearly done: the lecture opens by itself
+    if (phase === 'saving' || phase === 'discarding') return; // nearly done: the screen moves on by itself
     if (isActive) setConfirmLeave(true);
     else leave();
   };
@@ -516,6 +532,13 @@ export default function LectureRecordingScreen() {
           </>
         )}
 
+        {phase === 'discarding' && (
+          <View style={styles.centerBlock} accessibilityLiveRegion="polite">
+            <ActivityIndicator size="large" color={ZuriColors.primary} />
+            <Text style={styles.blockTitle}>Discarding…</Text>
+          </View>
+        )}
+
         {phase === 'saving' && (
           <View style={styles.centerBlock} accessibilityLiveRegion="polite">
             <ActivityIndicator size="large" color={ZuriColors.primary} />
@@ -593,6 +616,19 @@ export default function LectureRecordingScreen() {
       />
     </SafeAreaView>
   );
+}
+
+/** Delete recordings the student threw away. Native only; a file that's already gone is fine. */
+function deleteFiles(uris: (string | null | undefined)[]) {
+  if (Platform.OS === 'web') return;
+  for (const uri of new Set(uris.filter((u): u is string => !!u))) {
+    try {
+      const f = new File(uri);
+      if (f.exists) f.delete();
+    } catch {
+      // already gone, or the recorder still holds it; the OS clears the cache later
+    }
+  }
 }
 
 // ─── Pieces ───────────────────────────────────────────────────────
