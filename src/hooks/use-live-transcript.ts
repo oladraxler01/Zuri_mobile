@@ -43,6 +43,7 @@ export function useLiveTranscript(opts: { contextualStrings?: string[] } = {}) {
   const segStart = useRef<number | null>(null);
   const restartTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stopResolve = useRef<(() => void) | null>(null);
+  const active = useRef(false); // a recognition session is running (between 'start' and 'end')
 
   const clock = () => (Date.now() - startedAt.current - pausedMs.current) / 1000;
 
@@ -88,7 +89,10 @@ export function useLiveTranscript(opts: { contextualStrings?: string[] } = {}) {
     [begin]
   );
 
-  useSpeechRecognitionEvent('start', () => setListening(true));
+  useSpeechRecognitionEvent('start', () => {
+    active.current = true;
+    setListening(true);
+  });
   useSpeechRecognitionEvent('volumechange', (e) => setLevel(Math.max(0, Math.min(1, (e.value + 2) / 12))));
   useSpeechRecognitionEvent('audioend', (e) => {
     if (e.uri) setAudioUris((prev) => (prev.includes(e.uri!) ? prev : [...prev, e.uri!]));
@@ -124,6 +128,7 @@ export function useLiveTranscript(opts: { contextualStrings?: string[] } = {}) {
     if (RESTARTABLE.has(e.error) || wanted.current) scheduleRestart(e.error === 'network' ? 3000 : 300);
   });
   useSpeechRecognitionEvent('end', () => {
+    active.current = false;
     setListening(false);
     setInterim('');
     if (wanted.current) {
@@ -136,8 +141,12 @@ export function useLiveTranscript(opts: { contextualStrings?: string[] } = {}) {
 
   useEffect(
     () => () => {
+      const running = wanted.current || active.current;
       wanted.current = false;
       if (restartTimer.current) clearTimeout(restartTimer.current);
+      // Only abort a session that's still running: aborting an idle recognizer (after
+      // Stop, when the screen closes to open the saved lecture) can crash some Android phones.
+      if (!running) return;
       try {
         ExpoSpeechRecognitionModule.abort();
       } catch {

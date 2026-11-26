@@ -17,7 +17,7 @@ export const fileChunkStore: ChunkStore = {
     const source = new File(tempUri);
     const dest = new File(sessionDir(sessionId), `chunk-${String(seq).padStart(4, '0')}${source.extension || '.m4a'}`);
     if (dest.exists) dest.delete();
-    source.copy(dest);
+    await source.copy(dest);
     try {
       source.delete();
     } catch {

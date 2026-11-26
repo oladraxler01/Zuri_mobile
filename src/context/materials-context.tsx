@@ -87,7 +87,9 @@ function persistFile(tempUri: string, id: string, name: string): string {
     if (!dir.exists) dir.create({ intermediates: true });
     const ext = name.includes('.') ? name.slice(name.lastIndexOf('.')) : '';
     const dest = new File(dir, `${id}${ext}`);
-    new File(tempUri).copy(dest);
+    // copy() is async in this SDK: copy synchronously so the file is complete before it's used.
+    if (dest.exists) dest.delete();
+    new File(tempUri).copySync(dest);
     return dest.uri;
   } catch (e) {
     console.warn('Could not keep a copy of the material', e);
