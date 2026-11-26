@@ -1,0 +1,47 @@
+{
+  "configVersion": 0,
+  "apple": {
+    "copyright": "2026 Zuri",
+    "categories": ["EDUCATION", "PRODUCTIVITY"],
+    "info": {
+      "en-US": {
+        "title": "Zuri: AI Study Partner",
+        "subtitle": "Lectures, notes & exam prep",
+        "description": "Zuri is a study partner for university students. It turns your lectures, slides and past questions into notes and practice, so you find out what you don't understand before your exam does.\n\nADD YOUR TIMETABLE IN SECONDS\nTake a photo or screenshot of your timetable, or paste it. Zuri reads it and sets up your courses and classes for you to check and save.\n\nRECORD AND UNDERSTAND LECTURES\nTap record in class. Zuri transcribes the lecture and turns it into clear notes and a summary you can come back to.\n\nASK ABOUT YOUR OWN COURSE\nAsk questions and get answers based on your lecture notes and uploaded materials, with the passages they came from.\n\nPRACTISE BEFORE THE EXAM\nMake quizzes and flashcards from any material. Add your exam dates and past questions, and Zuri builds a study plan around what you still need to learn.\n\nSTAY ON TOP OF YOUR WEEK\nReminders before classes and study sessions, so nothing sneaks up on you.\n\nYOUR DATA, YOUR CONTROL\nNo ads. We never sell your data. Delete your account and everything in it at any time from Settings.\n\nAI can make mistakes. Check important facts against your lecture notes, and use Report on any answer that's wrong.",
+        "keywords": ["study", "lecture", "notes", "university", "exam", "quiz", "flashcards", "revision", "timetable", "transcribe", "student", "tutor"],
+        "releaseNotes": "First release of Zuri: timetable import, lecture recording and notes, AI answers from your own course, quizzes, flashcards and a study plan.",
+        "marketingUrl": "https://zurilearn.com",
+        "supportUrl": "https://zurilearn.com/support",
+        "privacyPolicyUrl": "https://zurilearn.com/app-privacy"
+      }
+    },
+    "advisory": {
+      "alcoholTobaccoOrDrugUseOrReferences": "NONE",
+      "contests": "NONE",
+      "gamblingSimulated": "NONE",
+      "horrorOrFearThemes": "NONE",
+      "matureOrSuggestiveThemes": "NONE",
+      "medicalOrTreatmentInformation": "NONE",
+      "profanityOrCrudeHumor": "NONE",
+      "sexualContentGraphicAndNudity": "NONE",
+      "sexualContentOrNudity": "NONE",
+      "violenceCartoonOrFantasy": "NONE",
+      "violenceRealistic": "NONE",
+      "violenceRealisticProlongedGraphicOrSadistic": "NONE",
+      "gambling": false,
+      "unrestrictedWebAccess": false,
+      "kidsAgeBand": null,
+      "seventeenPlus": false
+    },
+    "review": {
+      "firstName": "FILL_IN",
+      "lastName": "FILL_IN",
+      "email": "support@zurilearn.com",
+      "phone": "FILL_IN (+234...)",
+      "demoUsername": "review@zurilearn.com",
+      "demoPassword": "FILL_IN_FROM_create_review_account.sh (don't commit it)",
+      "demoRequired": true,
+      "notes": "See docs/store/REVIEWER_NOTES.md: paste the block from there."
+    }
+  }
+}

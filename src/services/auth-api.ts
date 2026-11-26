@@ -215,6 +215,24 @@ export async function changePassword(currentPassword: string, newPassword: strin
   }
 }
 
+/**
+ * DELETE /users/me { password } (signed in) → 202.
+ * Closes the account at once and signs out every device; the server then
+ * permanently deletes all of the student's data within 24 hours.
+ */
+export async function deleteAccount(password: string): Promise<void> {
+  try {
+    await apiRequest('/users/me', { method: 'DELETE', body: { password }, timeoutMs: 20000 });
+  } catch (e) {
+    // A wrong password is a 401 too; the server's message tells it apart from an expired session.
+    const serverMessage = e instanceof ApiError ? String(e.body?.message ?? e.body?.error ?? '') : '';
+    if (/password is incorrect/i.test(serverMessage)) {
+      throw new ApiError('server', 'That password isn’t right.', { status: 401 });
+    }
+    throw friendly(e, 'We couldn’t delete your account. Please try again.');
+  }
+}
+
 // ─── Devices (sessions) ──────────────────────────────────────────
 
 export interface DeviceSession {

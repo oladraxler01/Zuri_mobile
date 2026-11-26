@@ -21,6 +21,7 @@ import { askZuriStream, searchMaterial } from '@/services/ai-api';
 import { chatWithCoursePartner } from '@/services/academic-api';
 import { PartnerWidget } from '@/components/partner-widget';
 import { MarkdownText } from '@/components/markdown-text';
+import { ReportAnswer } from '@/components/report-answer';
 import { AIQuotaNote } from '@/components/ai-quota-note';
 import { lightColors, radius, space } from '@/theme';
 import { useConversations } from '@/context/conversations-context';
@@ -358,6 +359,7 @@ export default function AskScreen() {
                   ))}
                 </View>
               )}
+              {m.role === 'zuri' && <ReportAnswer text={m.text} surface="chat" />}
             </View>
           ))}
           {thinking &&

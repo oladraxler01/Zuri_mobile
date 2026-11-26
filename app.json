@@ -10,7 +10,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/images/icon.png",
-      "bundleIdentifier": "com.oladraxler.leximobile",
+      "bundleIdentifier": "com.zurilearn.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
