@@ -1,13 +1,14 @@
-# Push to main → test → stage (testers) → approve → release (production).
+# Testers: every push to main → test → update on the "preview" channel.
 # Runs on Expo's servers (EAS Workflows), started by the GitHub app linked in the
-# project's GitHub settings on expo.dev. No GitHub secret needed.
+# project's GitHub settings on expo.dev.
 #
-# Updates only reach installed builds on the same channel and app version
-# (app.json "version", runtimeVersion policy appVersion). Native changes need a
-# new build instead (.eas/workflows/build-preview-apk.yml). See docs/BUILDS.md.
+# This is an over-the-air update, not a new app build: installed test APKs
+# download the new JavaScript. Production goes out in batches, only when you
+# release (.eas/workflows/release.yml). New builds are only for native changes
+# (.eas/workflows/build-preview-apk.yml). See docs/BUILDS.md.
 # Add [eas skip] to a commit message to skip this workflow.
 
-name: Test, stage and release
+name: Test and stage for testers
 
 on:
   push:
@@ -28,7 +29,7 @@ jobs:
         run: npm run test:ci
 
   stage:
-    name: Stage for testers (preview channel)
+    name: Update testers (preview channel)
     needs: [test]
     type: update
     environment: preview
@@ -41,24 +42,4 @@ jobs:
       SENTRY_DISABLE_AUTO_UPLOAD: 'true'
     params:
       channel: preview
-      platform: all
-
-  approve:
-    name: Release this to production?
-    needs: [stage]
-    type: require-approval
-
-  release:
-    name: Release (production channel)
-    needs: [approve]
-    type: update
-    environment: production
-    # eas.json build.production.env
-    env:
-      EXPO_PUBLIC_API_GATEWAY_URL: https://api.zurilearn.com
-      EXPO_PUBLIC_USE_LIVE_API: 'true'
-      EXPO_PUBLIC_APP_ENV: production
-      SENTRY_DISABLE_AUTO_UPLOAD: 'true'
-    params:
-      channel: production
       platform: all

@@ -1,0 +1,54 @@
+# Production release, in batches. Everything merged to main since the last
+# release goes out together, when you decide, as one over-the-air update on the
+# "production" channel. Testers have been running it on "preview" first.
+#
+# Start a release either way:
+#   - push a version tag:  git tag v1.1.1 && git push origin v1.1.1
+#   - by hand:             expo.dev → Workflows → Release to production → Run,
+#                          or npx eas-cli workflow:run .eas/workflows/release.yml
+#
+# rollout: the share of production users who get it first (100 = everyone).
+# Raise it later from the update's page on expo.dev, or roll back from there.
+
+name: Release to production
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      rollout:
+        type: number
+        required: false
+        default: 100
+        description: Percent of production users who get it first (1–100)
+
+jobs:
+  test:
+    name: Typecheck, lint and test
+    steps:
+      - uses: eas/checkout
+      - uses: eas/install_node_modules
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests
+        run: npm run test:ci
+
+  release:
+    name: Update production
+    needs: [test]
+    type: update
+    environment: production
+    # eas.json build.production.env
+    env:
+      EXPO_PUBLIC_API_GATEWAY_URL: https://api.zurilearn.com
+      EXPO_PUBLIC_USE_LIVE_API: 'true'
+      EXPO_PUBLIC_APP_ENV: production
+      SENTRY_DISABLE_AUTO_UPLOAD: 'true'
+    params:
+      channel: production
+      platform: all
+      rollout_percentage: ${{ inputs.rollout || 100 }}

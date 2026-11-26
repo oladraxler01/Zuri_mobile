@@ -45,8 +45,11 @@ Pushes to `main` publish to `preview` by themselves (see CI/CD pipeline below); 
 | Where | When | What |
 |---|---|---|
 | GitHub Actions `.github/workflows/ci.yml` | Every pull request and push to `main` | Design tokens, typecheck, lint, tests, web export: the check before merging |
-| EAS Workflows `.eas/workflows/deploy.yml` | Every push to `main` | **Test** (typecheck, lint, tests) → **stage**: update to the `preview` channel (test APKs get it) → **approve** on expo.dev → **release**: update to the `production` channel |
-| EAS Workflows `.eas/workflows/build-preview-apk.yml` | By hand (expo.dev → Workflows, or `npx eas-cli workflow:run .eas/workflows/build-preview-apk.yml`) | A new test APK. Needed only for native changes or a version bump |
+| EAS Workflows `.eas/workflows/deploy.yml` | Every push to `main` | **Test** (typecheck, lint, tests) → over-the-air **update to `preview`**: testers get each merge |
+| EAS Workflows `.eas/workflows/release.yml` | When you release: push a tag (`git tag v1.1.1 && git push origin v1.1.1`) or run it on expo.dev | **Test** → **update to `production`** with everything merged since the last release, optionally to a share of users first (`rollout`) |
+| EAS Workflows `.eas/workflows/build-preview-apk.yml` | By hand only (expo.dev → Workflows, or `npx eas-cli workflow:run .eas/workflows/build-preview-apk.yml`) | A new test APK. Needed only for native changes or a version bump |
+
+**Nothing here rebuilds the app on pull requests or merges.** Pull requests only run GitHub CI (checks, no app). Merges send an update, which is a few MB of JavaScript that installed apps download; the APK stays the same. A new build is only made when you start one, for a native change.
 
 EAS Workflows run on Expo's servers. For pushes to start them, the GitHub repo must be connected to the Expo project: expo.dev → the project → **Settings → GitHub** → install the Expo GitHub app → pick `Zuri_mobile`. No GitHub secret is needed.
 

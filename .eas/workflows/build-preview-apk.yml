@@ -8,6 +8,10 @@
 
 name: Build a preview APK
 
+# Manual only: never runs on pushes or pull requests.
+on:
+  workflow_dispatch: {}
+
 jobs:
   test:
     name: Typecheck, lint and test
