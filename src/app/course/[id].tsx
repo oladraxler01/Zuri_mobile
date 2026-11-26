@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet, StatusBar } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, Pressable, ScrollView, StyleSheet, StatusBar, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -69,6 +69,14 @@ export default function CourseDetailScreen() {
   const [tab, setTab] = useState<TabKey>(
     TABS.some((t) => t.key === params.tab) ? (params.tab as TabKey) : 'overview'
   );
+  const tabRowRef = useRef<ScrollViewInstance>(null);
+  const tabX = useRef<Partial<Record<TabKey, number>>>({});
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  // Keep the chosen tab in view in the tab row.
+  useEffect(() => {
+    const x = tabX.current[tab];
+    if (x !== undefined) tabRowRef.current?.scrollTo({ x: Math.max(0, x - 40), animated: true });
+  }, [tab]);
 
   const slots = useMemo(
     () =>
@@ -164,10 +172,11 @@ export default function CourseDetailScreen() {
         </Pressable>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={styles.tabs} accessibilityRole="tablist">
+      <ScrollView ref={tabRowRef} horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={styles.tabs} accessibilityRole="tablist">
         {TABS.map((t) => (
           <Pressable
             key={t.key}
+            onLayout={(e) => (tabX.current[t.key] = e.nativeEvent.layout.x)}
             onPress={() => setTab(t.key)}
             style={[styles.tab, tab === t.key && styles.tabOn]}
             accessibilityRole="tab"
@@ -178,7 +187,24 @@ export default function CourseDetailScreen() {
         ))}
       </ScrollView>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        onTouchStart={(e) => (touch.current = { x: e.nativeEvent.pageX, y: e.nativeEvent.pageY })}
+        onTouchEnd={(e) => {
+          const start = touch.current;
+          touch.current = null;
+          if (!start) return;
+          const dx = e.nativeEvent.pageX - start.x;
+          const dy = e.nativeEvent.pageY - start.y;
+          // A clear sideways swipe moves to the next or previous tab.
+          if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 2) {
+            const i = TABS.findIndex((t) => t.key === tab);
+            const next = TABS[Math.min(TABS.length - 1, Math.max(0, i + (dx < 0 ? 1 : -1)))];
+            if (next.key !== tab) setTab(next.key);
+          }
+        }}
+      >
         {tab === 'overview' && (
           <>
             <WeakTopicsFromZuri course={course} />
@@ -467,9 +493,6 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: UI.borderSoft,
-    maxWidth: 640,
-    width: '100%',
-    alignSelf: 'center',
   },
   tab: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
   standingBig: { fontFamily: ZuriFonts.headlineLg, fontSize: 30, color: UI.ink },

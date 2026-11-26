@@ -13,7 +13,7 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardSheet } from '@/components/ui/keyboard-sheet';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
@@ -21,8 +21,13 @@ import { useAcademic, TimetableSlot } from '@/context/academic-context';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
-import { parseTimetableText, normaliseCode } from '@/utils/timetable-import';
+import { parseTimetableText, normaliseCode, keepStudentsClasses } from '@/utils/timetable-import';
+import { readTimetablePdf } from '@/services/timetable-file-api';
+import { currentUser } from '@/services/api-client';
+import { isBackendConfigured } from '@/services/api-config';
 import { makeStyles, useTheme } from '@/theme';
+
+const signedIn = () => isBackendConfigured && !!currentUser();
 
 const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -39,11 +44,12 @@ export default function StudentTimetableScreen() {
   const styles = useStyles();
   const { colors } = useTheme();
   const router = useRouter();
+  const params = useLocalSearchParams<{ upload?: string }>();
   const [fontsLoaded] = useZuriFonts();
   const { state, addTimetableSlot, removeTimetableSlot, setTimetableSlots, addCourse } = useAcademic();
   const [importMsg, setImportMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'manual' | 'upload'>('manual');
+  const [activeTab, setActiveTab] = useState<'manual' | 'upload'>(params.upload ? 'upload' : 'manual');
   const [selectedDay, setSelectedDay] = useState<TimetableSlot['day']>('Mon');
 
   // Add Slot Modal state
@@ -55,6 +61,7 @@ export default function StudentTimetableScreen() {
 
   // Upload scanning simulation
   const [scanning, setScanning] = useState(false);
+  const [scanStage, setScanStage] = useState('Reading your timetable…');
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
   if (!fontsLoaded) {
@@ -99,19 +106,54 @@ export default function StudentTimetableScreen() {
     const f = res.assets[0];
     setUploadedFileName(f.name);
     const isText = /^text\//.test(f.mimeType ?? '') || /\.(csv|txt|tsv)$/i.test(f.name);
-    if (!isText) {
+    const isPdf = f.mimeType === 'application/pdf' || /\.pdf$/i.test(f.name);
+    if (!isText && !isPdf) {
       setImportMsg({
         ok: false,
-        text: 'Reading PDFs and photos needs the timetable server, which isn’t connected yet. Save the timetable as CSV or text, or add classes manually.',
+        text: 'Zuri can’t read photos of timetables yet. Use the PDF from your department, a CSV or text file, or add classes by hand.',
       });
       return;
     }
     setScanning(true);
+    setScanStage('Reading your timetable…');
     try {
-      const text = Platform.OS === 'web' ? await (await fetch(f.uri)).text() : await new File(f.uri).text();
-      const parsed = parseTimetableText(text, state.courses);
+      let parsed;
+      if (isText) {
+        const text = Platform.OS === 'web' ? await (await fetch(f.uri)).text() : await new File(f.uri).text();
+        parsed = parseTimetableText(text, state.courses);
+      } else {
+        if (!signedIn()) {
+          setImportMsg({ ok: false, text: 'Sign in first: Zuri reads PDFs on its server.' });
+          return;
+        }
+        const read = await readTimetablePdf(
+          { uri: f.uri, name: f.name, mimeType: 'application/pdf', sizeBytes: f.size ?? undefined },
+          setScanStage
+        );
+        const fromAi = read.aiText ? parseTimetableText(read.aiText, state.courses) : null;
+        const fromPdf = parseTimetableText(read.text, state.courses);
+        parsed = fromAi && fromAi.slots.length >= fromPdf.slots.length ? fromAi : fromPdf;
+      }
+      // Same class listed twice (e.g. on two pages): keep one.
+      const seen = new Set<string>();
+      parsed = {
+        ...parsed,
+        slots: parsed.slots.filter((sl) => {
+          const k = `${sl.courseCode}|${sl.day}|${sl.startTime}`;
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        }),
+      };
+      // A department timetable has every level on it: keep this student's classes.
+      parsed = keepStudentsClasses(parsed, state.level, state.courses);
       if (!parsed.slots.length) {
-        setImportMsg({ ok: false, text: 'No classes found. Each line needs a course code, a day, a start and end time, and a venue.' });
+        setImportMsg({
+          ok: false,
+          text: isPdf
+            ? `No ${state.level} classes found in that PDF. If it’s a scanned image it can’t be read yet; add your classes by hand.`
+            : 'No classes found. Each line needs a course code, a day, a start and end time, and a venue.',
+        });
         return;
       }
       // Add any courses the file mentions that aren't in the list yet.
@@ -134,8 +176,11 @@ export default function StudentTimetableScreen() {
           ' Check them on the next step.',
       });
       setActiveTab('manual');
-    } catch {
-      setImportMsg({ ok: false, text: 'That file couldn’t be read. Try saving it again as CSV or plain text.' });
+    } catch (e) {
+      setImportMsg({
+        ok: false,
+        text: isPdf && e instanceof Error && e.message ? e.message : 'That file couldn’t be read. Try saving it again as CSV or plain text.',
+      });
     } finally {
       setScanning(false);
     }
@@ -250,7 +295,7 @@ export default function StudentTimetableScreen() {
               {scanning ? (
                 <View style={styles.scanningBox}>
                   <ActivityIndicator size="small" color={colors.text} />
-                  <Text style={styles.scanningText}>Reading your timetable…</Text>
+                  <Text style={styles.scanningText}>{scanStage}</Text>
                 </View>
               ) : (
                 <Pressable

@@ -12,6 +12,7 @@ import { useProgress } from '@/context/progress-context';
 import { ScreenShell, Panel, ListRow, Divider, StatusBadge } from '@/components/dashboard';
 import { localDateKey } from '@/utils/planner';
 import { formatDuration } from '@/utils/time';
+import { buildDescription } from '@/constants/build';
 import type { IoniconName } from '@/types/lecture';
 
 type Row = { icon: IoniconName; title: string; subtitle: string; href: string };
@@ -103,6 +104,7 @@ export default function YouScreen() {
         <Ionicons name="log-out-outline" size={18} color={UI.error} />
         <Text style={styles.signOutText}>Sign out</Text>
       </Pressable>
+      <Text style={styles.build}>{buildDescription()}</Text>
     </ScreenShell>
   );
 }
@@ -144,5 +146,6 @@ const styles = StyleSheet.create({
   statLabel: { fontFamily: ZuriFonts.bodyRegular, fontSize: 12, color: UI.muted, marginTop: 2 },
   sectionLabel: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted, marginBottom: 8, marginTop: 4 },
   signOut: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, borderRadius: 25, borderWidth: 1, borderColor: UI.errorSoft, backgroundColor: '#fff8f7' },
+  build: { fontFamily: ZuriFonts.bodyRegular, fontSize: 11, color: UI.muted, textAlign: 'center', marginTop: 4 },
   signOutText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.error },
 });

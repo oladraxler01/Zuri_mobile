@@ -120,3 +120,20 @@ export function findClashes(slots: TimetableSlot[]): [TimetableSlot, TimetableSl
     }
   return out;
 }
+
+/**
+ * A department timetable lists every level. Keep the student's own classes:
+ * courses they already have, plus courses at their level (CSC 1xx for 100L).
+ */
+export function keepStudentsClasses(parsed: ParsedTimetable, level: string, courses: Pick<CourseItem, 'code'>[]): ParsedTimetable {
+  const known = new Set(courses.map((c) => normaliseCode(c.code)));
+  const digit = String(parseInt(level, 10) || '').charAt(0);
+  const mine = (code: string) => known.has(code) || (!!digit && (code.match(/\d{3}/)?.[0] ?? '').charAt(0) === digit);
+  const levels = new Set(parsed.slots.map((s) => (s.courseCode.match(/\d{3}/)?.[0] ?? '').charAt(0)));
+  if (levels.size <= 1) return parsed; // a personal timetable: keep it all
+  return {
+    slots: parsed.slots.filter((s) => mine(s.courseCode)),
+    unknownCodes: parsed.unknownCodes.filter(mine),
+    skipped: parsed.skipped,
+  };
+}

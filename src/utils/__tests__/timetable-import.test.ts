@@ -99,3 +99,29 @@ describe('findClashes', () => {
     expect(findClashes([noon, morning])).toHaveLength(1);
   });
 });
+
+describe('keepStudentsClasses', () => {
+  const { parseTimetableText, keepStudentsClasses } = require('../timetable-import');
+  const dept = [
+    'CSC 101, Monday, 08:00 AM, 10:00 AM, LT 1',
+    'MTH 101, Tuesday, 10:00 AM, 12:00 PM, LT 2',
+    'CSC 201, Monday, 12:00 PM, 02:00 PM, Lab 1',
+    'CSC 301, Friday, 02:00 PM, 04:00 PM, Lab 2',
+    'GST 205, Sunday, 04:00 PM, 06:00 PM, Hall',
+  ].join('\n');
+
+  it('keeps only the student’s level from a department timetable', () => {
+    const out = keepStudentsClasses(parseTimetableText(dept, []), '100L', []);
+    expect(out.slots.map((s: any) => s.courseCode).sort()).toEqual(['CSC 101', 'MTH 101']);
+  });
+
+  it('also keeps courses the student already has', () => {
+    const out = keepStudentsClasses(parseTimetableText(dept, []), '100L', [{ code: 'GST 205' }]);
+    expect(out.slots.find((s: any) => s.courseCode === 'GST 205')?.day).toBe('Sun');
+  });
+
+  it('keeps everything in a personal timetable', () => {
+    const mine = 'CSC 201, Mon, 9:00 AM, 11:00 AM, LT\nMTH 201, Wed, 9:00 AM, 11:00 AM, LT';
+    expect(keepStudentsClasses(parseTimetableText(mine, []), '100L', []).slots).toHaveLength(2);
+  });
+});

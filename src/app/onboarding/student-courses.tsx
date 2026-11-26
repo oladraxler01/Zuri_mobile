@@ -17,8 +17,6 @@ import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic } from '@/context/academic-context';
-import { CatalogueSheet } from '@/components/onboarding/catalogue-sheet';
-import { catalogueFor } from '@/constants/course-catalogue';
 import { makeStyles, useTheme, type as typeStyles } from '@/theme';
 
 const LEVELS = ['100L', '200L', '300L', '400L', '500L'];
@@ -46,7 +44,6 @@ export default function StudentCoursesScreen() {
 
   // Modal State for adding course
   const [modalVisible, setModalVisible] = useState(false);
-  const [catalogueOpen, setCatalogueOpen] = useState(false);
   const [newCode, setNewCode] = useState('');
   const [newTitle, setNewTitle] = useState('');
   const [newUnits, setNewUnits] = useState('3');
@@ -240,9 +237,12 @@ export default function StudentCoursesScreen() {
           </Pressable>
         </View>
 
-        {/* Import from the department catalogue */}
+        {/* Find my courses in the department timetable */}
         <Pressable
-          onPress={() => setCatalogueOpen(true)}
+          onPress={() => {
+            setAcademicInfo({ department, level, semester });
+            router.push({ pathname: '/onboarding/student-timetable', params: { upload: '1' } } as Href);
+          }}
           style={({ pressed }) => [
             {
               flexDirection: 'row',
@@ -259,13 +259,11 @@ export default function StudentCoursesScreen() {
           ]}
           accessibilityRole="button"
         >
-          <Ionicons name="library-outline" size={20} color={colors.text} />
+          <Ionicons name="document-text-outline" size={20} color={colors.text} />
           <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: typeStyles.headline.fontFamily, fontSize: 14, color: colors.text }}>Import from course catalogue</Text>
+            <Text style={{ fontFamily: typeStyles.headline.fontFamily, fontSize: 14, color: colors.text }}>Find my courses in my department timetable</Text>
             <Text style={{ fontFamily: typeStyles.body.fontFamily, fontSize: 12, color: colors['text-muted'], marginTop: 2 }}>
-              {catalogueFor(department, level).length
-                ? `${catalogueFor(department, level).length} ${department} courses for ${level}`
-                : `Pick your department and level above`}
+              {`Upload the timetable PDF and Zuri adds your ${level} courses and class times`}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors['text-subtle']} />
@@ -325,16 +323,6 @@ export default function StudentCoursesScreen() {
         </Pressable>
       </View>
 
-      <CatalogueSheet
-        visible={catalogueOpen}
-        department={department}
-        level={level}
-        existingCodes={state.courses.map((c) => c.code)}
-        onClose={() => setCatalogueOpen(false)}
-        onImport={(list) =>
-          list.forEach((c) => addCourse({ code: c.code, title: c.title, units: c.units, lecturer: c.lecturer }))
-        }
-      />
 
       {/* Add Course Modal */}
       <Modal statusBarTranslucent navigationBarTranslucent
