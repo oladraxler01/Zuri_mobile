@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, StatusBar, type ScrollViewInstance } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, StatusBar, ActivityIndicator, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { setRecordingBusy } from '@/services/recording/busy';
 import { useRouter, useLocalSearchParams, useNavigation, usePreventRemove } from 'expo-router';
@@ -40,7 +40,7 @@ const LECTURE_RECORDING: RecordingOptions = {
 
 const BAR_COUNT = 28;
 
-type Phase = 'checking' | 'needs-permission' | 'denied' | 'ready' | 'recording' | 'paused' | 'completed' | 'error';
+type Phase = 'checking' | 'needs-permission' | 'denied' | 'ready' | 'recording' | 'paused' | 'completed' | 'saving' | 'error';
 
 export default function LectureRecordingScreen() {
   const router = useRouter();
@@ -80,6 +80,8 @@ export default function LectureRecordingScreen() {
   const [recordingUri, setRecordingUri] = useState<string | null>(null);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [savedId, setSavedId] = useState<string | null>(null);
   const allowLeave = useRef(false);
   const pendingLeave = useRef<any>(null);
 
@@ -151,8 +153,8 @@ export default function LectureRecordingScreen() {
   const isActive = phase === 'recording' || phase === 'paused' || phase === 'completed';
   // App updates wait until the recording is saved or discarded.
   useEffect(() => {
-    setRecordingBusy(isActive);
-  }, [isActive]);
+    setRecordingBusy(isActive || phase === 'saving');
+  }, [isActive, phase]);
   useEffect(() => () => setRecordingBusy(false), []);
   usePreventRemove(isActive, ({ data }) => {
     if (allowLeave.current) {
@@ -277,35 +279,50 @@ export default function LectureRecordingScreen() {
     leave();
   };
 
-  const save = () => {
-    if (live) {
-      const segments = lt.interim
-        ? [...lt.segments, { start: finalSeconds, end: finalSeconds, text: lt.interim }]
-        : lt.segments;
-      const id = saveRecording({
-        courseId: course?.id,
-        courseCode,
-        courseTitle,
-        durationSeconds: finalSeconds,
-        recordingUri: lt.audioUris[0],
-        extraAudioUris: lt.audioUris.slice(1),
-        liveTranscript: segments,
-      });
-      allowLeave.current = true;
-      router.replace(`/lecture/${id}` as Href);
-      return;
-    }
-    if (!recordingUri) return;
-    const id = saveRecording({
-      courseId: course?.id,
-      courseCode,
-      courseTitle,
-      durationSeconds: finalSeconds,
-      recordingUri,
-    });
+  /**
+   * Save & process. Shows "Saving your lecture" first, waits until the audio is safely
+   * moved into permanent storage, and only then opens the lecture (which plays and uploads
+   * that file). The leave-guard is off while saving ('saving' isn't an active phase), so
+   * switching to the lecture page can't be blocked half-way.
+   */
+  const save = async () => {
+    if (phase === 'saving') return;
+    if (!live && !recordingUri) return;
+    setSaveError('');
+    setPhase('saving');
     allowLeave.current = true;
-    router.replace(`/lecture/${id}` as Href);
+    // Let the saving screen draw before the file work starts.
+    await new Promise((r) => setTimeout(r, 60));
+    try {
+      const segments = live && lt.interim ? [...lt.segments, { start: finalSeconds, end: finalSeconds, text: lt.interim }] : lt.segments;
+      const id = await saveRecording(
+        live
+          ? {
+              courseId: course?.id,
+              courseCode,
+              courseTitle,
+              durationSeconds: finalSeconds,
+              recordingUri: lt.audioUris[0],
+              extraAudioUris: lt.audioUris.slice(1),
+              liveTranscript: segments,
+            }
+          : { courseId: course?.id, courseCode, courseTitle, durationSeconds: finalSeconds, recordingUri: recordingUri! }
+      );
+      setSavedId(id);
+    } catch (e) {
+      console.warn('[recording] save failed', e);
+      allowLeave.current = false;
+      setSaveError(
+        `Your recording is still here, but it couldn’t be saved${e instanceof Error && e.message ? ` (${e.message})` : ''}. Try again.`
+      );
+      setPhase('completed');
+    }
   };
+
+  // Saved: open the lecture, where its progress shows.
+  useEffect(() => {
+    if (savedId) router.replace(`/lecture/${savedId}` as Href);
+  }, [savedId]);
 
   if (!fontsLoaded) return <View style={styles.container} />;
 
@@ -335,6 +352,7 @@ export default function LectureRecordingScreen() {
     ) : null;
 
   const close = () => {
+    if (phase === 'saving') return; // nearly done: the lecture opens by itself
     if (isActive) setConfirmLeave(true);
     else leave();
   };
@@ -498,6 +516,14 @@ export default function LectureRecordingScreen() {
           </>
         )}
 
+        {phase === 'saving' && (
+          <View style={styles.centerBlock} accessibilityLiveRegion="polite">
+            <ActivityIndicator size="large" color={ZuriColors.primary} />
+            <Text style={styles.blockTitle}>Saving your lecture…</Text>
+            <Text style={styles.blockText}>Keep Zuri open for a moment. Next you’ll see the transcript and notes being made.</Text>
+          </View>
+        )}
+
         {phase === 'completed' && (
           <View style={styles.centerBlock}>
             <View style={[styles.bigIcon, { backgroundColor: UI.successSoft }]}>
@@ -521,6 +547,7 @@ export default function LectureRecordingScreen() {
               <SummaryRow icon="phone-portrait-outline" label="Saved to" value="This phone" />
             </View>
 
+            {!!saveError && <Text style={[styles.blockText, { color: UI.error }]}>{saveError}</Text>}
             <Pressable style={({ pressed }) => [styles.primaryWide, pressed && styles.btnPressed]} onPress={save}>
               <Ionicons name="cloud-upload-outline" size={18} color="#fff" />
               <Text style={styles.primaryWideText}>Save & process</Text>

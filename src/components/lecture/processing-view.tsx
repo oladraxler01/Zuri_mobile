@@ -80,7 +80,30 @@ export function ProcessingView({ lecture }: { lecture: Lecture }) {
   // When the real backend is used we don't get processing progress.
   const transcribing = !uploading && (p === undefined || p < 0.5);
 
-  const steps: { state: StepState; title: string; desc: string; progress?: number }[] = [
+  const words = lecture.liveTranscript?.reduce((n, s) => n + s.text.split(/\s+/).filter(Boolean).length, 0) ?? 0;
+  // Transcribed live on the phone: the transcript is already done; only the notes are being made.
+  const steps: { state: StepState; title: string; desc: string; progress?: number }[] = lecture.liveTranscript ? [
+    {
+      state: 'done',
+      title: 'Saved on your phone',
+      desc: `${formatDuration(lecture.durationSeconds)} recorded, kept safely even if you go offline.`,
+    },
+    {
+      state: 'done',
+      title: `Transcript ready · ${words.toLocaleString()} words`,
+      desc: 'Written live while you recorded. You can read it as soon as the notes are done.',
+    },
+    {
+      state: uploading ? 'active' : 'done',
+      title: uploading ? 'Sending the transcript to Zuri' : 'Sent to Zuri',
+      desc: 'So Zuri’s AI can make your notes.',
+    },
+    {
+      state: uploading ? 'pending' : 'active',
+      title: 'Preparing your study notes',
+      desc: 'Summary, key concepts, questions and flashcards.',
+    },
+  ] : [
     {
       state: 'done',
       title: 'Saved on your phone',

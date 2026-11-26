@@ -30,8 +30,8 @@ interface LecturesContextType {
   lectures: Lecture[];
   loaded: boolean;
   getLecture: (id: string) => Lecture | undefined;
-  /** Save a finished recording and start upload + processing. Returns the new id. */
-  saveRecording: (input: NewLecture) => string;
+  /** Save a finished recording (audio moved to permanent storage first), then start processing. Resolves with the new id. */
+  saveRecording: (input: NewLecture) => Promise<string>;
   retryProcessing: (id: string) => void;
   updateLecture: (id: string, patch: Partial<Lecture>) => void;
   deleteLecture: (id: string) => void;
@@ -39,16 +39,28 @@ interface LecturesContextType {
 
 const LecturesContext = createContext<LecturesContextType | undefined>(undefined);
 
-/** Move the recorder's temp file somewhere permanent (native only). */
-function persistAudio(tempUri: string, id: string): string {
+/**
+ * Move the recorder's temp file somewhere permanent (native only), and wait until it's there.
+ * A move inside the app's storage is a rename, so it's instant even for an hour of
+ * uncompressed live-transcription audio (100+ MB). Copy is only the fallback.
+ * Nothing may open the file (player, upload) before this resolves: a half-written
+ * file can crash the app.
+ */
+async function persistAudio(tempUri: string, id: string): Promise<string> {
   if (Platform.OS === 'web') return tempUri; // blob URL; lives until reload
   try {
     const dir = new Directory(Paths.document, 'lectures');
     if (!dir.exists) dir.create({ intermediates: true });
     const source = new File(tempUri);
+    if (!source.exists) return tempUri;
     const dest = new File(dir, `${id}${source.extension || '.m4a'}`);
-    source.copy(dest);
-    return dest.uri;
+    if (dest.exists) dest.delete();
+    try {
+      await source.move(dest);
+    } catch {
+      await source.copy(dest);
+    }
+    return dest.exists ? dest.uri : tempUri;
   } catch (e) {
     console.warn('Could not move recording to permanent storage', e);
     return tempUri;
@@ -234,8 +246,12 @@ export function LecturesProvider({ children }: { children: React.ReactNode }) {
   }, [isOnline, loaded, run]);
 
   const saveRecording = useCallback(
-    (input: NewLecture) => {
+    async (input: NewLecture) => {
       const id = `lec_${Date.now().toString(36)}`;
+      const audioUri = input.recordingUri ? await persistAudio(input.recordingUri, id) : undefined;
+      const extraAudioUris = input.extraAudioUris
+        ? await Promise.all(input.extraAudioUris.map((u, i) => persistAudio(u, `${id}-${i + 2}`)))
+        : undefined;
       const lecture: Lecture = {
         id,
         courseId: input.courseId,
@@ -243,9 +259,9 @@ export function LecturesProvider({ children }: { children: React.ReactNode }) {
         courseTitle: input.courseTitle,
         createdAt: new Date().toISOString(),
         durationSeconds: input.durationSeconds,
-        audioUri: input.recordingUri ? persistAudio(input.recordingUri, id) : undefined,
+        audioUri,
         liveTranscript: input.liveTranscript,
-        extraAudioUris: input.extraAudioUris?.map((u, i) => persistAudio(u, `${id}-${i + 2}`)),
+        extraAudioUris,
         status: input.liveTranscript ? 'processing' : 'uploading',
         progress: 0,
       };
