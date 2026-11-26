@@ -10,6 +10,7 @@ import { startFreshForNewAccount } from '@/utils/account-owner';
 import { useAcademic } from '@/context/academic-context';
 import { register, login, resendVerification, setPendingSignIn, MIN_PASSWORD_LENGTH } from '@/services/auth-api';
 import { isValidEmail } from '@/utils/validation';
+import { useSocialSignIn } from '@/hooks/use-social-sign-in';
 import { makeStyles, useTheme } from '@/theme';
 
 export default function SignUpScreen() {
@@ -27,6 +28,7 @@ export default function SignUpScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState('');
+  const social = useSocialSignIn(setFormError);
 
   if (!fontsLoaded) {
     return <View style={styles.container} />;
@@ -91,9 +93,6 @@ export default function SignUpScreen() {
     router.replace('/onboarding/sign-in' as Href);
   };
 
-  const handleSocialSignUp = (provider: 'Google' | 'Apple') => {
-    Alert.alert(`${provider} sign-up is coming soon`, 'For now, create your account with your email address.');
-  };
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
@@ -245,43 +244,59 @@ export default function SignUpScreen() {
             </Text>
           </View>
 
-          {/* Divider */}
-          <View style={styles.dividerRow}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.dividerLine} />
-          </View>
+          {social.any && (
+            <>
+              {/* Divider */}
+              <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or</Text>
+                <View style={styles.dividerLine} />
+              </View>
 
-          {/* Social Buttons */}
-          <View style={styles.socialGroup}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.socialButton,
-                pressed && styles.socialButtonPressed,
-              ]}
-              onPress={() => handleSocialSignUp('Google')}
-              accessibilityRole="button"
-              accessibilityLabel="Continue with Google"
-            >
-              {/* Google brand colour: a third-party mark, not a Zuri token. */}
-              {/* eslint-disable-next-line no-restricted-syntax */}
-              <Ionicons name="logo-google" size={20} color={'#EA4335'} />
-              <Text style={styles.socialButtonText}>Continue with Google</Text>
-            </Pressable>
+              {/* Social Buttons */}
+              <View style={styles.socialGroup}>
+                {social.google && (
+                  <Pressable
+                    style={({ pressed }) => [styles.socialButton, pressed && styles.socialButtonPressed]}
+                    onPress={() => social.signIn('google')}
+                    disabled={!!social.busy}
+                    accessibilityRole="button"
+                    accessibilityLabel="Continue with Google"
+                  >
+                    {social.busy === 'google' ? (
+                      <ActivityIndicator color={colors.text} />
+                    ) : (
+                      <>
+                        {/* Google brand colour: a third-party mark, not a Zuri token. */}
+                        {/* eslint-disable-next-line no-restricted-syntax */}
+                        <Ionicons name="logo-google" size={20} color={'#EA4335'} />
+                        <Text style={styles.socialButtonText}>Continue with Google</Text>
+                      </>
+                    )}
+                  </Pressable>
+                )}
 
-            <Pressable
-              style={({ pressed }) => [
-                styles.socialButton,
-                pressed && styles.socialButtonPressed,
-              ]}
-              onPress={() => handleSocialSignUp('Apple')}
-              accessibilityRole="button"
-              accessibilityLabel="Continue with Apple"
-            >
-              <Ionicons name="logo-apple" size={22} color={colors.text} />
-              <Text style={styles.socialButtonText}>Continue with Apple</Text>
-            </Pressable>
-          </View>
+                {social.apple && (
+                  <Pressable
+                    style={({ pressed }) => [styles.socialButton, pressed && styles.socialButtonPressed]}
+                    onPress={() => social.signIn('apple')}
+                    disabled={!!social.busy}
+                    accessibilityRole="button"
+                    accessibilityLabel="Continue with Apple"
+                  >
+                    {social.busy === 'apple' ? (
+                      <ActivityIndicator color={colors.text} />
+                    ) : (
+                      <>
+                        <Ionicons name="logo-apple" size={22} color={colors.text} />
+                        <Text style={styles.socialButtonText}>Continue with Apple</Text>
+                      </>
+                    )}
+                  </Pressable>
+                )}
+              </View>
+            </>
+          )}
         </KeyboardAwareScrollView>
       </View>
     </SafeAreaView>
