@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -13,6 +13,7 @@ import { ScreenShell, Panel, ListRow, Divider, StatusBadge } from '@/components/
 import { localDateKey } from '@/utils/planner';
 import { formatDuration } from '@/utils/time';
 import { buildDescription } from '@/constants/build';
+import { checkForAppUpdate, onUpdateStatus, restartIntoUpdate, updateStatus, type UpdateStatus } from '@/services/app-updates';
 import type { IoniconName } from '@/types/lecture';
 
 type Row = { icon: IoniconName; title: string; subtitle: string; href: string };
@@ -105,7 +106,37 @@ export default function YouScreen() {
         <Text style={styles.signOutText}>Sign out</Text>
       </Pressable>
       <Text style={styles.build}>{buildDescription()}</Text>
+      <UpdateCheck />
     </ScreenShell>
+  );
+}
+
+const UPDATE_WORDS: Record<UpdateStatus, string> = {
+  idle: 'Check for updates',
+  checking: 'Checking for updates…',
+  downloading: 'Downloading the update…',
+  ready: 'Update ready · Restart now',
+  'up-to-date': 'You have the latest version · Check again',
+  error: 'Couldn’t check. Tap to try again',
+};
+
+/** Testers can pull the newest update by hand (it also happens on its own). */
+function UpdateCheck() {
+  const [status, setStatus] = useState<UpdateStatus>(updateStatus());
+  useEffect(() => onUpdateStatus(setStatus), []);
+  if (__DEV__) return null;
+  const busy = status === 'checking' || status === 'downloading';
+  return (
+    <Pressable
+      onPress={() => (status === 'ready' ? restartIntoUpdate() : checkForAppUpdate(true))}
+      disabled={busy}
+      style={styles.updateBtn}
+      accessibilityRole="button"
+      accessibilityState={{ busy }}
+      accessibilityLabel={UPDATE_WORDS[status]}
+    >
+      <Text style={styles.updateText}>{UPDATE_WORDS[status]}</Text>
+    </Pressable>
   );
 }
 
@@ -148,4 +179,6 @@ const styles = StyleSheet.create({
   signOut: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, borderRadius: 25, borderWidth: 1, borderColor: UI.errorSoft, backgroundColor: '#fff8f7' },
   build: { fontFamily: ZuriFonts.bodyRegular, fontSize: 11, color: UI.muted, textAlign: 'center', marginTop: 4 },
   signOutText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 14, color: UI.error },
+  updateBtn: { minHeight: 48, alignItems: 'center', justifyContent: 'center' },
+  updateText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.inkSoft, textDecorationLine: 'underline' },
 });

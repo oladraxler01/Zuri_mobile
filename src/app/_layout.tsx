@@ -18,6 +18,7 @@ import { InstitutionProvider } from '@/context/institution-context';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { OfflineBanner } from '@/components/states/offline-banner';
 import { ReminderSync } from '@/components/reminder-sync';
+import { UpdateBanner } from '@/components/update-banner';
 import { StateView } from '@/components/states/state-view';
 import { UI } from '@/constants/zuri-ui';
 import { ThemeProvider } from '@/theme';
@@ -117,6 +118,7 @@ function AppShell() {
       </Stack>
       <OfflineBanner />
       <ReminderSync />
+      <UpdateBanner />
     </View>
   );
 }
