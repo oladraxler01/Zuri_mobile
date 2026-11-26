@@ -24,7 +24,7 @@ npm run update:preview -- "Timetable import from photos"
 npm run update:production -- "Fix sign-in"
 ```
 
-Use these scripts, not plain `eas update`. `eas update` bundles on your computer, so `EXPO_PUBLIC_*` values would come from your local `.env` (APP_ENV=development, no diagnostics) instead of the build profile. `scripts/publish-update.mjs` copies the `env` of the `eas.json` profile that uses the channel.
+Pushes to `main` publish to `preview` by themselves (see CI/CD pipeline below); these commands are for publishing by hand. Use them, not plain `eas update`. `eas update` bundles on your computer, so `EXPO_PUBLIC_*` values would come from your local `.env` (APP_ENV=development, no diagnostics) instead of the build profile. `scripts/publish-update.mjs` copies the `env` of the `eas.json` profile that uses the channel.
 
 **Who receives an update**
 - Only builds on the same channel (preview APKs listen on `preview`).
@@ -40,15 +40,17 @@ Use these scripts, not plain `eas update`. `eas update` bundles on your computer
 - Adding or upgrading a package with native code (e.g. `expo-image-picker`), or changing `app.json` plugins, permissions, icon, splash or package name.
 - Then bump `app.json` `"version"` (e.g. `1.2.0`), build (`npx eas build --profile preview --platform android`) and send testers the new APK. Updates published after that target the new version.
 
-## CI/CD pipeline (GitHub Actions)
+## CI/CD pipeline
 
-| Workflow | When | What |
+| Where | When | What |
 |---|---|---|
-| `ci.yml` | Every pull request and push to `main` | Design tokens, typecheck, lint, tests, web export |
-| `eas-update.yml` | After CI passes on a push to `main`; or by hand (Actions → Publish app update) | Publishes the JS to `preview` (by hand: `preview` or `production`). Installed APKs on that channel and version pick it up |
-| `eas-build.yml` | By hand only (Actions → Build app) | Starts an EAS build (APK for testers, or store build). Needed only for native changes |
+| GitHub Actions `.github/workflows/ci.yml` | Every pull request and push to `main` | Design tokens, typecheck, lint, tests, web export: the check before merging |
+| EAS Workflows `.eas/workflows/deploy.yml` | Every push to `main` | **Test** (typecheck, lint, tests) → **stage**: update to the `preview` channel (test APKs get it) → **approve** on expo.dev → **release**: update to the `production` channel |
+| EAS Workflows `.eas/workflows/build-preview-apk.yml` | By hand (expo.dev → Workflows, or `npx eas-cli workflow:run .eas/workflows/build-preview-apk.yml`) | A new test APK. Needed only for native changes or a version bump |
 
-Both Expo workflows need the repository secret **`EXPO_TOKEN`**, made in the Expo account that owns the project (`app.json` → `extra.eas.projectId`, slug `LexiMobile`): expo.dev → Account settings → Access tokens (a robot token on an organisation is best). Without it, the automatic update is skipped with a warning.
+EAS Workflows run on Expo's servers. For pushes to start them, the GitHub repo must be connected to the Expo project: expo.dev → the project → **Settings → GitHub** → install the Expo GitHub app → pick `Zuri_mobile`. No GitHub secret is needed.
+
+The `EXPO_PUBLIC_*` values for each update are set in `deploy.yml` and match the `eas.json` build profile, so updates behave like the builds they land on. Add `[eas skip]` to a commit message to skip a run.
 
 Installed APKs only ever listen to the project, channel and runtime version they were built with. Publishing from a different Expo account or project never reaches them.
 

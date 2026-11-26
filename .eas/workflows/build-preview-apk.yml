@@ -1,0 +1,28 @@
+# A new test APK. Only needed when native code changes (a new native package,
+# app.json plugins, permissions, icon) or app.json "version" is bumped; everything
+# else ships as an update through deploy.yml.
+#
+# Run it from the project's Workflows page on expo.dev, or:
+#   npx eas-cli workflow:run .eas/workflows/build-preview-apk.yml
+# The download link appears on expo.dev when the build finishes.
+
+name: Build a preview APK
+
+jobs:
+  test:
+    name: Typecheck, lint and test
+    steps:
+      - uses: eas/checkout
+      - uses: eas/install_node_modules
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm run test:ci
+
+  build_android:
+    name: Build the Android APK
+    needs: [test]
+    type: build
+    params:
+      platform: android
+      profile: preview
