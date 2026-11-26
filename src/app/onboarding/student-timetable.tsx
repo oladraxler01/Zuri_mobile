@@ -8,7 +8,6 @@ import {
   StatusBar,
   Modal,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,16 +17,8 @@ import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useZuriFonts } from '@/hooks/use-zuri-fonts';
 import { useAcademic, TimetableSlot } from '@/context/academic-context';
-import * as DocumentPicker from 'expo-document-picker';
-import { File } from 'expo-file-system';
-import { Platform } from 'react-native';
-import { parseTimetableText, normaliseCode, keepStudentsClasses } from '@/utils/timetable-import';
-import { readTimetablePdf } from '@/services/timetable-file-api';
-import { currentUser } from '@/services/api-client';
-import { isBackendConfigured } from '@/services/api-config';
+import { TimetableImport } from '@/components/academic/timetable-import';
 import { makeStyles, useTheme } from '@/theme';
-
-const signedIn = () => isBackendConfigured && !!currentUser();
 
 const DAYS: TimetableSlot['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -46,8 +37,8 @@ export default function StudentTimetableScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ upload?: string }>();
   const [fontsLoaded] = useZuriFonts();
-  const { state, addTimetableSlot, removeTimetableSlot, setTimetableSlots, addCourse } = useAcademic();
-  const [importMsg, setImportMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const { state, addTimetableSlot, removeTimetableSlot } = useAcademic();
+  const [importMsg, setImportMsg] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<'manual' | 'upload'>(params.upload ? 'upload' : 'manual');
   const [selectedDay, setSelectedDay] = useState<TimetableSlot['day']>('Mon');
@@ -58,11 +49,6 @@ export default function StudentTimetableScreen() {
   const [startTime, setStartTime] = useState('09:00 AM');
   const [endTime, setEndTime] = useState('11:00 AM');
   const [venue, setVenue] = useState('Lecture Theatre A');
-
-  // Upload scanning simulation
-  const [scanning, setScanning] = useState(false);
-  const [scanStage, setScanStage] = useState('Reading your timetable…');
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
   if (!fontsLoaded) {
     return <View style={styles.container} />;
@@ -93,97 +79,6 @@ export default function StudentTimetableScreen() {
     });
 
     setModalVisible(false);
-  };
-
-  // Import a timetable from a CSV / text file (read on the phone).
-  const handleSimulateUpload = async () => {
-    setImportMsg(null);
-    const res = await DocumentPicker.getDocumentAsync({
-      type: ['text/*', 'text/csv', 'application/vnd.ms-excel', 'application/pdf', 'image/*'],
-      copyToCacheDirectory: true,
-    });
-    if (res.canceled || !res.assets?.length) return;
-    const f = res.assets[0];
-    setUploadedFileName(f.name);
-    const isText = /^text\//.test(f.mimeType ?? '') || /\.(csv|txt|tsv)$/i.test(f.name);
-    const isPdf = f.mimeType === 'application/pdf' || /\.pdf$/i.test(f.name);
-    if (!isText && !isPdf) {
-      setImportMsg({
-        ok: false,
-        text: 'Zuri can’t read photos of timetables yet. Use the PDF from your department, a CSV or text file, or add classes by hand.',
-      });
-      return;
-    }
-    setScanning(true);
-    setScanStage('Reading your timetable…');
-    try {
-      let parsed;
-      if (isText) {
-        const text = Platform.OS === 'web' ? await (await fetch(f.uri)).text() : await new File(f.uri).text();
-        parsed = parseTimetableText(text, state.courses);
-      } else {
-        if (!signedIn()) {
-          setImportMsg({ ok: false, text: 'Sign in first: Zuri reads PDFs on its server.' });
-          return;
-        }
-        const read = await readTimetablePdf(
-          { uri: f.uri, name: f.name, mimeType: 'application/pdf', sizeBytes: f.size ?? undefined },
-          setScanStage
-        );
-        const fromAi = read.aiText ? parseTimetableText(read.aiText, state.courses) : null;
-        const fromPdf = parseTimetableText(read.text, state.courses);
-        parsed = fromAi && fromAi.slots.length >= fromPdf.slots.length ? fromAi : fromPdf;
-      }
-      // Same class listed twice (e.g. on two pages): keep one.
-      const seen = new Set<string>();
-      parsed = {
-        ...parsed,
-        slots: parsed.slots.filter((sl) => {
-          const k = `${sl.courseCode}|${sl.day}|${sl.startTime}`;
-          if (seen.has(k)) return false;
-          seen.add(k);
-          return true;
-        }),
-      };
-      // A department timetable has every level on it: keep this student's classes.
-      parsed = keepStudentsClasses(parsed, state.level, state.courses);
-      if (!parsed.slots.length) {
-        setImportMsg({
-          ok: false,
-          text: isPdf
-            ? `No ${state.level} classes found in that PDF. If it’s a scanned image it can’t be read yet; add your classes by hand.`
-            : 'No classes found. Each line needs a course code, a day, a start and end time, and a venue.',
-        });
-        return;
-      }
-      // Add any courses the file mentions that aren't in the list yet.
-      const idByCode = new Map(state.courses.map((c) => [normaliseCode(c.code), c.id]));
-      for (const code of parsed.unknownCodes) {
-        idByCode.set(code, addCourse({ code, title: code, units: 3 }));
-      }
-      const added: TimetableSlot[] = parsed.slots.map((sl, k) => ({
-        ...sl,
-        id: `imp_${Date.now().toString(36)}_${k}`,
-        courseId: idByCode.get(sl.courseCode) ?? '',
-      }));
-      setTimetableSlots([...state.timetable, ...added]);
-      setImportMsg({
-        ok: true,
-        text:
-          `Imported ${added.length} ${added.length === 1 ? 'class' : 'classes'}` +
-          (parsed.unknownCodes.length ? `, and added ${parsed.unknownCodes.join(', ')} to your courses` : '') +
-          (parsed.skipped.length ? `. ${parsed.skipped.length} line${parsed.skipped.length > 1 ? 's' : ''} couldn’t be read.` : '.') +
-          ' Check them on the next step.',
-      });
-      setActiveTab('manual');
-    } catch (e) {
-      setImportMsg({
-        ok: false,
-        text: isPdf && e instanceof Error && e.message ? e.message : 'That file couldn’t be read. Try saving it again as CSV or plain text.',
-      });
-    } finally {
-      setScanning(false);
-    }
   };
 
   const handleProceed = () => {
@@ -274,56 +169,21 @@ export default function StudentTimetableScreen() {
         </View>
 
         {activeTab === 'upload' ? (
-          /* Upload / Document Scan Section */
-          <View style={styles.uploadContainer}>
-            <View style={styles.uploadDropZone}>
-              <View style={styles.uploadIconCircle}>
-                <Ionicons name="document-text-outline" size={32} color={colors.text} />
-              </View>
-              <Text style={styles.uploadHeading}>Upload Departmental Timetable</Text>
-              <Text style={styles.uploadSubtext}>
-                Pick a CSV or text file with one class per line, for example:{'\n'}CSC 201, Mon, 09:00 AM, 11:00 AM, Faculty Lab 2
-              </Text>
-
-              {uploadedFileName ? (
-                <View style={styles.filePill}>
-                  <Ionicons name="checkmark-circle" size={18} color={colors.text} />
-                  <Text style={styles.filePillText} numberOfLines={1}>{uploadedFileName}</Text>
-                </View>
-              ) : null}
-
-              {scanning ? (
-                <View style={styles.scanningBox}>
-                  <ActivityIndicator size="small" color={colors.text} />
-                  <Text style={styles.scanningText}>{scanStage}</Text>
-                </View>
-              ) : (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.uploadActionBtn,
-                    pressed && styles.uploadActionBtnPressed,
-                  ]}
-                  onPress={handleSimulateUpload}
-                >
-                  <Ionicons name="cloud-upload" size={18} color={colors['on-primary']} />
-                  <Text style={styles.uploadActionBtnText}>
-                    {uploadedFileName ? 'Import another file' : 'Choose timetable file'}
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-
-            <View style={styles.infoCallout}>
-              <Ionicons name={importMsg ? (importMsg.ok ? 'checkmark-circle' : 'alert-circle') : 'information-circle-outline'} size={16} color={importMsg && !importMsg.ok ? colors.danger : colors['accent-text']} />
-              <Text style={styles.infoCalloutText}>
-                {importMsg?.text ??
-                  'Columns can be in any order and separated by commas, semicolons or tabs. Times like 9-11, 2:00 PM or 14:00 all work. Courses not in your list are added for you.'}
-              </Text>
-            </View>
-          </View>
+          <TimetableImport
+            onSaved={(message) => {
+              setImportMsg(`${message} Check them below.`);
+              setActiveTab('manual');
+            }}
+          />
         ) : (
           /* Manual Schedule Builder */
           <View style={styles.manualContainer}>
+            {importMsg ? (
+              <View style={styles.infoCallout} accessibilityLiveRegion="polite">
+                <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+                <Text style={styles.infoCalloutText}>{importMsg}</Text>
+              </View>
+            ) : null}
             {/* Days Selector Row */}
             <View style={styles.daysRow}>
               {DAYS.map((day) => {
@@ -690,70 +550,6 @@ const useStyles = makeStyles((t) => ({
   },
   modeTabTextSelected: {
     color: t.colors.text,
-  },
-  // Upload
-  uploadContainer: {
-    gap: 16,
-  },
-  uploadDropZone: {
-    borderWidth: 1.5,
-    borderColor: 'rgba(115, 120, 115, 0.3)',
-    borderStyle: 'dashed',
-    borderRadius: t.radius.lg,
-    padding: 24,
-    alignItems: 'center',
-    backgroundColor: t.colors['surface-sunken'],
-  },
-  uploadIconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: t.radius.full,
-    backgroundColor: t.colors['surface-raised'],
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  uploadHeading: { ...t.type['title-2'], color: t.colors.text,
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  uploadSubtext: { ...t.type.footnote, color: t.colors['text-muted'],
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  filePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: t.colors.tint,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: t.radius.md,
-    marginBottom: 16,
-  },
-  filePillText: { ...t.type.caption, color: t.colors.text,
-  },
-  scanningBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 8,
-  },
-  scanningText: { ...t.type.footnote, color: t.colors.text,
-  },
-  uploadActionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: t.colors.primary,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: t.radius.md,
-  },
-  uploadActionBtnPressed: {
-    opacity: 0.9,
-  },
-  uploadActionBtnText: { ...t.type.subhead, color: t.colors['on-primary'],
   },
   infoCallout: {
     flexDirection: 'row',
