@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
-import * as AppleAuthentication from 'expo-apple-authentication';
-import * as Crypto from 'expo-crypto';
-import { GoogleSignin, isErrorWithCode, isSuccessResponse, statusCodes } from '@react-native-google-signin/google-signin';
+import type * as AppleAuthenticationModule from 'expo-apple-authentication';
+import type * as CryptoModule from 'expo-crypto';
+import type * as GoogleSignInModule from '@react-native-google-signin/google-signin';
 import { ApiError, apiRequest, saveSession, type AuthUser } from '@/services/api-client';
 import { claimLocalData } from '@/utils/account-owner';
 
@@ -38,23 +38,43 @@ interface ProviderCredential extends SocialProof {
   last_name?: string;
 }
 
+/*
+ * The Google, Apple and crypto packages have native code. They are loaded only
+ * when needed, and a build that doesn't contain them (an older APK receiving a
+ * newer over-the-air update) just hides the buttons instead of crashing.
+ */
+function load<T>(get: () => T): T | null {
+  try {
+    return get();
+  } catch {
+    return null;
+  }
+}
+/* eslint-disable @typescript-eslint/no-require-imports */
+const nativeGoogle = () => load<typeof GoogleSignInModule>(() => require('@react-native-google-signin/google-signin'));
+const nativeApple = () => load<typeof AppleAuthenticationModule>(() => require('expo-apple-authentication'));
+const nativeCrypto = () => load<typeof CryptoModule>(() => require('expo-crypto'));
+/* eslint-enable @typescript-eslint/no-require-imports */
+
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '';
 
 /** Google needs its client IDs in the build; without them the button is hidden. */
 export function isGoogleSignInAvailable(): boolean {
   if (Platform.OS === 'web' || !GOOGLE_WEB_CLIENT_ID) return false;
-  return Platform.OS !== 'ios' || !!GOOGLE_IOS_CLIENT_ID;
+  if (Platform.OS === 'ios' && !GOOGLE_IOS_CLIENT_ID) return false;
+  return nativeGoogle() !== null;
 }
 
 /** Sign in with Apple exists on iPhone and iPad only. */
 export async function isAppleSignInAvailable(): Promise<boolean> {
-  if (Platform.OS !== 'ios') return false;
-  return AppleAuthentication.isAvailableAsync().catch(() => false);
+  const apple = Platform.OS === 'ios' ? nativeApple() : null;
+  if (!apple || !nativeCrypto()) return false;
+  return apple.isAvailableAsync().catch(() => false);
 }
 
 let googleConfigured = false;
-function configureGoogle() {
+function configureGoogle(GoogleSignin: typeof GoogleSignInModule.GoogleSignin) {
   if (googleConfigured) return;
   GoogleSignin.configure({
     webClientId: GOOGLE_WEB_CLIENT_ID,
@@ -66,10 +86,12 @@ function configureGoogle() {
 
 /** null = the student closed the sheet. */
 async function googleCredential(): Promise<ProviderCredential | null> {
-  if (!isGoogleSignInAvailable()) {
-    throw new ApiError('server', 'Google sign-in isn’t set up in this version of the app.');
+  const google = isGoogleSignInAvailable() ? nativeGoogle() : null;
+  if (!google) {
+    throw new ApiError('server', 'Google sign-in isn’t set up in this version of the app. Update the app to use it.');
   }
-  configureGoogle();
+  const { GoogleSignin, isErrorWithCode, isSuccessResponse, statusCodes } = google;
+  configureGoogle(GoogleSignin);
   try {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
     // Always show the account picker, so a shared phone can choose another account.
@@ -93,6 +115,11 @@ async function googleCredential(): Promise<ProviderCredential | null> {
 
 /** null = the student closed the sheet. */
 async function appleCredential(): Promise<ProviderCredential | null> {
+  const AppleAuthentication = Platform.OS === 'ios' ? nativeApple() : null;
+  const Crypto = nativeCrypto();
+  if (!AppleAuthentication || !Crypto) {
+    throw new ApiError('server', 'Sign in with Apple isn’t available in this version of the app. Update the app to use it.');
+  }
   // Apple is given the SHA-256 of the nonce; the server checks the raw one.
   const nonce = Crypto.randomUUID();
   const hashed = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, nonce);
