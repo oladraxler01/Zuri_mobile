@@ -17,7 +17,7 @@ These answers match what the app and server actually do (checked against the cod
 |---|---|---|
 | Personal info → Name | App functionality, Account management | |
 | Personal info → Email address | App functionality, Account management | |
-| Personal info → User IDs | App functionality, Account management | |
+| Personal info → User IDs | App functionality, Account management | Includes the Google / Apple account ID if they sign in with one. |
 | Audio → Voice or sound recordings | App functionality | **Optional.** Only when the user taps record. |
 | Photos and videos → Photos | App functionality | **Optional.** Timetable photos. Mark "processed ephemerally": they're read and not kept. |
 | Files and docs → Files and docs | App functionality | **Optional.** Uploaded slides, notes and past questions. |
@@ -67,5 +67,5 @@ Not collected: location, health, financial info, contacts, browsing or search hi
 - **Support URL:** https://zurilearn.com/support
 - **Export compliance:** already answered in `app.json` (`ITSAppUsesNonExemptEncryption: false`). The app uses only standard HTTPS.
 - **Age rating questionnaire:** everything **None** / **No**. Unrestricted web access: No. User-generated content shared with others: No. Expect 4+. Apple may suggest 12+ because of the AI chat; accept whatever it calculates.
-- **Sign in with Apple:** not required, because the app uses only its own email-and-password accounts (no Google or Facebook sign-in).
+- **Sign in with Apple:** offered alongside Continue with Google, as Guideline 4.8 requires. Deleting an account revokes the Apple sign-in.
 - **Account deletion (Guideline 5.1.1(v)):** Settings → Account → Delete account.

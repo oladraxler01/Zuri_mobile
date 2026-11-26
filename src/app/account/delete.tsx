@@ -1,10 +1,16 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, Linking, Alert } from 'react-native';
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { useTheme } from '@/theme';
 import { ScreenShell, Panel } from '@/components/dashboard';
-import { deleteAccount } from '@/services/auth-api';
+import { deleteAccount, type DeleteProof } from '@/services/auth-api';
+import {
+  isAppleSignInAvailable,
+  isGoogleSignInAvailable,
+  socialProof,
+  type SocialProvider,
+} from '@/services/social-auth';
 import { useSession } from '@/context/session-context';
 import { resetAllData } from '@/utils/reset';
 
@@ -21,6 +27,21 @@ export default function DeleteAccountScreen() {
   const [sure, setSure] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // Accounts made with Google / Apple may have no password: confirm with them instead.
+  const noPassword = user?.has_password === false;
+  const [apple, setApple] = useState(false);
+  const google = isGoogleSignInAvailable();
+  useEffect(() => {
+    if (noPassword) isAppleSignInAvailable().then(setApple);
+  }, [noPassword]);
+
+  const finish = async (proof: DeleteProof) => {
+    await deleteAccount(proof);
+    await resetAllData();
+    signOut();
+    router.replace('/onboarding/welcome' as Href);
+    Alert.alert('Account deleted', 'Your account is closed, and all your data will be permanently deleted within 24 hours.');
+  };
 
   const remove = async () => {
     if (busy) return;
@@ -29,11 +50,25 @@ export default function DeleteAccountScreen() {
     setError('');
     setBusy(true);
     try {
-      await deleteAccount(password);
-      await resetAllData();
-      signOut();
-      router.replace('/onboarding/welcome' as Href);
-      Alert.alert('Account deleted', 'Your account is closed, and all your data will be permanently deleted within 24 hours.');
+      await finish({ password });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'We couldn’t delete your account. Please try again.');
+      setBusy(false);
+    }
+  };
+
+  const removeWith = async (provider: SocialProvider) => {
+    if (busy) return;
+    if (!sure) return setError('Tick the box to confirm.');
+    setError('');
+    setBusy(true);
+    try {
+      const proof = await socialProof(provider);
+      if (!proof) {
+        setBusy(false);
+        return;
+      }
+      await finish(proof);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'We couldn’t delete your account. Please try again.');
       setBusy(false);
@@ -69,34 +104,60 @@ export default function DeleteAccountScreen() {
               <Text style={styles.checkText}>I understand my account and data will be permanently deleted.</Text>
             </Pressable>
 
-            <View style={styles.field}>
-              <Text style={styles.label}>Your password</Text>
-              <TextInput
-                style={styles.input}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                onSubmitEditing={remove}
-              />
-            </View>
-            {!!error && <Text style={styles.error}>{error}</Text>}
-            <Pressable
-              style={[styles.button, busy && { opacity: 0.7 }]}
-              onPress={remove}
-              disabled={busy}
-              accessibilityRole="button"
-            >
-              {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Delete my account</Text>}
-            </Pressable>
-            <Pressable
-              onPress={() => router.push({ pathname: '/onboarding/forgot-password', params: { email: user.email } } as Href)}
-              style={styles.linkWrap}
-              accessibilityRole="link"
-            >
-              <Text style={styles.link}>Forgot your password?</Text>
-            </Pressable>
+            {noPassword ? (
+              <>
+                <Text style={styles.body}>Confirm it’s you by signing in again with the account you used for Zuri.</Text>
+                {!!error && <Text style={styles.error}>{error}</Text>}
+                {busy && <ActivityIndicator color={colors.danger} />}
+                {google && (
+                  <Pressable style={[styles.button, busy && { opacity: 0.7 }]} onPress={() => removeWith('google')} disabled={busy} accessibilityRole="button">
+                    <Text style={styles.buttonText}>Confirm with Google and delete</Text>
+                  </Pressable>
+                )}
+                {apple && (
+                  <Pressable style={[styles.button, busy && { opacity: 0.7 }]} onPress={() => removeWith('apple')} disabled={busy} accessibilityRole="button">
+                    <Text style={styles.buttonText}>Confirm with Apple and delete</Text>
+                  </Pressable>
+                )}
+                {!google && !apple && (
+                  <Text style={styles.body}>
+                    This phone can’t confirm with Google or Apple. Set a password with “Forgot your password?” on the sign-in
+                    screen, or use the link below.
+                  </Text>
+                )}
+              </>
+            ) : (
+              <>
+                <View style={styles.field}>
+                  <Text style={styles.label}>Your password</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    onSubmitEditing={remove}
+                  />
+                </View>
+                {!!error && <Text style={styles.error}>{error}</Text>}
+                <Pressable
+                  style={[styles.button, busy && { opacity: 0.7 }]}
+                  onPress={remove}
+                  disabled={busy}
+                  accessibilityRole="button"
+                >
+                  {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Delete my account</Text>}
+                </Pressable>
+                <Pressable
+                  onPress={() => router.push({ pathname: '/onboarding/forgot-password', params: { email: user.email } } as Href)}
+                  style={styles.linkWrap}
+                  accessibilityRole="link"
+                >
+                  <Text style={styles.link}>Forgot your password?</Text>
+                </Pressable>
+              </>
+            )}
             <Pressable
               onPress={() => Linking.openURL('https://zurilearn.com/delete-account')}
               style={styles.linkWrap}
