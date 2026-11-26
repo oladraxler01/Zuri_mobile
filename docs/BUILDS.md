@@ -17,12 +17,42 @@ npx eas build --profile preview --platform all
 
 ## Over-the-air updates (`expo-updates`)
 
-- `runtimeVersion` follows the app version (`"policy": "appVersion"`): a JS-only fix ships as an update; anything that changes native code needs a new version and a new build.
-- Each profile listens on its own channel, so an update reaches only that kind of build:
+Publish JavaScript changes to the APKs testers already have:
 
 ```bash
-npx eas update --channel preview --message "Fix timetable import"
+npm run update:preview -- "Timetable import from photos"
+npm run update:production -- "Fix sign-in"
 ```
+
+Pushes to `main` publish to `preview` by themselves (see CI/CD pipeline below); these commands are for publishing by hand. Use them, not plain `eas update`. `eas update` bundles on your computer, so `EXPO_PUBLIC_*` values would come from your local `.env` (APP_ENV=development, no diagnostics) instead of the build profile. `scripts/publish-update.mjs` copies the `env` of the `eas.json` profile that uses the channel.
+
+**Who receives an update**
+- Only builds on the same channel (preview APKs listen on `preview`).
+- Only builds with the same runtime version. `runtimeVersion` follows `app.json` `"version"` (`"policy": "appVersion"`), now `1.1.0`. APKs built as `1.0.0` never receive `1.1.0` updates: those testers need the new APK once.
+
+**How it reaches the phone** (`src/services/app-updates.ts`, `src/components/update-banner.tsx`)
+- The app checks when it opens and each time it comes back to the front (at most every 5 minutes).
+- Once downloaded, a banner offers "Restart now". If the student ignores it, the app switches to the update the next time it comes back from the background.
+- It never restarts while a lecture is being recorded or waiting to be saved (`src/services/recording/busy.ts`).
+- You screen: "Check for updates" pulls one by hand; the build line shows `update ab12cd34` when an update is running.
+
+**When you need a new build instead** (JS updates can't carry these)
+- Adding or upgrading a package with native code (e.g. `expo-image-picker`), or changing `app.json` plugins, permissions, icon, splash or package name.
+- Then bump `app.json` `"version"` (e.g. `1.2.0`), build (`npx eas build --profile preview --platform android`) and send testers the new APK. Updates published after that target the new version.
+
+## CI/CD pipeline
+
+| Where | When | What |
+|---|---|---|
+| GitHub Actions `.github/workflows/ci.yml` | Every pull request and push to `main` | Design tokens, typecheck, lint, tests, web export: the check before merging |
+| EAS Workflows `.eas/workflows/deploy.yml` | Every push to `main` | **Test** (typecheck, lint, tests) → **stage**: update to the `preview` channel (test APKs get it) → **approve** on expo.dev → **release**: update to the `production` channel |
+| EAS Workflows `.eas/workflows/build-preview-apk.yml` | By hand (expo.dev → Workflows, or `npx eas-cli workflow:run .eas/workflows/build-preview-apk.yml`) | A new test APK. Needed only for native changes or a version bump |
+
+EAS Workflows run on Expo's servers. For pushes to start them, the GitHub repo must be connected to the Expo project: expo.dev → the project → **Settings → GitHub** → install the Expo GitHub app → pick `Zuri_mobile`. No GitHub secret is needed.
+
+The `EXPO_PUBLIC_*` values for each update are set in `deploy.yml` and match the `eas.json` build profile, so updates behave like the builds they land on. Add `[eas skip]` to a commit message to skip a run.
+
+Installed APKs only ever listen to the project, channel and runtime version they were built with. Publishing from a different Expo account or project never reaches them.
 
 ## Crash reporting (Sentry)
 

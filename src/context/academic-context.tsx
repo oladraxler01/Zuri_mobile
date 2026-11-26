@@ -31,6 +31,7 @@ import {
   type TodayTimelineResponse,
   type WeakTopicDTO,
 } from '@/services/academic-api';
+import type { TimetableImportResult } from '@/services/timetable-import-api';
 
 export interface CourseItem {
   id: string;
@@ -161,6 +162,11 @@ interface AcademicContextType {
   addTimetableSlot: (slot: Omit<TimetableSlot, 'id'>) => void;
   removeTimetableSlot: (id: string) => void;
   setTimetableSlots: (slots: TimetableSlot[]) => void;
+  /**
+   * Take in a timetable import the server just saved (POST /timetable/import/confirm).
+   * With replaceExisting, the phone's other classes for those courses are dropped too.
+   */
+  applyTimetableImport: (result: TimetableImportResult, replaceExisting: boolean) => void;
   updatePreferences: (prefs: Partial<StudentPreferences>) => void;
 
   // Server sync (no-ops while signed out)
@@ -451,14 +457,19 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
   // ─── Pull: replace sample / stale data with what the server has ───
 
   const syncing = useRef(false);
-  const syncFromServer = useCallback(async () => {
+  const syncAgain = useRef(false);
+  const syncFromServer = useCallback(async (): Promise<void> => {
     if (!isBackendConfigured) return;
     await loadAuth();
     if (!currentUser()) {
       setSync({ status: 'local' });
       return;
     }
-    if (syncing.current) return;
+    if (syncing.current) {
+      // A sync is already running with data fetched earlier: run another one after it.
+      syncAgain.current = true;
+      return;
+    }
     syncing.current = true;
     setSync((s) => ({ ...s, status: 'syncing', error: undefined }));
     try {
@@ -600,6 +611,10 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
       }));
     } finally {
       syncing.current = false;
+      if (syncAgain.current) {
+        syncAgain.current = false;
+        syncFromServer();
+      }
     }
   }, [schedulePush]);
 
@@ -749,6 +764,58 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const applyTimetableImport: AcademicContextType['applyTimetableImport'] = (result, replaceExisting) => {
+    setState((prev) => {
+      const returned = new Set([...result.courses.map((c) => c.id), ...result.slots.map((s) => s.id)]);
+      // Courses the student removed earlier and has now imported again come back.
+      const hiddenServerIds = (prev.hiddenServerIds ?? []).filter((id) => !returned.has(id));
+
+      const courses = [...prev.courses];
+      for (const d of result.courses) {
+        const code = d.code || d.title;
+        const patch: Partial<CourseItem> = {
+          serverId: d.id,
+          code,
+          title: d.title,
+          units: d.credit_units || 3,
+          catalogue: (d.visibility ?? 'catalogue') === 'catalogue',
+          onAcademic: true,
+          pendingSync: false,
+          syllabus: d.syllabus ?? undefined,
+          lectures: d.lectures,
+          events: d.events,
+        };
+        const i = courses.findIndex(
+          (c) => c.serverId === d.id || (!!d.client_id && c.id === d.client_id) || normCode(c.code) === normCode(code)
+        );
+        if (i >= 0) courses[i] = { ...courses[i], ...patch };
+        else courses.push({ ...(patch as Omit<CourseItem, 'id'>), id: d.id, color: COURSE_COLORS[courses.length % COURSE_COLORS.length] });
+      }
+
+      const byServerId = new Map(courses.filter((c) => c.serverId).map((c) => [c.serverId!, c]));
+      const importedCourseIds = new Set(result.courses.map((d) => byServerId.get(d.id)?.id).filter(Boolean));
+      const slotIds = new Set(result.slots.map((s) => s.id));
+      let timetable = prev.timetable.filter((t) => !slotIds.has(t.serverId ?? t.id));
+      if (replaceExisting) timetable = timetable.filter((t) => !importedCourseIds.has(t.courseId));
+      const imported: TimetableSlot[] = result.slots.map((s) => {
+        const course = byServerId.get(s.course_id);
+        return {
+          id: s.id,
+          serverId: s.id,
+          courseId: course?.id ?? s.course_id,
+          courseCode: course?.code ?? '',
+          day: s.day_of_week === 0 || s.day_of_week === 7 ? 'Sun' : DAYS[Math.max(0, Math.min(5, s.day_of_week - 1))],
+          startTime: to12h(s.start_time),
+          endTime: to12h(s.end_time),
+          venue: s.venue || '',
+        };
+      });
+      return { ...prev, hiddenServerIds, courses, timetable: [...timetable, ...imported] };
+    });
+    announceChange('courses');
+    syncFromServer();
+  };
+
   const updatePreferences = (prefs: Partial<StudentPreferences>) => {
     setState((prev) => ({
       ...prev,
@@ -778,6 +845,7 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
         addTimetableSlot,
         removeTimetableSlot,
         setTimetableSlots,
+        applyTimetableImport,
         updatePreferences,
         sync,
         syncFromServer,

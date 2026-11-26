@@ -8,8 +8,9 @@ import type { Material } from '@/types/material';
  */
 
 export interface SourceHit {
-  kind: 'lecture' | 'material';
-  /** lecture or material id */
+  /** 'paper': a research paper in one of the student's projects (Everything mode). */
+  kind: 'lecture' | 'material' | 'paper';
+  /** lecture, material or paper id */
   id: string;
   title: string;
   courseCode?: string;

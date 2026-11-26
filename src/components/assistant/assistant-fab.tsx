@@ -4,7 +4,7 @@ import { router, type Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { makeStyles, useTheme, haptics } from '@/theme';
 
-/** The round Zuri button that floats above the tab bar and opens the assistant. */
+/** The round Zuri button that floats above the tab bar and opens Ask Zuri (the one chat). */
 export function AssistantFab({ bottom }: { bottom: number }) {
   const styles = useStyles();
   const { colors } = useTheme();
@@ -12,11 +12,11 @@ export function AssistantFab({ bottom }: { bottom: number }) {
     <View pointerEvents="box-none" style={[styles.wrap, { bottom }]}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Open Zuri Assistant"
-        accessibilityHint="Ask about your classes, tests and deadlines"
+        accessibilityLabel="Ask Zuri"
+        accessibilityHint="Ask about your notes, classes, tests and deadlines"
         onPress={() => {
           haptics.light();
-          router.push('/assistant' as Href);
+          router.push('/ask' as Href);
         }}
         style={({ pressed }) => [styles.fab, pressed && styles.pressed]}
       >

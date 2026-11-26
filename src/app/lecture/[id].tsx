@@ -23,6 +23,8 @@ import { useSession } from '@/context/session-context';
 import { useLecturer } from '@/context/lecturer-context';
 import { ClassTab } from '@/components/lecture/class-tab';
 import { conceptForQuestion } from '@/utils/mastery';
+import { useAcademic } from '@/context/academic-context';
+import { CoursePickerSheet } from '@/components/lecture/course-picker-sheet';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
@@ -46,6 +48,8 @@ export default function LectureScreen() {
   const initialTab = tabs.some((t) => t.key === params.tab) ? (params.tab as TabKey) : 'overview';
   const [tab, setTab] = useState<TabKey>(initialTab);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pickCourse, setPickCourse] = useState(false);
+  const { state: academic } = useAcademic();
   const progress = useProgress();
 
   const player = useAudioPlayer(lecture?.audioUri ? { uri: lecture.audioUri } : null);
@@ -89,6 +93,8 @@ export default function LectureScreen() {
   }
 
   const ready = lecture.status === 'ready' && lecture.analysis;
+  // Quick recordings start without a course (or its course was removed since).
+  const sorted = !!lecture.courseId && (isLecturer || academic.courses.some((c) => c.id === lecture.courseId));
   const showComplete = ready && !lecture.seenAt;
 
   return (
@@ -100,7 +106,17 @@ export default function LectureScreen() {
         <Pressable onPress={goBack} hitSlop={10} accessibilityRole="button" accessibilityLabel="Go back">
           <Ionicons name="arrow-back" size={24} color={UI.ink} />
         </Pressable>
-        <Text style={styles.topCourse}>{lecture.courseCode}</Text>
+        <Pressable
+          onPress={() => !isLecturer && setPickCourse(true)}
+          disabled={isLecturer}
+          hitSlop={10}
+          style={styles.topCourseBtn}
+          accessibilityRole="button"
+          accessibilityLabel={`Course: ${sorted ? lecture.courseCode : 'not chosen'}. Change course`}
+        >
+          <Text style={styles.topCourse}>{sorted ? lecture.courseCode : 'UNSORTED'}</Text>
+          {!isLecturer && <Ionicons name="chevron-down" size={16} color={UI.inkSoft} />}
+        </Pressable>
         <Pressable
           onPress={() => setConfirmDelete(true)}
           hitSlop={10}
@@ -110,6 +126,16 @@ export default function LectureScreen() {
           <Ionicons name="trash-outline" size={20} color={UI.inkSoft} />
         </Pressable>
       </View>
+
+      {!sorted && !isLecturer && (
+        <View style={styles.sortCard}>
+          <Ionicons name="folder-open-outline" size={18} color={UI.inkSoft} />
+          <Text style={styles.sortText}>Not in a course yet. Put it in one so it shows with the rest of that course.</Text>
+          <Pressable onPress={() => setPickCourse(true)} hitSlop={8} accessibilityRole="button" style={styles.sortBtn}>
+            <Text style={styles.sortBtnText}>Choose course</Text>
+          </Pressable>
+        </View>
+      )}
 
       {lecture.status === 'waiting' ? (
         <WaitingView lecture={lecture} />
@@ -230,6 +256,20 @@ export default function LectureScreen() {
         </>
       )}
 
+      <CoursePickerSheet
+        visible={pickCourse}
+        courses={academic.courses}
+        currentId={sorted ? lecture.courseId : undefined}
+        onPick={(c) => {
+          updateLecture(lecture.id, { courseId: c.id, courseCode: c.code, courseTitle: c.title });
+          setPickCourse(false);
+        }}
+        onAddCourse={() => {
+          setPickCourse(false);
+          router.push('/(tabs)/explore' as Href);
+        }}
+        onClose={() => setPickCourse(false)}
+      />
       <ConfirmSheet
         visible={confirmDelete}
         title="Delete this lecture?"
@@ -288,6 +328,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: UI.borderSoft,
   },
+  topCourseBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 44 },
+  sortCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginHorizontal: 20,
+    marginBottom: 8,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: UI.cardMuted,
+  },
+  sortText: { flex: 1, fontFamily: ZuriFonts.bodyRegular, fontSize: 13, color: UI.ink },
+  sortBtn: { minHeight: 36, justifyContent: 'center' },
+  sortBtnText: { fontFamily: ZuriFonts.labelSmBold, fontSize: 13, color: UI.ink, textDecorationLine: 'underline' },
   topCourse: {
     fontFamily: ZuriFonts.labelSmBold,
     fontSize: 14,

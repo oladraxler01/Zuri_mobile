@@ -61,7 +61,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "jest",
-    "test:ci": "jest --ci"
+    "test:ci": "jest --ci",
+    "update:preview": "node scripts/publish-update.mjs preview",
+    "update:production": "node scripts/publish-update.mjs production"
   },
   "private": true,
   "jest": {

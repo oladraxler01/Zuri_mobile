@@ -4,6 +4,7 @@ import { Tabs } from 'expo-router';
 import { ZuriBottomTabBar } from '@/components/zuri-bottom-tab-bar';
 import { RoleGate } from '@/components/role-gate';
 import { AssistantFab } from '@/components/assistant/assistant-fab';
+import { RecordFab } from '@/components/record-fab';
 
 export default function TabsLayout() {
   const [barHeight, setBarHeight] = useState(76);
@@ -47,6 +48,7 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    <RecordFab bottom={barHeight + 14} />
     <AssistantFab bottom={barHeight + 14} />
     </View>
     </RoleGate>

@@ -30,6 +30,8 @@ function matches(lecture: Lecture, q: string) {
   return haystack.includes(q);
 }
 
+const UNSORTED = '__unsorted';
+
 /** All recorded lectures, newest first, with search and course filter. */
 export default function LectureArchiveScreen() {
   const router = useRouter();
@@ -43,12 +45,15 @@ export default function LectureArchiveScreen() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return lectures
-      .filter((l) => !courseFilter || l.courseId === courseFilter)
+      .filter((l) => !courseFilter || (courseFilter === UNSORTED ? !isSorted(l.courseId) : l.courseId === courseFilter))
       .filter((l) => !q || matches(l, q))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [lectures, query, courseFilter]);
 
   const coursesWithLectures = state.courses.filter((c) => lectures.some((l) => l.courseId === c.id));
+  // Quick recordings not put into a course yet (or whose course was removed).
+  const isSorted = (courseId?: string) => !!courseId && state.courses.some((c) => c.id === courseId);
+  const unsortedCount = lectures.filter((l) => !isSorted(l.courseId)).length;
 
   if (!fontsLoaded) return <View style={styles.container} />;
 
@@ -91,12 +96,15 @@ export default function LectureArchiveScreen() {
               />
             </View>
 
-            {coursesWithLectures.length > 1 && (
+            {(coursesWithLectures.length > 1 || unsortedCount > 0) && (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
                 <Chip label="All" on={!courseFilter} onPress={() => setCourseFilter(null)} />
                 {coursesWithLectures.map((c) => (
                   <Chip key={c.id} label={c.code} on={courseFilter === c.id} onPress={() => setCourseFilter(c.id)} />
                 ))}
+                {unsortedCount > 0 && (
+                  <Chip label={`Unsorted (${unsortedCount})`} on={courseFilter === UNSORTED} onPress={() => setCourseFilter(UNSORTED)} />
+                )}
               </ScrollView>
             )}
           </>
