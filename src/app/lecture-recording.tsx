@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, StatusBar, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { setRecordingBusy } from '@/services/recording/busy';
 import { useRouter, useLocalSearchParams, useNavigation, usePreventRemove } from 'expo-router';
 import type { Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -44,7 +45,9 @@ type Phase = 'checking' | 'needs-permission' | 'denied' | 'ready' | 'recording' 
 export default function LectureRecordingScreen() {
   const router = useRouter();
   const navigation = useNavigation();
-  const params = useLocalSearchParams<{ courseId?: string; courseCode?: string; courseTitle?: string }>();
+  // quick=1: the Record button. Starts at once; the course can be chosen now or later.
+  const params = useLocalSearchParams<{ courseId?: string; courseCode?: string; courseTitle?: string; quick?: string }>();
+  const quick = params.quick === '1';
   const [fontsLoaded] = useZuriFonts();
   const { state } = useAcademic();
   const { role } = useSession();
@@ -87,11 +90,16 @@ export default function LectureRecordingScreen() {
       courseList.find((c) => c.code.toLowerCase() === params.courseCode?.toLowerCase());
     if (byParam) return byParam;
     const next = upcomingClasses(timetable)[0];
+    if (quick) {
+      // Only a class that's on now (or starts within 15 minutes); otherwise sort it later.
+      const soon = next && (next.inProgress || next.start.getTime() - Date.now() < 15 * 60 * 1000);
+      return soon ? courseList.find((c) => c.id === next.slot.courseId) : undefined;
+    }
     return courseList.find((c) => c.id === next?.slot.courseId) ?? courseList[0];
   }, []);
   const [course, setCourse] = useState<CourseItem | undefined>(defaultCourse);
-  const courseCode = course?.code ?? params.courseCode ?? 'Lecture';
-  const courseTitle = course?.title ?? params.courseTitle ?? 'Untitled course';
+  const courseCode = course?.code ?? params.courseCode ?? (quick ? 'Unsorted' : 'Lecture');
+  const courseTitle = course?.title ?? params.courseTitle ?? (quick ? 'Quick recording' : 'Untitled course');
   const vocabulary = useMemo(() => [courseCode, ...courseTitle.split(/[\s&,]+/).filter((w) => w.length > 3)], [courseCode, courseTitle]);
   const lt = useLiveTranscript({ contextualStrings: vocabulary });
   const [liveSeconds, setLiveSeconds] = useState(0);
@@ -141,6 +149,11 @@ export default function LectureRecordingScreen() {
 
   // ── Block accidental exits while recording ──
   const isActive = phase === 'recording' || phase === 'paused' || phase === 'completed';
+  // App updates wait until the recording is saved or discarded.
+  useEffect(() => {
+    setRecordingBusy(isActive);
+  }, [isActive]);
+  useEffect(() => () => setRecordingBusy(false), []);
   usePreventRemove(isActive, ({ data }) => {
     if (allowLeave.current) {
       navigation.dispatch(data.action);
@@ -196,6 +209,14 @@ export default function LectureRecordingScreen() {
       setPhase('error');
     }
   };
+
+  // Quick record: start as soon as the microphone is allowed.
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (!quick || phase !== 'ready' || autoStarted.current) return;
+    autoStarted.current = true;
+    start();
+  }, [quick, phase]);
 
   const togglePause = () => {
     if (live) {
@@ -288,6 +309,31 @@ export default function LectureRecordingScreen() {
 
   if (!fontsLoaded) return <View style={styles.container} />;
 
+  // Quick record: pick the course while recording or before saving, or leave it for later.
+  const quickCoursePicker =
+    quick && courseList.length ? (
+      <View style={styles.quickPicker}>
+        <Text style={styles.label}>WHICH CLASS IS THIS? (OPTIONAL)</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.courseChips}>
+          {[undefined, ...courseList].map((c) => {
+            const on = c?.id === course?.id;
+            return (
+              <Pressable
+                key={c?.id ?? 'later'}
+                onPress={() => setCourse(c)}
+                style={[styles.courseChip, on && styles.courseChipOn]}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: on }}
+                accessibilityLabel={c ? c.code : 'Choose later'}
+              >
+                <Text style={[styles.courseChipText, on && { color: '#fff' }]}>{c ? c.code : 'Later'}</Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
+    ) : null;
+
   const close = () => {
     if (isActive) setConfirmLeave(true);
     else leave();
@@ -374,6 +420,7 @@ export default function LectureRecordingScreen() {
                 <Text style={styles.statusBadgeText}>{phase === 'paused' ? 'Paused' : 'Recording'}</Text>
               </View>
             </View>
+            {quickCoursePicker}
 
             <View style={styles.hubCard}>
               <Text style={styles.timerDisplay}>{formatClock(live ? liveSeconds : recState.durationMillis / 1000)}</Text>
@@ -459,12 +506,17 @@ export default function LectureRecordingScreen() {
             <Text style={styles.blockTitle}>Recording complete</Text>
             <Text style={styles.blockText}>
               {live
-                ? `${formatDuration(finalSeconds)} transcribed for ${courseCode} (${lt.segments.reduce((n, x) => n + x.text.split(/\s+/).length, 0)} words). Save it to get a summary, key points and questions.`
-                : `${formatDuration(finalSeconds)} recorded for ${courseCode}. Save it to get a transcript, summary, notes and questions.`}
+                ? `${formatDuration(finalSeconds)} transcribed${course || !quick ? ` for ${courseCode}` : ''} (${lt.segments.reduce((n, x) => n + x.text.split(/\s+/).length, 0)} words). Save it to get a summary, key points and questions.`
+                : `${formatDuration(finalSeconds)} recorded${course || !quick ? ` for ${courseCode}` : ''}. Save it to get a transcript, summary, notes and questions.`}
             </Text>
 
+            {quickCoursePicker}
             <View style={styles.summaryCard}>
-              <SummaryRow icon="school-outline" label="Course" value={`${courseCode} · ${courseTitle}`} />
+              <SummaryRow
+                icon="school-outline"
+                label="Course"
+                value={course || !quick ? `${courseCode} · ${courseTitle}` : 'Not chosen yet. Choose it later from the lecture.'}
+              />
               <SummaryRow icon="time-outline" label="Length" value={formatClock(finalSeconds)} />
               <SummaryRow icon="phone-portrait-outline" label="Saved to" value="This phone" />
             </View>
@@ -577,6 +629,7 @@ function PulseDot({ paused }: { paused: boolean }) {
 }
 
 const styles = StyleSheet.create({
+  quickPicker: { alignSelf: 'stretch', marginBottom: 12 },
   liveCard: { marginTop: 16, backgroundColor: UI.card, borderRadius: 16, borderWidth: 1, borderColor: UI.border, padding: 16 },
   liveHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   liveLabel: { fontFamily: ZuriFonts.labelSmBold, fontSize: 11, letterSpacing: 1.2, color: UI.muted },
