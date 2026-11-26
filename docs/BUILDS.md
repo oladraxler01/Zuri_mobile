@@ -28,13 +28,15 @@ Pushes to `main` publish to `preview` by themselves (see CI/CD pipeline below); 
 
 **Who receives an update**
 - Only builds on the same channel (preview APKs listen on `preview`).
-- Only builds with the same runtime version. `runtimeVersion` follows `app.json` `"version"` (`"policy": "appVersion"`), now `1.1.0`. APKs built as `1.0.0` never receive `1.1.0` updates: those testers need the new APK once.
+- Only builds with the same runtime version. `runtimeVersion` follows `app.json` `"version"` (`"policy": "appVersion"`), now `1.2.0`. APKs built as `1.1.0` never receive `1.2.0` updates: those testers need the new APK once.
 
 **How it reaches the phone** (`src/services/app-updates.ts`, `src/components/update-banner.tsx`)
 - The app checks when it opens and each time it comes back to the front (at most every 5 minutes).
 - Once downloaded, a banner offers "Restart now". If the student ignores it, the app switches to the update the next time it comes back from the background.
 - It never restarts while a lecture is being recorded or waiting to be saved (`src/services/recording/busy.ts`).
 - You screen: "Check for updates" pulls one by hand; the build line shows `update ab12cd34` when an update is running.
+
+**Rule: when you add a package with native code, bump `app.json` `"version"` in the same PR.** The runtime version then changes, so the update can't reach older APKs that lack the native code (an older APK running JavaScript that calls a missing native module can crash). 1.2.0 was bumped for Google / Apple sign-in after exactly that slipped through.
 
 **When you need a new build instead** (JS updates can't carry these)
 - Adding or upgrading a package with native code (e.g. `expo-image-picker`), or changing `app.json` plugins, permissions, icon, splash or package name.
